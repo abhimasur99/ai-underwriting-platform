@@ -236,3 +236,85 @@ class UnderwritingResult(BaseModel):
     open_questions: list[str] = []
     narrative: dict[str, str] = {}
     artifacts: dict[str, str] = {}
+
+
+# ---- workflow contracts (docs/data-contracts.md) -------------------------------------------
+
+class Event(BaseModel):
+    """One row of the append-only event log; also the SSE payload."""
+    event_id: int
+    deal_id: str
+    ts: str
+    actor: str
+    type: str
+    summary: str
+    deal_version: int
+    payload: dict = {}
+
+
+class ToolCall(BaseModel):
+    call_id: str
+    agent: str
+    tool: str
+    inputs: dict
+    formula: str | None = None
+    output: object
+    ts: str
+
+
+class Handoff(BaseModel):
+    handoff_id: str
+    from_: str = Field(alias="from")
+    to: str
+    deal_id: str
+    deal_version: int
+    task: str
+    attempt: int = 1
+    inputs_ref: str
+    ts: str
+    model_config = {"populate_by_name": True}
+
+
+class HandoffResult(BaseModel):
+    handoff_id: str
+    deal_id: str
+    deal_version: int
+    status: Literal["ok", "needs_input", "error"]
+    outputs_ref: str | None = None
+    summary: str = ""
+    duration_ms: int = 0
+
+
+class Mismatch(BaseModel):
+    field: str
+    underwriter: float | str | None
+    independent: float | str | None
+    diff: float | None = None
+    likely_cause: str = ""
+
+
+class CheckItem(BaseModel):
+    name: str
+    status: Literal["pass", "warn", "fail"]
+    detail: dict = {}
+
+
+class CheckReport(BaseModel):
+    deal_id: str
+    deal_version: int
+    status: Literal["pass", "warn", "fail"]
+    checks: list[CheckItem]
+    mismatches: list[Mismatch] = []
+    flags: list[Flag] = []
+    summary: str = ""
+
+
+class Patch(BaseModel):
+    patch_id: str
+    deal_id: str
+    kind: Literal["data", "narrative", "override"]
+    path: str
+    old: object = None
+    new: object = None
+    reason: str = ""
+    status: Literal["proposed", "confirmed", "cancelled"] = "proposed"
