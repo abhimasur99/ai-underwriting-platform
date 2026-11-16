@@ -33,3 +33,4 @@ smoke:
 
 fixtures:
 	$(BIN)/python scripts/generate_sample_deals.py
+	$(BIN)/python scripts/generate_cached_fixtures.py

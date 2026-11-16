@@ -24,7 +24,7 @@ _QUESTIONS = [
 ]
 
 
-def _questions(reasons: list[Reason], flags) -> list[str]:
+def open_questions(reasons: list[Reason], flags) -> list[str]:
     out: list[str] = []
 
     def add(q: str) -> None:
@@ -60,7 +60,7 @@ def underwrite(deal: Deal, rules: RulesConfig | None = None) -> UnderwritingResu
         deal_id=deal.deal_id, deal_version=deal.version, rules_version=rules.version,
         call=outcome.call, reasons=outcome.reasons, metrics=metrics, exit=exit_, stress=stress,
         reconciliation=recon, rule_checks=outcome.checks, flags=flags,
-        open_questions=_questions(outcome.reasons, flags),
+        open_questions=open_questions(outcome.reasons, flags),
     )
     result.narrative = default_narrative(result)
     return result

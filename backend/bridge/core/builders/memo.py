@@ -200,6 +200,11 @@ def render_memo(deal: Deal, result: UnderwritingResult, path: str | Path,
     for flag in result.flags:
         story.append(Paragraph(f"Flag {flag.code}: {flag.message}", SMALL))
 
+    if result.overrides:
+        story.append(_section("Reviewer overrides (judgment only; numbers unchanged)"))
+        for text in result.overrides:
+            story.append(Paragraph(f"- {text}", SMALL))
+
     # open questions and risks
     story.append(_section("Open questions"))
     if result.open_questions:

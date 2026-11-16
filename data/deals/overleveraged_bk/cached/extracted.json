@@ -1,0 +1,838 @@
+{
+ "deal_id": "D-0044",
+ "name": "Brooklyn multifamily, 22 units",
+ "version": 1,
+ "property": {
+  "address": {
+   "value": "310 Sample Street, Brooklyn, NY 11216",
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 7",
+    "quote": "- Address: 310 Sample Street, Brooklyn, NY 11216 (fictional)",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "asset_type": {
+   "value": "multifamily",
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 8",
+    "quote": "- Asset type: multifamily",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "unit_count": {
+   "value": 22,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 9",
+    "quote": "- Units: 22",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "occupied_units": {
+   "value": 20,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 11",
+    "quote": "- In-place occupancy: 20 of 22 units",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "year_built": {
+   "value": 1925,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 10",
+    "quote": "- Year built: 1925",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  }
+ },
+ "loan_request": {
+  "loan_commitment": {
+   "value": 4050000.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 18",
+    "quote": "- Loan commitment requested: $4,050,000",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "initial_advance": {
+   "value": 3450000.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 19",
+    "quote": "- Initial advance at closing: $3,450,000",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "note_rate": {
+   "value": 0.115,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 22",
+    "quote": "- Note rate: 11.50% interest-only",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "term_months": {
+   "value": 12,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 21",
+    "quote": "- Term: 12 months",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "points": {
+   "value": 2.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 23",
+    "quote": "- Origination: 2.00 points",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  }
+ },
+ "valuation": {
+  "as_is_value": {
+   "value": 4000000.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 40",
+    "quote": "- As-is value (broker opinion): $4,000,000",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "arv": {
+   "value": 5000000.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 41",
+    "quote": "- After-repair value (ARV): $5,000,000, based on stabilized NOI at a 5.60% cap rate",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  }
+ },
+ "purchase": {
+  "purchase_price": {
+   "value": 4000000.0,
+   "source": {
+    "kind": "document",
+    "doc": "purchase_contract.md",
+    "locator": "line 6",
+    "quote": "- Purchase price: $4,000,000",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "deposit": {
+   "value": 200000.0,
+   "source": {
+    "kind": "document",
+    "doc": "purchase_contract.md",
+    "locator": "line 7",
+    "quote": "- Deposit: $200,000",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "closing_date": {
+   "value": "2026-12-10",
+   "source": {
+    "kind": "document",
+    "doc": "purchase_contract.md",
+    "locator": "line 8",
+    "quote": "- Scheduled closing date: 2026-12-10",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  }
+ },
+ "renovation": {
+  "renovation_budget": {
+   "value": 600000.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 36",
+    "quote": "| Renovation budget | $600,000 |",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "line_items": [
+   {
+    "item": "Unit interior renovations",
+    "amount": 260000.0
+   },
+   {
+    "item": "Roof and facade",
+    "amount": 90000.0
+   },
+   {
+    "item": "Boiler and heating",
+    "amount": 60000.0
+   },
+   {
+    "item": "Electrical and plumbing",
+    "amount": 50000.0
+   },
+   {
+    "item": "Common areas",
+    "amount": 40000.0
+   },
+   {
+    "item": "Soft costs (architect, permits)",
+    "amount": 60000.0
+   },
+   {
+    "item": "Contingency",
+    "amount": 40000.0
+   }
+  ]
+ },
+ "sources_uses": {
+  "sources": [
+   {
+    "name": "Senior bridge loan",
+    "amount": 4050000.0
+   },
+   {
+    "name": "Sponsor equity",
+    "amount": 400000.0
+   }
+  ],
+  "uses": [
+   {
+    "name": "Purchase price",
+    "amount": 4000000.0
+   },
+   {
+    "name": "Renovation budget",
+    "amount": 600000.0
+   }
+  ],
+  "stated_total_sources": {
+   "value": 4450000.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 31",
+    "quote": "| Total sources | $4,450,000 |",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "stated_total_uses": {
+   "value": 4600000.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 37",
+    "quote": "| Total uses | $4,600,000 |",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  }
+ },
+ "pro_forma": {
+  "stabilized_noi": {
+   "value": 280000.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 54",
+    "quote": "| Stabilized NOI | $280,000 |",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "gpr": {
+   "value": 420000.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 49",
+    "quote": "| Gross potential rent | $420,000 |",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "vacancy_pct": {
+   "value": 0.05,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 50",
+    "quote": "| Vacancy and credit loss (5%) | -$21,000 |",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "other_income": {
+   "value": 1000.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 51",
+    "quote": "| Other income | $1,000 |",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "opex": {
+   "value": 120000.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 53",
+    "quote": "| Operating expenses | -$120,000 |",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  }
+ },
+ "rent_roll": {
+  "units": [
+   {
+    "unit": "101",
+    "unit_type": "studio",
+    "status": "occupied",
+    "monthly_rent": 1150.0,
+    "sqft": 400.0,
+    "tenant": "Tenant 101",
+    "lease_start": "2024-02-01",
+    "lease_end": "2025-01-31"
+   },
+   {
+    "unit": "102",
+    "unit_type": "1br",
+    "status": "occupied",
+    "monthly_rent": 1370.0,
+    "sqft": 560.0,
+    "tenant": "Tenant 102",
+    "lease_start": "2024-02-18",
+    "lease_end": "2025-02-17"
+   },
+   {
+    "unit": "103",
+    "unit_type": "1br",
+    "status": "occupied",
+    "monthly_rent": 1415.0,
+    "sqft": 560.0,
+    "tenant": "Tenant 103",
+    "lease_start": "2024-03-06",
+    "lease_end": "2025-03-06"
+   },
+   {
+    "unit": "104",
+    "unit_type": "2br",
+    "status": "occupied",
+    "monthly_rent": 1735.0,
+    "sqft": 760.0,
+    "tenant": "Tenant 104",
+    "lease_start": "2024-03-23",
+    "lease_end": "2025-03-23"
+   },
+   {
+    "unit": "105",
+    "unit_type": "1br",
+    "status": "occupied",
+    "monthly_rent": 1430.0,
+    "sqft": 560.0,
+    "tenant": "Tenant 105",
+    "lease_start": "2024-04-09",
+    "lease_end": "2025-04-09"
+   },
+   {
+    "unit": "106",
+    "unit_type": "studio",
+    "status": "occupied",
+    "monthly_rent": 1150.0,
+    "sqft": 400.0,
+    "tenant": "Tenant 106",
+    "lease_start": "2024-04-26",
+    "lease_end": "2025-04-26"
+   },
+   {
+    "unit": "201",
+    "unit_type": "studio",
+    "status": "occupied",
+    "monthly_rent": 1180.0,
+    "sqft": 400.0,
+    "tenant": "Tenant 201",
+    "lease_start": "2024-03-03",
+    "lease_end": "2025-03-03"
+   },
+   {
+    "unit": "202",
+    "unit_type": "1br",
+    "status": "vacant",
+    "monthly_rent": 0.0,
+    "sqft": 560.0,
+    "tenant": null,
+    "lease_start": null,
+    "lease_end": null
+   },
+   {
+    "unit": "203",
+    "unit_type": "1br",
+    "status": "occupied",
+    "monthly_rent": 1370.0,
+    "sqft": 560.0,
+    "tenant": "Tenant 203",
+    "lease_start": "2024-04-06",
+    "lease_end": "2025-04-06"
+   },
+   {
+    "unit": "204",
+    "unit_type": "2br",
+    "status": "occupied",
+    "monthly_rent": 1765.0,
+    "sqft": 760.0,
+    "tenant": "Tenant 204",
+    "lease_start": "2024-04-23",
+    "lease_end": "2025-04-23"
+   },
+   {
+    "unit": "205",
+    "unit_type": "1br",
+    "status": "occupied",
+    "monthly_rent": 1385.0,
+    "sqft": 560.0,
+    "tenant": "Tenant 205",
+    "lease_start": "2024-05-10",
+    "lease_end": "2025-05-10"
+   },
+   {
+    "unit": "206",
+    "unit_type": "studio",
+    "status": "occupied",
+    "monthly_rent": 1180.0,
+    "sqft": 400.0,
+    "tenant": "Tenant 206",
+    "lease_start": "2024-05-27",
+    "lease_end": "2025-05-27"
+   },
+   {
+    "unit": "301",
+    "unit_type": "studio",
+    "status": "occupied",
+    "monthly_rent": 1135.0,
+    "sqft": 400.0,
+    "tenant": "Tenant 301",
+    "lease_start": "2024-04-03",
+    "lease_end": "2025-04-03"
+   },
+   {
+    "unit": "302",
+    "unit_type": "1br",
+    "status": "occupied",
+    "monthly_rent": 1430.0,
+    "sqft": 560.0,
+    "tenant": "Tenant 302",
+    "lease_start": "2024-04-20",
+    "lease_end": "2025-04-20"
+   },
+   {
+    "unit": "303",
+    "unit_type": "1br",
+    "status": "occupied",
+    "monthly_rent": 1400.0,
+    "sqft": 560.0,
+    "tenant": "Tenant 303",
+    "lease_start": "2024-05-07",
+    "lease_end": "2025-05-07"
+   },
+   {
+    "unit": "304",
+    "unit_type": "2br",
+    "status": "occupied",
+    "monthly_rent": 1720.0,
+    "sqft": 760.0,
+    "tenant": "Tenant 304",
+    "lease_start": "2024-05-24",
+    "lease_end": "2025-05-24"
+   },
+   {
+    "unit": "305",
+    "unit_type": "1br",
+    "status": "occupied",
+    "monthly_rent": 1415.0,
+    "sqft": 560.0,
+    "tenant": "Tenant 305",
+    "lease_start": "2024-06-10",
+    "lease_end": "2025-06-10"
+   },
+   {
+    "unit": "401",
+    "unit_type": "studio",
+    "status": "occupied",
+    "monthly_rent": 1165.0,
+    "sqft": 400.0,
+    "tenant": "Tenant 401",
+    "lease_start": "2024-05-04",
+    "lease_end": "2025-05-04"
+   },
+   {
+    "unit": "402",
+    "unit_type": "1br",
+    "status": "occupied",
+    "monthly_rent": 1385.0,
+    "sqft": 560.0,
+    "tenant": "Tenant 402",
+    "lease_start": "2024-05-21",
+    "lease_end": "2025-05-21"
+   },
+   {
+    "unit": "403",
+    "unit_type": "1br",
+    "status": "vacant",
+    "monthly_rent": 0.0,
+    "sqft": 560.0,
+    "tenant": null,
+    "lease_start": null,
+    "lease_end": null
+   },
+   {
+    "unit": "404",
+    "unit_type": "2br",
+    "status": "occupied",
+    "monthly_rent": 1750.0,
+    "sqft": 760.0,
+    "tenant": "Tenant 404",
+    "lease_start": "2024-06-24",
+    "lease_end": "2025-06-24"
+   },
+   {
+    "unit": "405",
+    "unit_type": "1br",
+    "status": "occupied",
+    "monthly_rent": 1370.0,
+    "sqft": 560.0,
+    "tenant": "Tenant 405",
+    "lease_start": "2024-07-11",
+    "lease_end": "2025-07-11"
+   }
+  ],
+  "annual_occupied_rent": {
+   "value": 334800.0,
+   "source": {
+    "kind": "derived",
+    "doc": "rent_roll.csv",
+    "locator": "rows 2-23",
+    "quote": null,
+    "formula": "12 * sum(monthly_rent where status == occupied)",
+    "reason": null
+   },
+   "confidence": 1.0
+  }
+ },
+ "t12": {
+  "lines": [
+   {
+    "line_item": "Gross rental income",
+    "category": "income",
+    "months": [
+     24552.0,
+     24692.0,
+     24831.0,
+     24552.0,
+     24692.0,
+     24831.0,
+     24692.0,
+     24552.0,
+     24831.0,
+     24692.0,
+     24552.0,
+     24831.0
+    ],
+    "total": 296300.0
+   },
+   {
+    "line_item": "Other income",
+    "category": "income",
+    "months": [
+     667.0,
+     667.0,
+     667.0,
+     667.0,
+     667.0,
+     667.0,
+     667.0,
+     667.0,
+     667.0,
+     667.0,
+     667.0,
+     663.0
+    ],
+    "total": 8000.0
+   },
+   {
+    "line_item": "Real estate taxes",
+    "category": "expense",
+    "months": [
+     4000.0,
+     4000.0,
+     4000.0,
+     4000.0,
+     4000.0,
+     4000.0,
+     4000.0,
+     4000.0,
+     4000.0,
+     4000.0,
+     4000.0,
+     4000.0
+    ],
+    "total": 48000.0
+   },
+   {
+    "line_item": "Insurance",
+    "category": "expense",
+    "months": [
+     1417.0,
+     1417.0,
+     1417.0,
+     1417.0,
+     1417.0,
+     1417.0,
+     1417.0,
+     1417.0,
+     1417.0,
+     1417.0,
+     1417.0,
+     1413.0
+    ],
+    "total": 17000.0
+   },
+   {
+    "line_item": "Utilities",
+    "category": "expense",
+    "months": [
+     2000.0,
+     2000.0,
+     2000.0,
+     2000.0,
+     2000.0,
+     2000.0,
+     2000.0,
+     2000.0,
+     2000.0,
+     2000.0,
+     2000.0,
+     2000.0
+    ],
+    "total": 24000.0
+   },
+   {
+    "line_item": "Repairs and maintenance",
+    "category": "expense",
+    "months": [
+     1500.0,
+     1500.0,
+     1500.0,
+     1500.0,
+     1500.0,
+     1500.0,
+     1500.0,
+     1500.0,
+     1500.0,
+     1500.0,
+     1500.0,
+     1500.0
+    ],
+    "total": 18000.0
+   },
+   {
+    "line_item": "Payroll",
+    "category": "expense",
+    "months": [
+     1000.0,
+     1000.0,
+     1000.0,
+     1000.0,
+     1000.0,
+     1000.0,
+     1000.0,
+     1000.0,
+     1000.0,
+     1000.0,
+     1000.0,
+     1000.0
+    ],
+    "total": 12000.0
+   },
+   {
+    "line_item": "Management fee",
+    "category": "expense",
+    "months": [
+     1000.0,
+     1000.0,
+     1000.0,
+     1000.0,
+     1000.0,
+     1000.0,
+     1000.0,
+     1000.0,
+     1000.0,
+     1000.0,
+     1000.0,
+     1000.0
+    ],
+    "total": 12000.0
+   },
+   {
+    "line_item": "Contract services",
+    "category": "expense",
+    "months": [
+     417.0,
+     417.0,
+     417.0,
+     417.0,
+     417.0,
+     417.0,
+     417.0,
+     417.0,
+     417.0,
+     417.0,
+     417.0,
+     413.0
+    ],
+    "total": 5000.0
+   },
+   {
+    "line_item": "Administrative and other",
+    "category": "expense",
+    "months": [
+     1167.0,
+     1167.0,
+     1167.0,
+     1167.0,
+     1167.0,
+     1167.0,
+     1167.0,
+     1167.0,
+     1167.0,
+     1167.0,
+     1167.0,
+     1163.0
+    ],
+    "total": 14000.0
+   }
+  ],
+  "rental_income": {
+   "value": 296300.0,
+   "source": {
+    "kind": "derived",
+    "doc": "t12.csv",
+    "locator": "rows 2-11",
+    "quote": null,
+    "formula": "total of the Gross rental income line",
+    "reason": null
+   },
+   "confidence": 1.0
+  },
+  "total_income": {
+   "value": 304300.0,
+   "source": {
+    "kind": "derived",
+    "doc": "t12.csv",
+    "locator": "rows 2-11",
+    "quote": null,
+    "formula": "sum of income line totals",
+    "reason": null
+   },
+   "confidence": 1.0
+  },
+  "total_expenses": {
+   "value": 150000.0,
+   "source": {
+    "kind": "derived",
+    "doc": "t12.csv",
+    "locator": "rows 2-11",
+    "quote": null,
+    "formula": "sum of expense line totals",
+    "reason": null
+   },
+   "confidence": 1.0
+  },
+  "in_place_noi": {
+   "value": 154300.0,
+   "source": {
+    "kind": "derived",
+    "doc": "t12.csv",
+    "locator": "rows 2-11",
+    "quote": null,
+    "formula": "total income - total expenses",
+    "reason": null
+   },
+   "confidence": 1.0
+  }
+ },
+ "sponsor": {
+  "name": {
+   "value": "Northgate Capital Group LLC",
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.md",
+    "locator": "line 14",
+    "quote": "- Northgate Capital Group LLC (fictional)",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  }
+ },
+ "flags": []
+}

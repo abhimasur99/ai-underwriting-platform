@@ -211,6 +211,15 @@ class Store:
                      old=json.loads(r["old_json"]), new=json.loads(r["new_json"]),
                      reason=r["reason"], status=r["status"])
 
+    def patches(self, deal_id: str, kind: str | None = None, status: str | None = None
+                ) -> list[Patch]:
+        with self._conn() as c:
+            ids = [r[0] for r in c.execute(
+                "SELECT patch_id FROM patches WHERE deal_id=? ORDER BY patch_id", (deal_id,))]
+        got = [self.get_patch(i) for i in ids]
+        return [p for p in got if (kind is None or p.kind == kind)
+                and (status is None or p.status == status)]
+
     def set_patch_status(self, patch_id: str, status: str) -> None:
         with self._conn() as c:
             c.execute("UPDATE patches SET status=? WHERE patch_id=?", (status, patch_id))

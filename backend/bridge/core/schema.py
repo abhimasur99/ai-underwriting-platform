@@ -234,6 +234,7 @@ class UnderwritingResult(BaseModel):
     rule_checks: list[RuleCheck] = []
     flags: list[Flag] = []
     open_questions: list[str] = []
+    overrides: list[str] = []
     narrative: dict[str, str] = {}
     artifacts: dict[str, str] = {}
 

@@ -115,6 +115,8 @@ def independent_parse(deal_dir: str | Path) -> dict:
         "sources_stated_total": need(stated.get("total sources"), "total sources"),
         "uses_stated_total": need(stated.get("total uses"), "total uses"),
         "rent_roll_rows": len(rent_rows),
+        "rent_roll_units": [{"unit": r["unit"], "status": r["status"].strip().lower(),
+                             "rent": _money(r[rent_col] or "0")} for r in rent_rows],
         "rent_roll_annual": annual_rent,
         "t12_rental_income": rental_income,
         "t12_total_income": totals["income"],

@@ -19,6 +19,7 @@ jobs:
       - name: Fixtures regenerate with no diff
         run: |
           python scripts/generate_sample_deals.py
+          python scripts/generate_cached_fixtures.py
           git diff --exit-code data/deals
 
   frontend:
