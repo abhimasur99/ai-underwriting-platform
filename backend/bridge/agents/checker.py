@@ -135,3 +135,21 @@ def run_checker(deal: Deal, result: UnderwritingResult, deal_dir: Path, rec: Rec
               {"status": report.status, "mismatches": [m.field for m in mismatches],
                "attempt": rec.version})
     return report
+
+
+def recheck_memo(report: CheckReport, deal: Deal, result: UnderwritingResult, deal_dir: Path,
+                 overrides: list[dict] | None = None) -> CheckReport:
+    """After a narrative edit or an override: re-run only the memo number match."""
+    cfg = formulas.load_config()
+    inputs = parse.independent_parse(deal_dir)
+    if overrides:
+        inputs = apply_overrides(inputs, overrides)
+    metrics = formulas.independent_recompute(inputs, cfg)
+    check = pdftext.memo_number_match(Path(result.artifacts["memo_pdf"]), inputs, metrics, cfg,
+                                      result.call)
+    bad = bool(check["unmatched"]) or not check["call_ok"]
+    item = CheckItem(name="memo_number_match", status="fail" if bad else "pass",
+                     detail={"unmatched_numbers": check["unmatched"], "call_ok": check["call_ok"]})
+    checks = [item if c.name == "memo_number_match" else c for c in report.checks]
+    return report.model_copy(update={
+        "checks": checks, "status": _status(*[c.status for c in checks])})
