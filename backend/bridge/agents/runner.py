@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 from typing import Protocol
 
+from bridge.agents import cached_nlu
+from bridge.agents.runner_types import ChiefTurn, IntakeTurn
 from bridge.core.narrative import default_narrative
 from bridge.core.parsers import parse_deal_dir
 from bridge.core.schema import CheckReport, Deal, Mismatch, UnderwritingResult
@@ -21,6 +23,10 @@ class AgentRunner(Protocol):
     def explain_mismatch(self, mismatch: Mismatch) -> str: ...
 
     def explain_check(self, report: CheckReport) -> str: ...
+
+    def interpret_intake(self, message: str) -> IntakeTurn: ...
+
+    def interpret_chief(self, message: str) -> ChiefTurn: ...
 
 
 _INPUT_HINTS = {
@@ -71,5 +77,13 @@ class CachedRunner:
         return text + (f" Mismatched fields: {fields}." if fields else "")
 
 
+    def interpret_intake(self, message: str) -> IntakeTurn:
+        return cached_nlu.interpret_intake(message)
+
+    def interpret_chief(self, message: str) -> ChiefTurn:
+        return cached_nlu.interpret_chief(message)
+
+
 def load_cached_json(path: Path) -> dict:
     return json.loads(path.read_text())
+
