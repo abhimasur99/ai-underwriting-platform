@@ -1,0 +1,64 @@
+{
+  "deal_id": "D-0042",
+  "name": "Bronx multifamily, 40 units",
+  "expected_call": "screen",
+  "expected_reason_codes": [],
+  "answer_key": {
+    "purchase_price": 8000000,
+    "renovation_budget": 1200000,
+    "loan_commitment": 6500000,
+    "initial_advance": 5300000,
+    "equity": 2700000,
+    "as_is_value": 8000000,
+    "arv": 12500000,
+    "note_rate": 0.105,
+    "term_months": 18,
+    "unit_count": 40,
+    "occupied_units": 36,
+    "asset_type": "multifamily",
+    "stabilized_noi": 700000.0,
+    "in_place_noi": 369304,
+    "rent_roll_annual": 730320,
+    "t12_rental_income": 715104,
+    "t12_total_income": 727104,
+    "t12_total_expenses": 357800,
+    "sources_stated_total": 9200000,
+    "uses_stated_total": 9200000
+  },
+  "metrics": {
+    "total_cost": 9200000,
+    "ltc": 0.7065217391304348,
+    "ltv_as_is": 0.6625,
+    "loan_to_arv": 0.52,
+    "dscr_in_place": 0.6636190476190477,
+    "debt_yield_stabilized": 0.1076923076923077,
+    "implied_cap_rate": 0.056,
+    "payoff": 6500000.0,
+    "takeout_caps": {
+      "dscr": 9333333.333333334,
+      "ltv": 8750000.0,
+      "debt_yield": 8235294.117647058
+    },
+    "takeout_binding": "debt_yield",
+    "takeout_max": 8235294.117647058,
+    "refi_cushion": 1735294.1176470583,
+    "exit_dscr": 1.794871794871795,
+    "stress": {
+      "noi": 630000.0,
+      "rate": 0.06999999999999999,
+      "takeout_caps": {
+        "dscr": 7200000.0,
+        "ltv": 8750000.0,
+        "debt_yield": 7411764.705882353
+      },
+      "takeout_binding": "dscr",
+      "takeout_max": 7200000.0,
+      "refi_cushion": 700000.0,
+      "exit_dscr": 1.3846153846153848
+    },
+    "rr_vs_t12_gap": 0.021278023895824942,
+    "sources_vs_uses_gap": 0.0,
+    "unit_count_match": true
+  },
+  "note": "Reference values computed by scripts/generate_sample_deals.py from config/rules.yaml."
+}

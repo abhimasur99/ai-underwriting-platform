@@ -1,0 +1,66 @@
+{
+  "deal_id": "D-0043",
+  "name": "Queens mixed-use, 18 residential + 2 retail",
+  "expected_call": "watch",
+  "expected_reason_codes": [
+    "REFI_CUSHION_NEGATIVE_STRESS"
+  ],
+  "answer_key": {
+    "purchase_price": 5000000,
+    "renovation_budget": 800000,
+    "loan_commitment": 4300000,
+    "initial_advance": 3500000,
+    "equity": 1500000,
+    "as_is_value": 5000000,
+    "arv": 7000000,
+    "note_rate": 0.105,
+    "term_months": 18,
+    "unit_count": 20,
+    "occupied_units": 19,
+    "asset_type": "mixed_use",
+    "stabilized_noi": 400000.0,
+    "in_place_noi": 364072,
+    "rent_roll_annual": 547800,
+    "t12_rental_income": 537072,
+    "t12_total_income": 542072,
+    "t12_total_expenses": 178000,
+    "sources_stated_total": 5800000,
+    "uses_stated_total": 5800000
+  },
+  "metrics": {
+    "total_cost": 5800000,
+    "ltc": 0.7413793103448276,
+    "ltv_as_is": 0.7,
+    "loan_to_arv": 0.6142857142857143,
+    "dscr_in_place": 0.9906721088435374,
+    "debt_yield_stabilized": 0.09302325581395349,
+    "implied_cap_rate": 0.05714285714285714,
+    "payoff": 4300000.0,
+    "takeout_caps": {
+      "dscr": 5333333.333333334,
+      "ltv": 4900000.0,
+      "debt_yield": 4705882.352941176
+    },
+    "takeout_binding": "debt_yield",
+    "takeout_max": 4705882.352941176,
+    "refi_cushion": 405882.3529411759,
+    "exit_dscr": 1.550387596899225,
+    "stress": {
+      "noi": 360000.0,
+      "rate": 0.06999999999999999,
+      "takeout_caps": {
+        "dscr": 4114285.7142857146,
+        "ltv": 4900000.0,
+        "debt_yield": 4235294.117647058
+      },
+      "takeout_binding": "dscr",
+      "takeout_max": 4114285.7142857146,
+      "refi_cushion": -185714.28571428545,
+      "exit_dscr": 1.1960132890365451
+    },
+    "rr_vs_t12_gap": 0.019974975422289747,
+    "sources_vs_uses_gap": 0.0,
+    "unit_count_match": true
+  },
+  "note": "Reference values computed by scripts/generate_sample_deals.py from config/rules.yaml."
+}

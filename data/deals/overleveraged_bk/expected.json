@@ -1,0 +1,72 @@
+{
+  "deal_id": "D-0044",
+  "name": "Brooklyn multifamily, 22 units (should fail)",
+  "expected_call": "decline",
+  "expected_reason_codes": [
+    "LTC_DECLINE",
+    "LTV_AS_IS_DECLINE",
+    "LOAN_TO_ARV_DECLINE",
+    "EXIT_DSCR_WATCH",
+    "REFI_CUSHION_NEGATIVE_BASE",
+    "RENT_ROLL_VS_T12_DECLINE",
+    "SOURCES_VS_USES_DECLINE"
+  ],
+  "answer_key": {
+    "purchase_price": 4000000,
+    "renovation_budget": 600000,
+    "loan_commitment": 4050000,
+    "initial_advance": 3450000,
+    "equity": 400000,
+    "as_is_value": 4000000,
+    "arv": 5000000,
+    "note_rate": 0.115,
+    "term_months": 12,
+    "unit_count": 22,
+    "occupied_units": 20,
+    "asset_type": "multifamily",
+    "stabilized_noi": 280000.0,
+    "in_place_noi": 154300,
+    "rent_roll_annual": 334800,
+    "t12_rental_income": 296300,
+    "t12_total_income": 304300,
+    "t12_total_expenses": 150000,
+    "sources_stated_total": 4450000,
+    "uses_stated_total": 4600000
+  },
+  "metrics": {
+    "total_cost": 4600000,
+    "ltc": 0.8804347826086957,
+    "ltv_as_is": 0.8625,
+    "loan_to_arv": 0.81,
+    "dscr_in_place": 0.3889098928796471,
+    "debt_yield_stabilized": 0.0691358024691358,
+    "implied_cap_rate": 0.056,
+    "payoff": 4050000.0,
+    "takeout_caps": {
+      "dscr": 3733333.3333333335,
+      "ltv": 3500000.0,
+      "debt_yield": 3294117.647058823
+    },
+    "takeout_binding": "debt_yield",
+    "takeout_max": 3294117.647058823,
+    "refi_cushion": -755882.3529411769,
+    "exit_dscr": 1.1522633744855968,
+    "stress": {
+      "noi": 252000.0,
+      "rate": 0.06999999999999999,
+      "takeout_caps": {
+        "dscr": 2880000.0,
+        "ltv": 3500000.0,
+        "debt_yield": 2964705.8823529407
+      },
+      "takeout_binding": "dscr",
+      "takeout_max": 2880000.0,
+      "refi_cushion": -1170000.0,
+      "exit_dscr": 0.8888888888888891
+    },
+    "rr_vs_t12_gap": 0.12993587580155247,
+    "sources_vs_uses_gap": 0.03260869565217391,
+    "unit_count_match": true
+  },
+  "note": "Reference values computed by scripts/generate_sample_deals.py from config/rules.yaml."
+}

@@ -1,0 +1,36 @@
+# What the intake chat must collect before a deal is READY. Completeness is decided by code, never by a model.
+required_documents:
+  - {type: deal_summary,       label: "Deal summary and pro forma", accepted: [md, txt, pdf, docx]}
+  - {type: purchase_contract,  label: "Purchase contract",          accepted: [md, txt, pdf, docx]}
+  - {type: rent_roll,          label: "Rent roll",                  accepted: [csv, xlsx, pdf]}
+  - {type: t12,                label: "T-12 operating statement",   accepted: [csv, xlsx, pdf]}
+  - {type: renovation_budget,  label: "Renovation budget",          accepted: [csv, xlsx, pdf]}
+
+optional_documents: [sponsor_materials, appraisal, photos, insurance]
+
+required_facts:
+  - property_address
+  - asset_type
+  - unit_count
+  - loan_amount_requested
+  - purchase_price
+  - renovation_budget
+  - sponsor_name
+
+upload_limits:
+  max_file_mb: 25
+  allowed_extensions: [csv, xlsx, pdf, docx, md, txt, jpg, png]
+
+# Cheap deterministic classification at upload time. Only if both hints fail does an internal model
+# pick a label from the fixed enum (it never returns free text to the external chat).
+classification:
+  filename_hints:
+    rent_roll: [rent_roll, rentroll, rent-roll]
+    t12: [t12, t-12, trailing, operating]
+    renovation_budget: [reno, renovation, budget]
+    purchase_contract: [contract, psa, purchase]
+    deal_summary: [summary, package, offering, pro_forma]
+  header_hints:
+    rent_roll: [unit, tenant, lease_start, monthly_rent]
+    t12: [line_item, category, total]
+    renovation_budget: [line_item, amount]

@@ -1,0 +1,35 @@
+version: "0.1-illustrative"
+disclaimer: "Illustrative thresholds for a demo. These are NOT CapMoon's lending box."
+
+eligibility:
+  asset_types: [multifamily, mixed_use]
+  loan_size_usd: {min: 1000000, max: 15000000}
+
+# A value above watch_above is a WATCH reason; above decline_above is a DECLINE reason.
+leverage:
+  ltc:         {watch_above: 0.75, decline_above: 0.85}
+  ltv_as_is:   {watch_above: 0.75, decline_above: 0.85}
+  loan_to_arv: {watch_above: 0.65, decline_above: 0.75}
+
+exit:
+  takeout:
+    rate: 0.06            # assumed take-out loan rate, interest-only
+    min_dscr: 1.25
+    max_ltv: 0.70         # on ARV
+    min_debt_yield: 0.085
+  exit_fee_pct: 0.0       # added to payoff if the lender charges one
+  # exit_dscr = stabilized NOI / (payoff * takeout rate). Below watch_below is WATCH, below decline_below is DECLINE.
+  exit_dscr: {watch_below: 1.25, decline_below: 1.10}
+  stress: {noi_haircut: 0.10, rate_bump_bps: 100}
+  implied_cap_rate: {watch_below: 0.05}   # stabilized NOI / ARV
+
+# Gap = abs(a - b) / b. Within pass_within is PASS, above decline_above is DECLINE, in between is WATCH.
+reconciliation:
+  rent_roll_vs_t12: {pass_within: 0.05, decline_above: 0.10}
+  sources_vs_uses:  {pass_within: 0.005, decline_above: 0.01}
+  unit_count_must_match: true
+
+confidence:
+  flag_below: 0.80
+  key_fields: [purchase_price, renovation_budget, loan_commitment, initial_advance,
+               as_is_value, arv, stabilized_noi, unit_count, note_rate]
