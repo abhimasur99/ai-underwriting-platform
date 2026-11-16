@@ -28,6 +28,9 @@ bridge = ["agents/prompts/*.md"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Point at backend/ directly so tests do not depend on the editable-install .pth file
+# (macOS can flag it hidden, and Python then skips it).
+pythonpath = ["backend", "."]
 
 [tool.ruff]
 line-length = 100

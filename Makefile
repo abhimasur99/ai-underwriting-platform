@@ -21,7 +21,7 @@ lint:
 
 dev:
 	@trap 'kill 0' INT TERM EXIT; \
-	$(BIN)/uvicorn bridge.api.app:app --reload --port 8000 & \
+	$(BIN)/uvicorn bridge.api.app:app --app-dir backend --reload --port 8000 & \
 	(cd frontend && npm run dev) & \
 	wait
 
