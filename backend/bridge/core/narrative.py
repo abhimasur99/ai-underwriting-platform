@@ -1,0 +1,27 @@
+"""Deterministic narrative used when no model is involved (offline mode, tests).
+
+Numbers appear only as placeholders. The memo leads with the exit.
+"""
+from bridge.core.schema import UnderwritingResult
+
+
+def default_narrative(result: UnderwritingResult) -> dict[str, str]:
+    return {
+        "summary": (
+            "Recommendation: {{call}}. The take-out is limited by the {{exit.binding}} test at "
+            "{{exit.takeout_max}}, a refinance cushion of {{exit.refi_cushion}} over the "
+            "{{exit.payoff}} payoff, with an exit DSCR of {{exit.exit_dscr}}. Loan to cost is "
+            "{{metrics.ltc}}, loan to as-is value {{metrics.ltv_as_is}} and loan to ARV "
+            "{{metrics.loan_to_arv}}."
+        ),
+        "exit": (
+            "Under stress the take-out falls to {{stress.takeout_max}} ({{stress.binding}} "
+            "binds), leaving a cushion of {{stress.refi_cushion}} and an exit DSCR of "
+            "{{stress.exit_dscr}}. Stabilized debt yield is {{metrics.debt_yield_stabilized}} "
+            "against an implied cap rate of {{metrics.implied_cap_rate}}."
+        ),
+        "risks": (
+            "The rules raised {{reasons.count}} reason(s), listed in this memo. Stabilized NOI "
+            "and ARV are the borrower's figures, used as given and not independently appraised."
+        ),
+    }
