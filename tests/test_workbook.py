@@ -1,12 +1,11 @@
 """Workbook: live formulas for every metric, recalculated values match the answer key."""
 import pytest
 from bridge.core.builders.workbook import METRIC_CELLS, build_workbook
+from bridge.core.independent.xl import Evaluator
 from bridge.core.parsers import parse_deal_dir
 from bridge.core.rules import load_rules
 from bridge.core.underwrite import underwrite
 from openpyxl import load_workbook
-
-from tests.xl_eval import Evaluator
 
 SHEETS = ["Summary", "Inputs", "Rent Roll", "T-12", "Sources & Uses", "Metrics",
           "Exit & Stress", "Flags"]
