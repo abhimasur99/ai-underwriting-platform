@@ -1,37 +1,38 @@
 #!/usr/bin/env python3
-"""One tiny live Claude call to verify the API key. Needs ANTHROPIC_API_KEY in .env or the env."""
-import os
+"""One tiny live Claude call to verify the API key and the request shape the runner uses
+(structured output via output_config.format). Needs ANTHROPIC_API_KEY in .env or the environment."""
+import json
 import sys
 from pathlib import Path
 
-import anthropic
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 
-
-def load_env() -> None:
-    env = Path(__file__).resolve().parents[1] / ".env"
-    if not env.exists():
-        return
-    for line in env.read_text().splitlines():
-        line = line.strip()
-        if line and not line.startswith("#") and "=" in line:
-            key, _, value = line.partition("=")
-            os.environ.setdefault(key.strip(), value.strip())
+import anthropic  # noqa: E402
+from bridge.settings import get_settings  # noqa: E402
 
 
 def main() -> int:
-    load_env()
-    if not os.environ.get("ANTHROPIC_API_KEY"):
+    settings = get_settings()
+    if not settings.api_key:
         print("ANTHROPIC_API_KEY is not set. Copy .env.example to .env and fill it in.")
         return 1
-    model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5")
-    client = anthropic.Anthropic()
-    reply = client.messages.create(
-        model=model,
-        max_tokens=16,
-        messages=[{"role": "user", "content": "Reply with the single word: ok"}],
-    )
-    print(f"model={model} reply={reply.content[0].text.strip()!r}")
-    return 0
+    client = anthropic.Anthropic(api_key=settings.api_key)
+    try:
+        reply = client.messages.create(
+            model=settings.model, max_tokens=2048,
+            messages=[{"role": "user", "content": "Reply with JSON saying ok is true."}],
+            output_config={"effort": "low", "format": {"type": "json_schema", "schema": {
+                "type": "object", "properties": {"ok": {"type": "boolean"}},
+                "required": ["ok"], "additionalProperties": False}}},
+        )
+    except anthropic.APIError as exc:
+        print(f"Claude call failed: {type(exc).__name__}: {exc}")
+        return 1
+    text = next((b.text for b in reply.content if b.type == "text"), "")
+    ok = bool(text) and json.loads(text).get("ok") is True
+    print(f"model={settings.model} stop={reply.stop_reason} ok={ok} "
+          f"tokens in/out={reply.usage.input_tokens}/{reply.usage.output_tokens}")
+    return 0 if ok else 1
 
 
 if __name__ == "__main__":
