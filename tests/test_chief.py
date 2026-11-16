@@ -89,11 +89,12 @@ def test_specialist_agents_never_call_each_other(tmp_path):
             assert e.summary.endswith("-> chief: ok")
 
 
-def test_process_requires_a_ready_deal(tmp_path):
+def test_process_requires_a_ready_deal_and_does_not_fail_it(tmp_path):
     chief = make_chief(tmp_path)
     deal_id = chief.create_deal()
-    assert chief.process(deal_id) == "FAILED"
-    assert any(e.type == "error" for e in chief.store.events(deal_id))
+    with pytest.raises(InvalidTransition):
+        chief.process(deal_id)
+    assert chief.state(deal_id) == "CREATED"          # still recoverable
 
 
 def test_missing_required_field_goes_to_needs_input(tmp_path):

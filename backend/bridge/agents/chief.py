@@ -159,7 +159,11 @@ class Chief:
 
     # ------------------------------------------------------------------ pipeline
     def process(self, deal_id: str) -> str:
-        """Run extraction, underwriting and checking until the deal reaches review (or stops)."""
+        """Run extraction, underwriting and checking until the deal reaches review (or stops).
+        Raises InvalidTransition (without failing the deal) if it is not ready to run."""
+        state = self.state(deal_id)
+        if state not in ("READY", "SENT_BACK", "UNDERWRITING"):
+            raise InvalidTransition(f"cannot process a deal in state {state}")
         with self._lock(deal_id):
             try:
                 self._process(deal_id)
@@ -173,12 +177,10 @@ class Chief:
             deal = self._extract(deal_id)
             if deal is None:
                 return
-        elif state in ("SENT_BACK", "UNDERWRITING"):
+        else:
             deal = self.store.get_deal(deal_id)
             if state == "SENT_BACK":
                 self._set_state(deal_id, "UNDERWRITING", deal.version)
-        else:
-            raise InvalidTransition(f"cannot process a deal in state {state}")
         self._underwrite_and_check(deal_id, deal)
 
     def _extract(self, deal_id: str) -> Deal | None:
