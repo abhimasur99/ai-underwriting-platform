@@ -69,7 +69,7 @@ def _approve(deal: Deal, result: UnderwritingResult) -> str:
     parts = [f"Subject: {deal.property.address.value}: next steps", "Hello,", _opening(deal),
              "We have completed our first review and would like to move this forward."]
     if asks:
-        parts.append("To keep things moving, please send us the following:\n"
+        parts.append("To keep things moving, we have the following questions:\n"
                      + "\n".join(f"- {q}" for q in asks))
     else:
         parts.append("We have no further requests at this stage.")
