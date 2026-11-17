@@ -220,6 +220,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/deals/{deal_id}/max-loan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Largest Loan
+         * @description The largest loan that still gets the call (screen, or watch to avoid a decline).
+         */
+        get: operations["largest_loan_api_deals__deal_id__max_loan_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/deals/{deal_id}/patches/{patch_id}/cancel": {
         parameters: {
             query?: never;
@@ -309,6 +329,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/deals/{deal_id}/what-if": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * What If
+         * @description The current case against one with some assumptions changed. Nothing is saved: no
+         *     version, no event, no change to the deal.
+         */
+        post: operations["what_if_api_deals__deal_id__what_if_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/deals/{deal_id}/workbook": {
         parameters: {
             query?: never;
@@ -377,6 +418,19 @@ export interface components {
             archived: boolean;
             /** Deal Id */
             deal_id: string;
+        };
+        /** Assumption */
+        Assumption: {
+            /** After */
+            after: number;
+            /** Before */
+            before: number;
+            /** Key */
+            key: string;
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
         };
         /** Body_upload_file_api_deals__deal_id__files_post */
         Body_upload_file_api_deals__deal_id__files_post: {
@@ -475,6 +529,8 @@ export interface components {
             patch?: components["schemas"]["Patch"] | null;
             /** Reply */
             reply: string;
+            scenario?: components["schemas"]["Outcome"] | null;
+            sizing?: components["schemas"]["Sizing"] | null;
             /**
              * Suggestions
              * @default []
@@ -748,6 +804,19 @@ export interface components {
             /** Underwriter */
             underwriter: number | string | null;
         };
+        /**
+         * Outcome
+         * @description The current case against the changed one.
+         */
+        Outcome: {
+            /** Assumptions */
+            assumptions: components["schemas"]["Assumption"][];
+            /** Call After */
+            call_after: string;
+            /** Call Before */
+            call_before: string;
+            diff: components["schemas"]["VersionDiff"];
+        };
         /** Patch */
         Patch: {
             /** Deal Id */
@@ -949,6 +1018,34 @@ export interface components {
             value: number;
             /** Watch Threshold */
             watch_threshold?: number | null;
+        };
+        /** Sizing */
+        Sizing: {
+            /**
+             * Binding
+             * @default []
+             */
+            binding: string[];
+            /** Call At Max */
+            call_at_max: string | null;
+            /**
+             * Capped
+             * @default false
+             */
+            capped: boolean;
+            /** Current Call */
+            current_call: string;
+            /** Current Loan */
+            current_loan: number;
+            /** Max Loan */
+            max_loan: number | null;
+            /**
+             * Persistent
+             * @default []
+             */
+            persistent: string[];
+            /** Target */
+            target: string;
         };
         /** Source */
         Source: {
@@ -1154,6 +1251,13 @@ export interface components {
             reasons_removed: string[];
             /** To Version */
             to_version: number;
+        };
+        /** WhatIfRequest */
+        WhatIfRequest: {
+            /** Params */
+            params: {
+                [key: string]: number;
+            };
         };
         /** WorkbookCell */
         WorkbookCell: {
@@ -1678,6 +1782,39 @@ export interface operations {
             };
         };
     };
+    largest_loan_api_deals__deal_id__max_loan_get: {
+        parameters: {
+            query?: {
+                target?: string;
+            };
+            header?: never;
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Sizing"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     cancel_patch_api_deals__deal_id__patches__patch_id__cancel_post: {
         parameters: {
             query?: never;
@@ -1825,6 +1962,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TranscriptMessage"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    what_if_api_deals__deal_id__what_if_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WhatIfRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Outcome"];
                 };
             };
             /** @description Validation Error */

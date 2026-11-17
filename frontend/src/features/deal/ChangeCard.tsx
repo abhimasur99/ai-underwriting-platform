@@ -1,4 +1,4 @@
-import type { VersionDiff } from '../../api/client'
+import type { Outcome, VersionDiff } from '../../api/client'
 import { mult, pct, usd } from '../../lib/format'
 import { CallChip } from '../../ui/Chip'
 
@@ -10,14 +10,30 @@ function input(path: string, text: string): string {
   return path.endsWith('note_rate') ? pct(n) : usd(n)
 }
 
-/** Before and after for the version that was just made: the input that moved, the metrics that
- *  moved with it, and whether the call changed. */
-export default function ChangeCard({ diff }: { diff: VersionDiff }) {
-  if (diff.from_version === diff.to_version) return null
+function assumed(kind: string, v: number): string {
+  if (kind === 'bps') return `${Math.round(v)} bps`
+  return (SHOW[kind] ?? usd)(v)
+}
+
+/** Before and after for the version that was just made (or, for a what-if, for the case that was
+ *  only tried): the input that moved, the metrics that moved with it, and whether the call
+ *  changed. A what-if lists its assumptions instead of inputs and says nothing was saved. */
+export default function ChangeCard({ diff, scenario }: { diff: VersionDiff; scenario?: Outcome }) {
+  if (!scenario && diff.from_version === diff.to_version) return null
   const flipped = diff.call_before !== diff.call_after
   return (
     <div className="relative mt-2 border border-slate-300 bg-white p-3 text-xs">
-      <div className="eyebrow !text-ink">Version {diff.to_version}: what changed</div>
+      <div className="eyebrow !text-ink">
+        {scenario ? 'What-if: not saved' : `Version ${diff.to_version}: what changed`}
+      </div>
+      {scenario?.assumptions.map((a) => (
+        <div key={a.key} className="mt-2">
+          <span className="text-slate-600">{a.label}: </span>
+          <span className="font-semibold">
+            {assumed(a.kind, a.before)} → {assumed(a.kind, a.after)}
+          </span>
+        </div>
+      ))}
       {diff.inputs.map((i) => (
         <div key={i.path} className="mt-2">
           <span className="font-mono">{i.path === 'documents' ? 'documents read again' : i.path}</span>

@@ -84,7 +84,9 @@ Chat on the left, the deal on the right. Back and previous are on the left, next
 | `GET /api/deals/{id}/stream` | SSE for one deal |
 | `GET /api/stream` | SSE for the queue |
 | `GET /api/deals/{id}/artifacts/{memo.pdf or workbook.xlsx}` | Latest outputs |
-| `POST /api/deals/{id}/chief-chat` | Internal chat; returns reply and optional patch proposal |
+| `POST /api/deals/{id}/chief-chat` | Internal chat; returns reply, suggestions and optional patch proposal, what-if outcome or sizing |
+| `POST /api/deals/{id}/what-if` | Try different assumptions (`{params: {name: value}}`); returns the current case against the changed one. Saves nothing; 422 for an unknown or out-of-range assumption |
+| `GET /api/deals/{id}/max-loan?target=screen\|watch` | The largest loan that still reaches the target call, found by re-applying the rules. Saves nothing |
 | `POST /api/deals/{id}/patches/{patch_id}/confirm` | Apply a proposed patch |
 | `POST /api/deals/{id}/patches/{patch_id}/cancel` | Cancel a proposed patch |
 | `POST /api/deals/{id}/decision` | `approve`, `reject`, `request_info` (note required) or `send_back` (re-run) |

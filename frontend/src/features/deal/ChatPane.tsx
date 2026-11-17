@@ -1,17 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../../api/client'
-import type { Patch, VersionDiff } from '../../api/client'
+import type { Outcome, Patch, Sizing, VersionDiff } from '../../api/client'
 import { pct, usd } from '../../lib/format'
 import { REVIEWER_PROMPTS } from '../../lib/samples'
 import type { Prompt } from '../../lib/samples'
 import { Button } from '../../ui/Button'
 import ChangeCard from './ChangeCard'
+import SizingCard from './SizingCard'
 
 interface Msg {
   from: 'you' | 'chief'
   text: string
   patch?: Patch
   diff?: VersionDiff
+  scenario?: Outcome
+  sizing?: Sizing
   suggestions?: string[]
 }
 
@@ -19,8 +22,9 @@ const INTRO: Msg = {
   from: 'chief',
   text:
     'Hello. I can answer questions about this deal’s calculations, exceptions and sources, ' +
-    'explain why the call is what it is, show what changed between versions, and propose edits ' +
-    'for you to confirm. Nothing changes until you confirm.',
+    'explain why the call is what it is, show what changed between versions, try what-if ' +
+    'assumptions, find the largest loan that still screens, and propose edits for you to ' +
+    'confirm. Nothing changes until you confirm.',
 }
 
 function showValue(path: string, v: unknown): string {
@@ -118,7 +122,10 @@ export default function ChatPane({
     setBusy(true)
     try {
       const r = await api.chiefChat(dealId, m)
-      say({ from: 'chief', text: r.reply, patch: r.patch ?? undefined, suggestions: r.suggestions })
+      say({
+        from: 'chief', text: r.reply, patch: r.patch ?? undefined, suggestions: r.suggestions,
+        scenario: r.scenario ?? undefined, sizing: r.sizing ?? undefined,
+      })
     } catch (e) {
       say({ from: 'chief', text: (e as Error).message })
     } finally {
@@ -182,6 +189,8 @@ export default function ChatPane({
                 {m.text}
               </div>
               {m.diff && <ChangeCard diff={m.diff} />}
+              {m.scenario && <ChangeCard diff={m.scenario.diff} scenario={m.scenario} />}
+              {m.sizing && <SizingCard sizing={m.sizing} />}
               {m.patch && (
                 <PatchCard
                   patch={m.patch}
