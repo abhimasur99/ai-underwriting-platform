@@ -2,6 +2,50 @@
 
 Work one sprint at a time. Stop at done-when and show the result before starting the next. Branch per sprint, tag at the end. Cut line is at the bottom.
 
+## Status and the rebuild plan (updated 2026-11-16)
+
+| Sprint | State |
+| --- | --- |
+| 0 Setup, 1 Core, 2 Agents, 3 UI, 3b Restyle and queue housekeeping | Done, tagged (`sprint-0` to `sprint-3b`) |
+| 3c Files and deals | In progress |
+| 3d Deal page rebuild | Planned |
+| 3e Intake and chat | Planned |
+| 3f Draft broker reply | Planned |
+| 4 Demo and docs | Planned (last) |
+
+Why 3c to 3f exist: a design review (see `docs/decisions.md` D29 to D33) found that the demo should use real PDF, Word and Excel files, that the deal page repeats itself and shows system internals instead of the reviewer's job, and that the chats are too canned. Each sprint below is its own branch and tag, test-first where it touches core code.
+
+## Sprint 3c: Files and deals
+- [ ] Add `pypdf` and `python-docx`. Read PDF (text layer) and DOCX into the same structure the markdown parser uses; summary and contract may be `.md`, `.txt`, `.pdf` or `.docx`; tables may be `.csv` or `.xlsx`. The checker gets its own small reader (independence)
+- [ ] Intake accepts only formats that really parse; classification also uses a document's first lines (content hints)
+- [ ] Sample-document writers (markdown to PDF, DOCX, XLSX), deterministic so CI can diff them
+- [ ] Eight new sample deals (`docs/deals-catalog.md`): 4 Screen, 4 Watch, 2 Decline, 1 Needs input across the 11, in three file kits (markdown and CSV; PDF and XLSX; mixed)
+- [ ] Answer keys and cached fixtures for all 11; one parametrized end-to-end test over every deal
+**Done when:** all 11 deals reach their expected call (the Needs input deal stops and asks, then proceeds after a corrected file), the checker agrees on each, uploading the PDF and XLSX files through the API works, and CI regenerates the files with no diff.
+
+## Sprint 3d: Deal page rebuild
+- [ ] Layout: chat on the left (collapsible), workspace on the right; back on the left, forward on the right
+- [ ] Header actions on every tab: Reject, Request info, Approve; Next deal needing review
+- [ ] One summary strip (call, checker, flags, open questions) replacing the repeated status chips
+- [ ] Tabs: Memo, Numbers (metrics, sources, click to edit inputs), Files (document text with the source line highlighted), Process (flow graph and a readable log)
+- [ ] Queue: a Next action column (Your review, Waiting on sponsor, Running); sorted by what needs you
+- [ ] Request info replaces Send back: the note appears in the sponsor's chat and the deal waits for new files
+- [ ] Shared UI kit and feature folders; `vitest` unit tests for flow derivation and next-action rules; accessibility pass (contrast AA, tab roles, keyboard, live regions); checked at 1280x800 and 1440x900
+**Done when:** a reviewer can go from the queue to a decision without opening the Process tab, and every number opens to its source line.
+
+## Sprint 3e: Intake and chat
+- [ ] Facts are read from the uploaded documents; the sponsor only confirms or fills gaps
+- [ ] Interactive checklist beside the chat (drop a file onto its slot); chat on the left, as everywhere
+- [ ] Richer replies from code-composed templates (greeting, help, what is missing, what next, status, thanks); live mode may phrase them from an allowed-facts packet, guarded by a test that rejects numbers and decision language
+- [ ] Chief chat: capabilities help, deal summary, flags, what changed in the latest version, follow-up chips
+**Done when:** a sponsor who drops five files and types nothing else is told what was read and what is missing.
+
+## Sprint 3f: Draft broker reply
+- [ ] Approving a deal produces a draft reply to the broker (template offline, wording from Claude in live mode); it is shown for the reviewer to edit and approve, and is never sent
+**Done when:** every approved or rejected deal has a logged, reviewer-approved draft.
+
+`make e2e` (a Playwright script in the repo) runs the demo path locally; it is not a CI step.
+
 ## Sprint 0: Setup (20 min)
 - [ ] Python project with `pyproject.toml`, `.venv`, `ruff`, `pytest`; `frontend/` created with Vite, React, TypeScript, Tailwind
 - [ ] Folder layout from `docs/architecture.md` created with empty modules
