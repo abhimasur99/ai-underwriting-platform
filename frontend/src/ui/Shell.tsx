@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { useMode } from '../api/hooks'
-import { ModeBadge } from './Chips'
+import { ModeBadge } from './Chip'
 
 /** Dark top bar shared by every page. `external` is the borrower-facing intake: no internal nav. */
 export function TopBar({ active, external = false }: { active?: 'queue' | 'new'; external?: boolean }) {

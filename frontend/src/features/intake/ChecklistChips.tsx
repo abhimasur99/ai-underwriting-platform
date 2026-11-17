@@ -1,4 +1,4 @@
-import type { Checklist } from '../api/client'
+import type { Checklist } from '../../api/client'
 
 const DOC_LABELS: Record<string, string> = {
   deal_summary: 'Deal summary',

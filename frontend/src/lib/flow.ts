@@ -36,6 +36,7 @@ export function deriveFlow(events: ApiEvent[]): Flow {
   let escalated = false
   let submitted = false
   let touched = false
+  let asked = false            // the reviewer asked the sponsor for something
   const open = new Map<string, NodeId>()
 
   const reset = (ids: NodeId[]) =>
@@ -53,6 +54,7 @@ export function deriveFlow(events: ApiEvent[]): Flow {
         break
       case 'state.changed': {
         dealState = str(p.to)
+        if (dealState !== 'NEEDS_INPUT') asked = false
         if (typeof p.retry_count === 'number') retries = p.retry_count
         if ('escalation' in p) escalated = Boolean(p.escalation)
         if (dealState === 'EXTRACTING') reset(['extraction', 'underwriter', 'checker', 'reviewer'])
@@ -83,6 +85,9 @@ export function deriveFlow(events: ApiEvent[]): Flow {
       case 'review.requested':
         escalated = Boolean(p.escalation)
         break
+      case 'info.requested':
+        asked = true
+        break
       case 'error':
         nodes.chief = { state: 'failed', note: e.summary }
         break
@@ -103,11 +108,15 @@ export function deriveFlow(events: ApiEvent[]): Flow {
       nodes.chief = { state: 'running', note: 'routing handoffs' }
     else if (['NEEDS_REVIEW', 'APPROVED', 'RELEASED', 'REJECTED'].includes(dealState))
       nodes.chief = { state: 'done', note: 'handed to reviewer' }
+    else if (dealState === 'NEEDS_INPUT' && asked)
+      nodes.chief = { state: 'idle', note: 'waiting for the sponsor' }
     else if (dealState === 'NEEDS_INPUT')
       nodes.chief = { state: 'failed', note: 'needs more input' }
   }
   if (dealState === 'NEEDS_REVIEW')
     nodes.reviewer = { state: 'running', note: escalated ? 'check failed: escalated' : 'awaiting you' }
+  else if (dealState === 'NEEDS_INPUT' && asked)
+    nodes.reviewer = { state: 'running', note: 'waiting on the sponsor' }
   else if (dealState === 'APPROVED' || dealState === 'RELEASED')
     nodes.reviewer = { state: 'done', note: 'approved' }
   else if (dealState === 'REJECTED') nodes.reviewer = { state: 'failed', note: 'rejected' }

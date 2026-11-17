@@ -8,7 +8,7 @@ Work one sprint at a time. Stop at done-when and show the result before starting
 | --- | --- |
 | 0 Setup, 1 Core, 2 Agents, 3 UI, 3b Restyle and queue housekeeping | Done, tagged (`sprint-0` to `sprint-3b`) |
 | 3c Files and deals | Built, awaiting merge and tag |
-| 3d Deal page rebuild | Planned |
+| 3d Deal page rebuild | Built, awaiting review |
 | 3e Intake and chat | Planned |
 | 3f Draft broker reply | Planned |
 | 4 Demo and docs | Planned (last) |
@@ -26,13 +26,13 @@ Why 3c to 3f exist: a design review (see `docs/decisions.md` D29 to D33) found t
 **Done when:** all 11 deals reach their expected call (the Needs input deal stops and asks, then proceeds after a corrected file), the checker agrees on each, uploading the PDF and XLSX files through the API works, and CI regenerates the files with no diff.
 
 ## Sprint 3d: Deal page rebuild
-- [ ] Layout: chat on the left (collapsible), workspace on the right; back on the left, forward on the right
-- [ ] Header actions on every tab: Reject, Request info, Approve; Next deal needing review
-- [ ] One summary strip (call, checker, flags, open questions) replacing the repeated status chips
-- [ ] Tabs: Memo, Numbers (metrics, sources, click to edit inputs), Files (document text with the source line highlighted), Process (flow graph and a readable log)
-- [ ] Queue: a Next action column (Your review, Waiting on sponsor, Running); sorted by what needs you
-- [ ] Request info replaces Send back: the note appears in the sponsor's chat and the deal waits for new files
-- [ ] Shared UI kit and feature folders; `vitest` unit tests for flow derivation and next-action rules; accessibility pass (contrast AA, tab roles, keyboard, live regions); checked at 1280x800 and 1440x900
+- [x] Layout: chat on the left (collapsible), workspace on the right; back on the left, forward on the right
+- [x] Header actions on every tab: Reject, Request info, Approve; Next deal needing review
+- [x] One summary strip (call, checker, flags, open questions) replacing the repeated status chips
+- [x] Tabs: Memo, Numbers (metrics and sources; "click to edit inputs" is deferred, edits still go through the chat), Files (document text with the source line highlighted), Process (flow graph and a readable log)
+- [x] Queue: a Next action column (Your review, Waiting on sponsor, Running); sorted by what needs you
+- [x] Request info replaces Send back: the note appears in the sponsor's chat and the deal waits for new files
+- [x] Shared UI kit and feature folders; `vitest` unit tests for flow derivation and next-action rules; accessibility pass (contrast AA, tab roles, keyboard, live regions); checked at 1280x800 and 1440x900
 **Done when:** a reviewer can go from the queue to a decision without opening the Process tab, and every number opens to its source line.
 
 ## Sprint 3e: Intake and chat

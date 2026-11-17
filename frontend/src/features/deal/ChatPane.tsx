@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { api } from '../api/client'
-import type { Patch } from '../api/client'
-import { pct, usd } from '../lib/format'
-import { REVIEWER_PROMPTS } from '../lib/samples'
-import { Button } from './Chips'
+import { api } from '../../api/client'
+import type { Patch } from '../../api/client'
+import { pct, usd } from '../../lib/format'
+import { REVIEWER_PROMPTS } from '../../lib/samples'
+import { Button } from '../../ui/Button'
 
 interface Msg {
   from: 'you' | 'chief'
@@ -66,8 +66,8 @@ function PatchCard({
 }
 
 export default function ChiefChat({
-  dealId, enabled, pending,
-}: { dealId: string; enabled: boolean; pending: Patch[] }) {
+  dealId, enabled, pending, onCollapse,
+}: { dealId: string; enabled: boolean; pending: Patch[]; onCollapse: () => void }) {
   const [msgs, setMsgs] = useState<Msg[]>([
     {
       from: 'chief',
@@ -138,11 +138,18 @@ export default function ChiefChat({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b border-slate-200 px-4 py-3">
-        <h2 className="eyebrow !text-ink">Chief chat</h2>
-        <p className="text-xs text-slate-500">Reviewer only. The chief reads your message; code answers.</p>
+      <div className="flex items-start border-b border-slate-200 px-4 py-3">
+        <div>
+          <h2 className="eyebrow !text-ink">Chief chat</h2>
+          <p className="text-xs text-slate-600">Reviewer only. The chief reads your message; code answers.</p>
+        </div>
+        <button onClick={onCollapse} aria-label="Collapse the chat"
+          className="ml-auto text-xs font-semibold text-slate-500 hover:text-ink">
+          Hide
+        </button>
       </div>
-      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+      <div role="log" aria-live="polite" aria-label="Conversation"
+        className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
         {msgs.map((m, i) => (
           <div key={i} className={m.from === 'you' ? 'flex justify-end' : ''}>
             <div className={`max-w-[92%] ${m.from === 'you' ? '' : 'w-full'}`}>

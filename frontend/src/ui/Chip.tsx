@@ -28,74 +28,11 @@ export function CallChip({ call }: { call: string | null | undefined }) {
   return <Chip tone={tone}>{call}</Chip>
 }
 
-const STATE_TONE: Record<string, Tone> = {
-  CREATED: 'slate',
-  AWAITING_DOCS: 'slate',
-  READY: 'slate',
-  NEEDS_INPUT: 'amber',
-  EXTRACTING: 'amber',
-  EXTRACTED: 'amber',
-  UNDERWRITING: 'amber',
-  UNDERWRITTEN: 'amber',
-  CHECKING: 'amber',
-  CHECKED: 'amber',
-  SENT_BACK: 'amber',
-  NEEDS_REVIEW: 'sky',
-  APPROVED: 'teal',
-  RELEASED: 'teal',
-  REJECTED: 'coral',
-  FAILED: 'coral',
-}
-
-export function StateChip({ state }: { state: string }) {
-  return <Chip tone={STATE_TONE[state] ?? 'slate'}>{state.replaceAll('_', ' ').toLowerCase()}</Chip>
-}
-
-export function StageChip({ stage }: { stage: string }) {
-  const tone: Tone =
-    stage === 'Done' ? 'teal' : stage === 'Failed' ? 'coral' : stage === 'Review' ? 'sky'
-      : stage === 'Awaiting docs' ? 'slate' : 'amber'
-  return <Chip tone={tone}>{stage}</Chip>
-}
-
 export function EscalationBadge() {
   return (
     <Chip tone="coral" title="The independent check kept failing after the retry limit; a human must look">
       Check failed · escalated
     </Chip>
-  )
-}
-
-export function Button({
-  children,
-  onClick,
-  tone = 'slate',
-  disabled,
-  title,
-  type = 'button',
-}: {
-  children: ReactNode
-  onClick?: () => void
-  tone?: 'primary' | 'slate' | 'danger'
-  disabled?: boolean
-  title?: string
-  type?: 'button' | 'submit'
-}) {
-  const styles = {
-    primary: 'border-ink bg-ink text-paper hover:bg-slate-700 hover:border-slate-700',
-    slate: 'border-ink text-ink hover:bg-ink hover:text-paper',
-    danger: 'border-coral-600 text-coral-700 hover:bg-coral-600 hover:text-white',
-  }[tone]
-  return (
-    <button
-      type={type}
-      title={title}
-      disabled={disabled}
-      onClick={onClick}
-      className={`rounded-[2px] border px-4 py-1.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-transparent disabled:text-slate-400 ${styles}`}
-    >
-      {children}
-    </button>
   )
 }
 

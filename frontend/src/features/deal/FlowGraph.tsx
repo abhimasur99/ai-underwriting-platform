@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Background, ConnectionMode, Handle, MarkerType, Position, ReactFlow } from '@xyflow/react'
 import type { Edge, Node, NodeProps } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import type { Flow, NodeId, NodeState } from '../lib/flow'
+import type { Flow, NodeId, NodeState } from '../../lib/flow'
 
 interface AgentData extends Record<string, unknown> {
   id: NodeId
@@ -156,7 +156,8 @@ export default function FlowGraph({
       nodeTypes={nodeTypes}
       connectionMode={ConnectionMode.Loose}
       fitView
-      fitViewOptions={{ padding: 0.12, maxZoom: 1.1 }}
+      fitViewOptions={{ padding: 0.2, maxZoom: 1.1 }}
+      minZoom={0.4}
       nodesDraggable={false}
       nodesConnectable={false}
       elementsSelectable={false}

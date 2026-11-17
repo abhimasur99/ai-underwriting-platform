@@ -15,8 +15,8 @@
   --color-slate-100: #efefe9;
   --color-slate-200: #e1e1da;
   --color-slate-300: #cfcfc7;
-  --color-slate-400: #9a9a93;
-  --color-slate-500: #6e6e69;
+  --color-slate-400: #686863;   /* WCAG AA (4.5:1) on white, paper and the tinted fills */
+  --color-slate-500: #55554f;
   --color-slate-600: #53534f;
   --color-slate-700: #3a3b3a;
   --color-slate-800: #232425;
@@ -101,6 +101,18 @@ textarea {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--color-slate-500);
+}
+
+/* Honour the system setting: no pulsing dots, no animated edges, no transitions. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* React Flow */

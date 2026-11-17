@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { api } from '../api/client'
-import type { Checklist } from '../api/client'
-import { useDebounced, useStream } from '../api/hooks'
-import ChecklistChips from '../components/ChecklistChips'
-import { Page } from '../components/Shell'
-import { SAMPLE_FACTS } from '../lib/samples'
+import { api } from '../../api/client'
+import type { Checklist } from '../../api/client'
+import { useDebounced, useStream } from '../../api/hooks'
+import ChecklistChips from './ChecklistChips'
+import { Page } from '../../ui/Shell'
+import { SAMPLE_FACTS } from '../../lib/samples'
 
 interface Msg {
   from: 'agent' | 'you' | 'file'

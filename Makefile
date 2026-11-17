@@ -4,7 +4,7 @@ PY ?= python3.12
 VENV := .venv
 BIN := $(VENV)/bin
 
-.PHONY: setup test lint dev dev-retry dev-live demo smoke fixtures openapi
+.PHONY: setup test lint dev dev-retry dev-live demo smoke fixtures openapi e2e
 
 setup:
 	$(PY) -m venv $(VENV)
@@ -14,10 +14,11 @@ setup:
 
 test:
 	$(BIN)/pytest -q
+	cd frontend && npm test
 
 lint:
 	$(BIN)/ruff check .
-	cd frontend && npm run typecheck
+	cd frontend && npm run typecheck && npm run lint
 
 # BRIDGE_STEP_DELAY (seconds, 0 = off) makes each agent visibly "work" so the Flow tab is watchable.
 dev:
@@ -51,3 +52,8 @@ fixtures:
 openapi:
 	$(BIN)/python scripts/export_openapi.py
 	cd frontend && npm run gen:api
+
+# A browser smoke test of the demo path, local only. Run `make demo` first (it resets the data this
+# test changes) with the app up (`make dev` in another terminal). Installs the browser on first use.
+e2e:
+	cd frontend && npx playwright-core install chromium && npm run e2e

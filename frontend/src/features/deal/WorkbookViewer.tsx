@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { api } from '../api/client'
-import type { WorkbookView } from '../api/client'
-import { cellText } from '../lib/format'
+import { api } from '../../api/client'
+import type { WorkbookView } from '../../api/client'
+import { cellText } from '../../lib/format'
 
 function letters(n: number): string {
   let out = ''

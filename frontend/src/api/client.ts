@@ -14,6 +14,8 @@ export type Checklist = S['ChecklistStatus']
 export type IntakeStatus = S['IntakeStatus']
 export type WorkbookView = S['WorkbookView']
 export type ChiefChatResponse = S['ChiefChatResponse']
+export type FileRow = S['FileRow']
+export type FileText = S['FileText']
 
 export class ApiError extends Error {
   status: number
@@ -59,6 +61,7 @@ export const api = {
     }),
   deal: (id: string) => request<DealDetail>(`/api/deals/${id}`),
   events: (id: string, after = 0) => request<ApiEvent[]>(`/api/deals/${id}/events?after=${after}`),
+  fileText: (id: string, fileId: string) => request<FileText>(`/api/deals/${id}/files/${fileId}/text`),
   workbook: (id: string) => request<WorkbookView>(`/api/deals/${id}/workbook`),
   createDeal: () => request<S['CreateDealResponse']>('/api/deals', { method: 'POST' }),
   chat: (id: string, message: string) =>
@@ -75,7 +78,7 @@ export const api = {
     request<S['StateResponse']>(`/api/deals/${id}/patches/${patchId}/confirm`, { method: 'POST' }),
   cancelPatch: (id: string, patchId: string) =>
     request<S['StateResponse']>(`/api/deals/${id}/patches/${patchId}/cancel`, { method: 'POST' }),
-  decide: (id: string, decision: 'approve' | 'send_back' | 'reject', rationale: string) =>
+  decide: (id: string, decision: 'approve' | 'send_back' | 'reject' | 'request_info', rationale: string) =>
     request<S['StateResponse']>(`/api/deals/${id}/decision`, json({ decision, rationale })),
 }
 

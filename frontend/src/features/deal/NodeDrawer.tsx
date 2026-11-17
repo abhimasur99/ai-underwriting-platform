@@ -1,8 +1,8 @@
-import type { ApiEvent } from '../api/client'
-import { clock } from '../lib/format'
-import { nodeActivity } from '../lib/flow'
-import type { Flow, NodeId } from '../lib/flow'
-import { Chip } from './Chips'
+import type { ApiEvent } from '../../api/client'
+import { clock } from '../../lib/format'
+import { nodeActivity } from '../../lib/flow'
+import type { Flow, NodeId } from '../../lib/flow'
+import { Chip } from '../../ui/Chip'
 
 const TITLES: Record<NodeId, string> = {
   intake: 'Intake chat',

@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import type { ApiEvent, Deal, UnderwritingResult, CheckReport } from '../api/client'
-import { LABELS, metricValue, mult, pct, usd } from '../lib/format'
-import { sourceFor, toolCallFor } from '../lib/metrics'
-import { CallChip, Chip } from './Chips'
+import type { ApiEvent, Deal, UnderwritingResult, CheckReport } from '../../api/client'
+import { LABELS, metricValue, mult, pct, usd } from '../../lib/format'
+import { sourceFor, toolCallFor } from '../../lib/metrics'
+import { CallChip, Chip } from '../../ui/Chip'
 
 const tone = (s: string) => (s === 'pass' ? 'teal' : s === 'watch' || s === 'warn' ? 'amber' : 'coral')
 
@@ -34,8 +34,11 @@ function val(v: unknown): string {
 
 /** One metric. Click to see the formula, its inputs, and the document line each input came from. */
 function MetricRow({
-  k, value, result, deal, events,
-}: { k: string; value: number; result: UnderwritingResult; deal: Deal; events: ApiEvent[] }) {
+  k, value, result, deal, events, onViewSource,
+}: {
+  k: string; value: number; result: UnderwritingResult; deal: Deal; events: ApiEvent[]
+  onViewSource: (doc: string, locator: string) => void
+}) {
   const [open, setOpen] = useState(false)
   const e = toolCallFor(k, events, result.deal_version)
   const p = (e?.payload ?? {}) as { formula?: string; inputs?: Record<string, unknown> }
@@ -79,6 +82,12 @@ function MetricRow({
                       <>
                         {src.doc}, {src.locator}
                         {src.quote && <div className="italic">“{src.quote}”</div>}
+                        {src.locator && (
+                          <button onClick={() => onViewSource(src.doc ?? '', src.locator ?? '')}
+                            className="mt-1 font-semibold text-ink underline underline-offset-4">
+                            View in the document
+                          </button>
+                        )}
                       </>
                     ) : (
                       <>{src.kind}</>
@@ -164,9 +173,12 @@ function CheckBlock({ check }: { check: CheckReport }) {
   )
 }
 
-export default function DecisionPackage({
-  deal, result, check, events,
-}: { deal: Deal; result: UnderwritingResult; check: CheckReport | null; events: ApiEvent[] }) {
+export default function Numbers({
+  deal, result, check, events, onViewSource,
+}: {
+  deal: Deal; result: UnderwritingResult; check: CheckReport | null; events: ApiEvent[]
+  onViewSource: (doc: string, locator: string) => void
+}) {
   return (
     <div className="space-y-4 p-4">
       <Section title="Recommendation (the AI call is a recommendation; you decide)">
@@ -203,7 +215,8 @@ export default function DecisionPackage({
 
       <Section title="Metrics (click one for its formula, inputs and sources)">
         {Object.entries(result.metrics).map(([k, v]) => (
-          <MetricRow key={k} k={k} value={v} result={result} deal={deal} events={events} />
+          <MetricRow key={k} k={k} value={v} result={result} deal={deal} events={events}
+            onViewSource={onViewSource} />
         ))}
       </Section>
 

@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
-import { api } from '../api/client'
-import { useQueue } from '../api/hooks'
-import { CallChip, Chip, StageChip } from '../components/Chips'
-import { Page } from '../components/Shell'
-import { ago } from '../lib/format'
-import { navigate } from '../lib/router'
+import { api } from '../../api/client'
+import { useQueue } from '../../api/hooks'
+import { CallChip, Chip } from '../../ui/Chip'
+import { Page } from '../../ui/Shell'
+import { ago } from '../../lib/format'
+import { navigate } from '../../lib/router'
 
 type Filter = 'all' | 'review' | 'flagged' | 'archived'
 
 const FILTERS: { id: Filter; label: string }[] = [
   { id: 'all', label: 'All' },
-  { id: 'review', label: 'Needs review' },
+  { id: 'review', label: 'Needs your review' },
   { id: 'flagged', label: 'Flagged' },
   { id: 'archived', label: 'Archived' },
 ]
@@ -37,7 +37,7 @@ export default function Queue() {
   const live = useMemo(() => (rows ?? []).filter((r) => !r.archived), [rows])
   const counts: Record<Filter, number> = {
     all: live.length,
-    review: live.filter((r) => r.state === 'NEEDS_REVIEW').length,
+    review: live.filter((r) => r.needs_you).length,
     flagged: live.filter((r) => r.flags > 0).length,
     archived: (rows ?? []).length - live.length,
   }
@@ -46,9 +46,9 @@ export default function Queue() {
     const q = search.trim().toLowerCase()
     const base = filter === 'archived' ? (rows ?? []).filter((r) => r.archived) : live
     return base.filter((r) => {
-      if (filter === 'review' && r.state !== 'NEEDS_REVIEW') return false
+      if (filter === 'review' && !r.needs_you) return false
       if (filter === 'flagged' && r.flags === 0) return false
-      return !q || `${r.deal_id} ${r.name} ${r.stage} ${r.call ?? ''}`.toLowerCase().includes(q)
+      return !q || `${r.deal_id} ${r.name} ${r.next_action} ${r.call ?? ''}`.toLowerCase().includes(q)
     })
   }, [rows, live, filter, search])
 
@@ -95,9 +95,8 @@ export default function Queue() {
               <div className="eyebrow !text-paper/50">Internal</div>
               <h1 className="mt-2 text-[44px] leading-[1.05]">Deal queue</h1>
               <p className="mt-3 max-w-lg text-[15px] font-light leading-relaxed text-paper/70">
-                Bridge loan packages move from intake through extraction, underwriting and an
-                independent check, then wait here for your decision. Every row is a view over the
-                event log and updates live.
+                The deals that need you come first. Each row says what happens next and who has to
+                act. Every row is a view over the event log and updates live.
               </p>
             </div>
             <button
@@ -185,7 +184,7 @@ export default function Queue() {
                     className="h-3.5 w-3.5 accent-ink"
                   />
                 </th>
-                {['Deal', 'Stage', 'Call', 'Flags', 'Age', 'Owner', ''].map((h, i) => (
+                {['Deal', 'Next action', 'Call', 'Flags', 'Age', 'Owner', ''].map((h, i) => (
                   <th key={i} className="eyebrow py-2.5 pr-4">
                     {h}
                   </th>
@@ -217,7 +216,11 @@ export default function Queue() {
                     </div>
                   </td>
                   <td className="pr-4">
-                    <StageChip stage={r.stage} />
+                    {r.needs_you ? (
+                      <Chip tone="sky">{r.next_action}</Chip>
+                    ) : (
+                      <span className="text-slate-700">{r.next_action}</span>
+                    )}
                   </td>
                   <td className="pr-4">
                     <CallChip call={r.call} />

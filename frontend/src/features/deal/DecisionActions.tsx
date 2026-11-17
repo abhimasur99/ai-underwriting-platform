@@ -1,39 +1,33 @@
 import { useState } from 'react'
-import { api } from '../api/client'
-import { Button, Chip } from './Chips'
+import { api } from '../../api/client'
+import { Button } from '../../ui/Button'
+import { Chip } from '../../ui/Chip'
 
-type Decision = 'approve' | 'send_back' | 'reject'
+type Decision = 'approve' | 'reject'
 
 const FINAL: Record<string, { tone: 'teal' | 'coral'; text: string }> = {
   APPROVED: { tone: 'teal', text: 'Approved' },
-  RELEASED: { tone: 'teal', text: 'Approved and released' },
+  RELEASED: { tone: 'teal', text: 'Approved' },
   REJECTED: { tone: 'coral', text: 'Rejected' },
 }
 
-// What each button really does in this prototype (see Chief.decide in the backend).
-const EXPLAIN: Record<Decision, { label: string; what: string; confirm: string }> = {
-  approve: {
-    label: 'Approve',
-    what: 'Records your approval and closes the deal. A released snapshot (deal data, result, check and your rationale) is saved next to the memo. Nothing is sent outside this app.',
-    confirm: 'Approve this deal and close it?',
-  },
-  send_back: {
-    label: 'Send back',
-    what: 'Runs underwriting and the independent check again on the current deal version, then returns the deal here. Use it to retry after a flag or a failed check. It does not message anyone.',
-    confirm: 'Re-run underwriting and the check?',
-  },
-  reject: {
-    label: 'Reject',
-    what: 'Closes the deal as rejected and logs your rationale. This is final: a closed deal cannot be reopened.',
-    confirm: 'Reject this deal and close it?',
-  },
+// What each action really does in this prototype (see Chief.decide in the backend).
+const EXPLAIN = [
+  ['Reject', 'Closes the deal as rejected and logs your rationale. This is final: a closed deal cannot be reopened.'],
+  ['Request info', 'Asks the sponsor for something. Your note appears in their intake chat and the deal waits. A reply in words returns it to you as it is; a new file is read again as a new version.'],
+  ['Approve', 'Records your approval and closes the deal. A released snapshot (deal data, result, check and your rationale) is saved beside the memo. Nothing is sent outside this app.'],
+] as const
+
+const CONFIRM: Record<Decision, string> = {
+  approve: 'Approve this deal and close it?',
+  reject: 'Reject this deal and close it?',
 }
 
-/** The human decision. The AI call is a recommendation; only these buttons record a decision. */
-export default function DecisionBar({
-  dealId, state, escalated,
-}: { dealId: string; state: string; escalated: boolean }) {
-  const [rationale, setRationale] = useState('')
+/** Reject on the left, the primary action on the right. The AI call is a recommendation; only
+ *  these buttons record a decision. */
+export default function DecisionActions({
+  dealId, state, escalated, onRequestInfo,
+}: { dealId: string; state: string; escalated: boolean; onRequestInfo: () => void }) {
   const [asking, setAsking] = useState<Decision | null>(null)
   const [busy, setBusy] = useState<Decision | null>(null)
   const [help, setHelp] = useState(false)
@@ -46,8 +40,7 @@ export default function DecisionBar({
     setBusy(decision)
     setError(null)
     try {
-      await api.decide(dealId, decision, rationale.trim())
-      setRationale('')
+      await api.decide(dealId, decision, '')
     } catch (e) {
       setError((e as Error).message)
     } finally {
@@ -55,75 +48,67 @@ export default function DecisionBar({
     }
   }
 
-  const ask = (d: Decision) => {
-    setError(null)
-    setAsking(d)
-  }
+  if (final)
+    return (
+      <div className="flex items-center gap-2">
+        <Chip tone={final.tone}>{final.text}</Chip>
+      </div>
+    )
 
   return (
-    <div className="border-b border-slate-200 bg-white px-5 py-3">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="eyebrow w-28 shrink-0">{final ? 'Decision' : 'Your decision'}</div>
-        {final ? (
-          <Chip tone={final.tone}>{final.text}</Chip>
-        ) : (
-          <>
-            <input
-              value={rationale}
-              onChange={(e) => setRationale(e.target.value)}
-              disabled={!open}
-              aria-label="Rationale"
-              placeholder={open ? 'Rationale (optional)' : 'Opens when the deal reaches review'}
-              className="min-w-48 flex-1 border-b border-slate-300 bg-transparent px-1 py-1.5 text-sm outline-none focus:border-ink disabled:text-slate-400"
-            />
-            <Button tone="primary" disabled={!open || busy !== null} onClick={() => ask('approve')}>
-              {busy === 'approve' ? 'Approving…' : 'Approve'}
-            </Button>
-            <Button disabled={!open || busy !== null} onClick={() => ask('send_back')}>
-              {busy === 'send_back' ? 'Sending back…' : 'Send back'}
-            </Button>
-            <Button tone="danger" disabled={!open || busy !== null} onClick={() => ask('reject')}>
-              {busy === 'reject' ? 'Rejecting…' : 'Reject'}
-            </Button>
-          </>
-        )}
+    <div className="relative">
+      <div className="flex items-center gap-2">
         <button
           onClick={() => setHelp(!help)}
           aria-expanded={help}
-          className="text-xs font-semibold text-slate-500 underline underline-offset-4 hover:text-ink"
+          aria-label="What do these actions do?"
+          title="What do these actions do?"
+          className="mr-1 h-7 w-7 border border-slate-300 text-xs font-bold text-slate-500 hover:border-ink hover:text-ink"
         >
-          {help ? 'Hide' : 'What do these do?'}
+          ?
         </button>
+        <Button tone="danger" disabled={!open || busy !== null} onClick={() => setAsking('reject')}>
+          {busy === 'reject' ? 'Rejecting…' : 'Reject'}
+        </Button>
+        <Button disabled={!open || busy !== null} onClick={onRequestInfo}>
+          Request info
+        </Button>
+        <Button tone="primary" disabled={!open || busy !== null} onClick={() => setAsking('approve')}>
+          {busy === 'approve' ? 'Approving…' : 'Approve'}
+        </Button>
       </div>
 
-      {asking && (
-        <div className="mt-3 flex flex-wrap items-center gap-3 border border-ink bg-paper px-4 py-2.5 text-sm">
-          <span className="font-semibold">{EXPLAIN[asking].confirm}</span>
-          {asking === 'approve' && escalated && (
-            <span className="text-coral-700">
-              The independent check kept failing and this deal was escalated.
-            </span>
+      {(asking || help || error) && (
+        <div className="absolute right-0 top-full z-20 mt-2 w-[26rem] max-w-[90vw] border border-ink bg-white p-4 shadow-xl">
+          {asking && (
+            <div role="group" aria-label="Confirm">
+              <p className="text-sm font-semibold">{CONFIRM[asking]}</p>
+              {asking === 'approve' && escalated && (
+                <p className="mt-1 text-xs text-coral-700">
+                  The independent check kept failing and this deal was escalated.
+                </p>
+              )}
+              <div className="mt-3 flex justify-end gap-2">
+                <Button onClick={() => setAsking(null)}>Cancel</Button>
+                <Button tone={asking === 'reject' ? 'danger' : 'primary'} onClick={() => void run(asking)}>
+                  Yes, {asking}
+                </Button>
+              </div>
+            </div>
           )}
-          <span className="ml-auto flex gap-2">
-            <Button tone={asking === 'reject' ? 'danger' : 'primary'} onClick={() => void run(asking)}>
-              Yes, {EXPLAIN[asking].label.toLowerCase()}
-            </Button>
-            <Button onClick={() => setAsking(null)}>Cancel</Button>
-          </span>
+          {help && !asking && (
+            <dl className="space-y-3 text-xs text-slate-600">
+              {EXPLAIN.map(([name, text]) => (
+                <div key={name}>
+                  <dt className="eyebrow !text-ink">{name}</dt>
+                  <dd className="mt-0.5 leading-relaxed">{text}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          {error && <p role="alert" className="text-xs text-coral-700">{error}</p>}
         </div>
       )}
-
-      {help && (
-        <dl className="mt-3 grid gap-x-8 gap-y-3 border-t border-slate-200 pt-3 text-xs text-slate-600 md:grid-cols-3">
-          {(Object.keys(EXPLAIN) as Decision[]).map((d) => (
-            <div key={d}>
-              <dt className="eyebrow !text-ink">{EXPLAIN[d].label}</dt>
-              <dd className="mt-1 leading-relaxed">{EXPLAIN[d].what}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
-      {error && <p className="mt-2 text-xs text-coral-700">{error}</p>}
     </div>
   )
 }
