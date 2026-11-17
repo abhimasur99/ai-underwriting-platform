@@ -9,6 +9,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 
 from bridge.agents import intake_replies as say
 from bridge.agents import patches as patching
+from bridge.agents.broker_reply import ReplyError
 from bridge.agents.chief import Chief, DecisionError
 from bridge.agents.chief_chat import ChiefChat
 from bridge.agents.intake import IncomingFile, IntakeAgent
@@ -23,7 +24,7 @@ from bridge.core.diff import VersionDiff
 from bridge.core.parsers.errors import ParseError
 from bridge.core.parsers.view import document_lines
 from bridge.core.scenario import Outcome, ScenarioError, run_scenario
-from bridge.core.schema import Event
+from bridge.core.schema import Event, ReplyDraft
 from bridge.core.sizing import Sizing, max_loan
 from bridge.settings import Settings, get_settings
 from bridge.store import projections
@@ -99,7 +100,7 @@ def create_app(settings: Settings | None = None, runner: AgentRunner | None = No
             return fn(*args)
         except (DecisionError, InvalidTransition) as exc:
             raise HTTPException(409, str(exc)) from exc
-        except patching.PatchError as exc:
+        except (patching.PatchError, ReplyError) as exc:
             raise HTTPException(422, str(exc)) from exc
 
     @app.get("/api/health")
@@ -298,6 +299,28 @@ def create_app(settings: Settings | None = None, runner: AgentRunner | None = No
             raise HTTPException(
                 422, "decision must be approve, send_back, reject or request_info")
         return {"state": _guard(chief.decide, deal_id, body.decision, body.rationale)}
+
+    # ---- the draft reply to the broker (never sent)
+    @app.get("/api/deals/{deal_id}/reply-draft", response_model=ReplyDraft | None)
+    def get_reply_draft(deal_id: str):
+        need(deal_id)
+        return chief.reply_draft(deal_id)
+
+    @app.post("/api/deals/{deal_id}/reply-draft", response_model=ReplyDraft)
+    def draft_reply(deal_id: str):
+        """Draft the reply for a decided deal, or start over on it."""
+        need(deal_id)
+        return _guard(chief.draft_reply, deal_id)
+
+    @app.put("/api/deals/{deal_id}/reply-draft", response_model=ReplyDraft)
+    def edit_reply(deal_id: str, body: m.ReplyTextRequest):
+        need(deal_id)
+        return _guard(chief.edit_reply, deal_id, body.text)
+
+    @app.post("/api/deals/{deal_id}/reply-draft/approve", response_model=ReplyDraft)
+    def approve_reply(deal_id: str):
+        need(deal_id)
+        return _guard(chief.approve_reply, deal_id)
 
     return app
 

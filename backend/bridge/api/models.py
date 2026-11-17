@@ -93,6 +93,10 @@ class DecisionRequest(BaseModel):
     rationale: str = ""
 
 
+class ReplyTextRequest(BaseModel):
+    text: str
+
+
 class StateResponse(BaseModel):
     state: str
 

@@ -37,6 +37,15 @@ describe('readableLog', () => {
     expect(lines[2].text).toBe('The check kept failing: escalated to you')
   })
 
+  it('records the reply to the broker as drafted, edited and approved, never as sent', () => {
+    const lines = readableLog([ev('reply.drafted', {}, 'chief'), ev('reply.edited', {}), ev('reply.approved', {})])
+    expect(lines.map((l) => l.text)).toEqual([
+      'Drafted the reply to the broker (not sent)',
+      'Edited the reply to the broker',
+      'Approved the reply to the broker (not sent)',
+    ])
+  })
+
   it('tells decisions and the request-info conversation in the reviewer’s own terms', () => {
     const lines = readableLog([
       ev('info.requested', { note: 'Send the tax bill' }),

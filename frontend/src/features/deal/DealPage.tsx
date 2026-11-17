@@ -14,6 +14,7 @@ import CalculationsTab from './CalculationsTab'
 import FilesTab from './FilesTab'
 import MemoViewer from './MemoViewer'
 import ProcessTab from './ProcessTab'
+import ReplyDialog from './ReplyDialog'
 import RequestInfoDialog from './RequestInfoDialog'
 import ReviewPanel from './ReviewPanel'
 import SummaryStrip from './SummaryStrip'
@@ -27,6 +28,7 @@ export default function DealPage({ dealId, tab }: { dealId: string; tab?: string
   const [selected, setSelected] = useState<NodeId | null>(null)
   const [focus, setFocus] = useState<{ doc: string; locator: string } | null>(null)
   const [infoDraft, setInfoDraft] = useState<string | null>(null)
+  const [replyOpen, setReplyOpen] = useState(false)
   const [chatOpen, setChatOpen] = usePersisted('chatOpen', true)
   const [attentionOpen, setAttentionOpen] = usePersisted('attentionOpen', true)
   const flow = useMemo(() => deriveFlow(events), [events])
@@ -62,7 +64,7 @@ export default function DealPage({ dealId, tab }: { dealId: string; tab?: string
     <Page active="queue">
       <div className="flex h-full flex-col">
         <DealHeader dealId={dealId} detail={detail} nav={neighbours(rows, dealId)}
-          onChanged={reload} onRequestInfo={() => setInfoDraft('')} />
+          onChanged={reload} onRequestInfo={() => setInfoDraft('')} onReply={() => setReplyOpen(true)} />
         <SummaryStrip detail={detail} />
 
         <div className="flex min-h-0 flex-1">
@@ -116,6 +118,7 @@ export default function DealPage({ dealId, tab }: { dealId: string; tab?: string
         </div>
       </div>
       <RequestInfoDialog dealId={dealId} initial={infoDraft} onClose={() => setInfoDraft(null)} />
+      <ReplyDialog dealId={dealId} open={replyOpen} onClose={() => setReplyOpen(false)} />
     </Page>
   )
 }

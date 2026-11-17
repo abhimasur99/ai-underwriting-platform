@@ -83,7 +83,8 @@ def test_a_what_if_answer_shows_before_and_after_and_says_nothing_was_saved(tmp_
     assert "Take-out maximum: $8,235,294 to $8,000,000" in r
     # at 7% the stress case runs at 8%: the DSCR cap falls to 6.3M, under the 6.5M loan
     assert "The call would move from Screen to Watch" in r
-    assert "REFI_CUSHION_NEGATIVE_STRESS" in r and "nothing has been saved" in r
+    assert "does not cover the payoff under stress" in r and "nothing has been saved" in r
+    assert "REFI_CUSHION" not in r
     assert out["scenario"]["call_after"] == "watch" and out["patch"] is None
     assert chief.store.versions(deal_id) == [1]                    # the deal is untouched
     assert chief.state(deal_id) == "NEEDS_REVIEW" and not chief.store.patches(deal_id)
@@ -99,7 +100,7 @@ def test_a_milder_what_if_leaves_the_call_where_it_is(tmp_path):
 def test_a_what_if_that_changes_the_call_says_so(tmp_path):
     _, chat, deal_id = setup(tmp_path)
     r = chat.handle(deal_id, "what if NOI is 35% lower?")["reply"]
-    assert "The call would move from Screen to" in r and "New reasons" in r
+    assert "The call would move from Screen to" in r and "New concerns" in r
 
 
 def test_two_assumptions_at_once(tmp_path):

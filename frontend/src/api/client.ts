@@ -21,6 +21,7 @@ export type VersionDiff = S['VersionDiff']
 export type TranscriptMessage = S['TranscriptMessage']
 export type Outcome = S['Outcome']
 export type Sizing = S['Sizing']
+export type ReplyDraft = S['ReplyDraft']
 
 export class ApiError extends Error {
   status: number
@@ -88,6 +89,16 @@ export const api = {
     request<S['StateResponse']>(`/api/deals/${id}/patches/${patchId}/confirm`, { method: 'POST' }),
   cancelPatch: (id: string, patchId: string) =>
     request<S['StateResponse']>(`/api/deals/${id}/patches/${patchId}/cancel`, { method: 'POST' }),
+  replyDraft: (id: string) => request<ReplyDraft | null>(`/api/deals/${id}/reply-draft`),
+  draftReply: (id: string) => request<ReplyDraft>(`/api/deals/${id}/reply-draft`, { method: 'POST' }),
+  editReply: (id: string, text: string) =>
+    request<ReplyDraft>(`/api/deals/${id}/reply-draft`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    }),
+  approveReply: (id: string) =>
+    request<ReplyDraft>(`/api/deals/${id}/reply-draft/approve`, { method: 'POST' }),
   decide: (id: string, decision: 'approve' | 'send_back' | 'reject' | 'request_info', rationale: string) =>
     request<S['StateResponse']>(`/api/deals/${id}/decision`, json({ decision, rationale })),
 }

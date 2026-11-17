@@ -48,9 +48,10 @@ Chat on the left, the deal on the right. Back and previous are on the left, next
 ```
 
 **Header (every tab).** The deal name, id and version, one status chip (the queue's Next action), and the decision: **Reject** on the left, **Request info**, **Approve** on the right (the primary action rightmost). Approve and Reject ask once before they act; Request info opens a dialog for the note. **More** holds the memo and workbook downloads, re-run, and archive. A deal that is decided shows its outcome instead of the buttons. The **?** explains each action.
-- **Approve** records the approval and closes the deal; a released snapshot is saved beside the memo. Nothing leaves the app.
+- **Approve** records the approval and closes the deal; a released snapshot is saved beside the memo. A draft reply to the broker opens (see below). Nothing leaves the app.
 - **Request info** asks the sponsor for something. The note appears in their intake chat and the deal waits (`NEEDS_INPUT`). A reply in words returns it to the reviewer at the same version (nothing is re-extracted, so confirmed edits are safe); a new file is read again as the next version. An upload that is refused or a duplicate keeps the deal waiting (decision D36).
-- **Reject** closes the deal as rejected. Approved and rejected deals are final.
+- **Reject** closes the deal as rejected and also opens the draft reply. Approved and rejected deals are final.
+- **Reply to the broker** (decision D43). After an approval or a rejection a dialog opens with a draft written from the deal: next steps and the open questions for an approval, plain-language themes for a rejection, never a ratio or a dollar figure. The reviewer edits it, can start over, copies it, and approves the wording (refused while `[Your name]` or `[Your title]` is unfilled). Drafted, edited and approved are logged. The header keeps a **Reply to broker** button for any decided deal. The dialog says in plain words that nothing is sent.
 
 **Summary strip.** Call, checker status, exceptions, questions for the sponsor, and "Model-read fields: please confirm" when a model read any field. It replaces the status that used to be repeated in the header, a timeline and the graph.
 
@@ -62,7 +63,7 @@ Chat on the left, the deal on the right. Back and previous are on the left, next
 
 **Process.** For audit and for the demo: the agent graph (Chief in the center, never agent to agent), a drawer per node with handoffs and tool calls, and a history in plain words ("Asked Checker to check the numbers independently", "Asked the sponsor: ...") with the raw events one click away.
 
-**Chief chat (internal).** Free text, docked on the left and collapsible (the choice is remembered), and the conversation is kept across reloads. The chief classifies the message into: question (answered from the deal record), data edit, narrative edit, judgment override, or action (approve, request info, which it points you to the button for). A question can be about a metric, why the call is what it is, a summary, the exceptions and questions for the sponsor, **what changed in this version**, or what the chief can do. Each answer offers follow-up questions as buttons; after a confirmed edit the chat shows a before and after card (the input that moved, the metrics that moved with it, and whether the call changed). Every figure in an answer comes from a calculation.
+**Chief chat (internal).** Free text, docked on the left and collapsible (the choice is remembered), and the conversation is kept across reloads. The chief classifies the message into: question (answered from the deal record), data edit, narrative edit, judgment override, or action (approve, request info, which it points you to the button for). A question can be about a metric, why the call is what it is, a summary, the exceptions and questions for the sponsor, **what changed in this version**, a **what-if** ("what if the take-out rate is 7%?", "what if NOI is 10% lower?", "what if the cap rate is 6.5%?"), **the largest loan that still screens**, or what the chief can do. A what-if answers with a card of the current case against the changed one and the call change, marked **not saved**; nothing is saved and no version is made (decision D41). The largest-loan answer is solved by code and names the limit that binds (decision D42). Reasons are always given in plain words, never as rule codes. Each answer offers follow-up questions as buttons; after a confirmed edit the chat shows a before and after card (the input that moved, the metrics that moved with it, and whether the call changed). Every figure in an answer comes from a calculation.
 - Data edit: the chief proposes a patch card (field, old, new, reason). The reviewer clicks Confirm or Cancel. Confirm applies the patch, bumps `deal_version`, and re-runs from underwriting.
 - Narrative edit: the chief proposes revised text; Confirm re-renders the memo only.
 - Judgment override: requires a reason; creates an override record; numbers do not change.
@@ -85,6 +86,10 @@ Chat on the left, the deal on the right. Back and previous are on the left, next
 | `GET /api/stream` | SSE for the queue |
 | `GET /api/deals/{id}/artifacts/{memo.pdf or workbook.xlsx}` | Latest outputs |
 | `POST /api/deals/{id}/chief-chat` | Internal chat; returns reply, suggestions and optional patch proposal, what-if outcome or sizing |
+| `GET /api/deals/{id}/reply-draft` | The draft reply to the broker for an approved or rejected deal (null before a decision): `decision`, `text`, `status` (draft or approved), `wording` (template or claude), `edited` |
+| `POST /api/deals/{id}/reply-draft` | Draft the reply, or start over on it (409 before a decision) |
+| `PUT /api/deals/{id}/reply-draft` | The reviewer's edited text (422 if empty or too long); status returns to draft |
+| `POST /api/deals/{id}/reply-draft/approve` | Record the reviewer's approval of the wording (422 while a `[blank]` is left). Nothing is ever sent |
 | `POST /api/deals/{id}/what-if` | Try different assumptions (`{params: {name: value}}`); returns the current case against the changed one. Saves nothing; 422 for an unknown or out-of-range assumption |
 | `GET /api/deals/{id}/max-loan?target=screen\|watch` | The largest loan that still reaches the target call, found by re-applying the rules. Saves nothing |
 | `POST /api/deals/{id}/patches/{patch_id}/confirm` | Apply a proposed patch |
