@@ -237,3 +237,40 @@ def test_live_mode_health_reports_live(tmp_path):
     settings = Settings("test-key-not-real", "m", tmp_path / "c.db", tmp_path, mode="live")
     health = TestClient(create_app(settings)).get("/api/health").json()
     assert health == {"status": "ok", "mode": "live"}
+
+
+def test_archive_restore_and_queue_filter(client):
+    deal_id = submitted_deal(client)
+    kept = client.post("/api/deals").json()["deal_id"]
+    out = client.delete(f"/api/deals/{deal_id}")
+    assert out.status_code == 200 and out.json()["archived"] is True
+    assert [r["deal_id"] for r in client.get("/api/deals").json()] == [kept]
+    everything = client.get("/api/deals?include_archived=true").json()
+    assert {r["deal_id"] for r in everything} == {deal_id, kept}
+    assert next(r for r in everything if r["deal_id"] == deal_id)["archived"] is True
+    assert client.get(f"/api/deals/{deal_id}").status_code == 200          # still readable
+    assert client.post(f"/api/deals/{deal_id}/restore").json()["archived"] is False
+    assert {r["deal_id"] for r in client.get("/api/deals").json()} == {deal_id, kept}
+    types = [e["type"] for e in client.get(f"/api/deals/{deal_id}/events").json()]
+    assert "deal.archived" in types and "deal.restored" in types
+
+
+def test_archive_is_refused_while_a_deal_is_processing(client):
+    deal_id = client.post("/api/deals").json()["deal_id"]
+    client.app.state.store.append_event(deal_id, "chief", "state.changed", "x",
+                                        payload={"to": "UNDERWRITING"})
+    assert client.delete(f"/api/deals/{deal_id}").status_code == 409
+
+
+def test_archive_unknown_deal_is_404(client):
+    assert client.delete("/api/deals/D-9999").status_code == 404
+    assert client.post("/api/deals/D-9999/restore").status_code == 404
+
+
+def test_rename_a_deal(client):
+    deal_id = client.post("/api/deals").json()["deal_id"]
+    out = client.patch(f"/api/deals/{deal_id}", json={"name": "  Harbor Street bridge  "})
+    assert out.status_code == 200 and out.json()["name"] == "Harbor Street bridge"
+    assert client.get("/api/deals").json()[0]["name"] == "Harbor Street bridge"
+    assert client.patch(f"/api/deals/{deal_id}", json={"name": "   "}).status_code == 422
+    assert client.patch("/api/deals/D-9999", json={"name": "x"}).status_code == 404

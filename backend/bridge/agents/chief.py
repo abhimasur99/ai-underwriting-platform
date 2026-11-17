@@ -248,6 +248,39 @@ class Chief:
                       {"escalation": True, "check": report.status, "mismatches": fields})
             return
 
+    # ------------------------------------------------------------------ housekeeping
+    # A deal is never deleted: the log is append-only and IDs must not be reused. Archiving is a
+    # logged event that hides the deal from the queue; restoring undoes it.
+    BUSY = {"EXTRACTING", "EXTRACTED", "UNDERWRITING", "UNDERWRITTEN", "CHECKING", "CHECKED",
+            "SENT_BACK"}
+
+    def archive(self, deal_id: str) -> None:
+        status = projections.status(self.store, deal_id)
+        if status.state in self.BUSY:
+            raise DecisionError(f"deal is still running (state {status.state}); try again when "
+                                "it reaches review")
+        if not status.archived:
+            Recorder(self.store, deal_id, status.deal_version).event(
+                "reviewer", "deal.archived", f"archived {deal_id}", {"state": status.state})
+
+    def restore(self, deal_id: str) -> None:
+        status = projections.status(self.store, deal_id)
+        if status.archived:
+            Recorder(self.store, deal_id, status.deal_version).event(
+                "reviewer", "deal.restored", f"restored {deal_id}")
+
+    def rename(self, deal_id: str, name: str) -> str:
+        name = " ".join(name.split())
+        if not name:
+            raise DecisionError("a deal name cannot be empty")
+        if len(name) > 80:
+            raise DecisionError("a deal name is limited to 80 characters")
+        status = projections.status(self.store, deal_id)
+        self.store.set_name(deal_id, name)
+        Recorder(self.store, deal_id, status.deal_version).event(
+            "reviewer", "deal.renamed", f"renamed to {name}", {"from": status.name, "to": name})
+        return name
+
     # ------------------------------------------------------------------ reviewer actions
     def latest(self, deal_id: str) -> tuple[Deal, UnderwritingResult, CheckReport | None]:
         deal = self.store.get_deal(deal_id)

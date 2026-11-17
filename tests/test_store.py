@@ -99,3 +99,20 @@ def test_queue_lists_deals_newest_activity_first(store):
 
 def test_next_deal_id(store):
     assert store.next_deal_id() == "D-0002"
+
+
+def test_archive_hides_a_deal_from_the_queue_but_keeps_it(store):
+    store.create_deal("D-0002", "Other")
+    store.append_event("D-0002", "reviewer", "deal.archived", "archived")
+    assert projections.status(store, "D-0002").archived is True
+    assert [r.deal_id for r in projections.queue(store)] == ["D-0001"]
+    both = projections.queue(store, include_archived=True)
+    assert {r.deal_id for r in both} == {"D-0001", "D-0002"}
+    store.append_event("D-0002", "reviewer", "deal.restored", "restored")
+    assert projections.status(store, "D-0002").archived is False
+    assert len(projections.queue(store)) == 2
+
+
+def test_deal_ids_are_never_reused_after_archiving(store):
+    store.append_event("D-0001", "reviewer", "deal.archived", "archived")
+    assert store.next_deal_id() == "D-0002"

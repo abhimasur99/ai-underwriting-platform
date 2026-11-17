@@ -19,6 +19,24 @@
     "title": "AmountRow",
     "type": "object"
    },
+   "ArchiveResponse": {
+    "properties": {
+     "archived": {
+      "title": "Archived",
+      "type": "boolean"
+     },
+     "deal_id": {
+      "title": "Deal Id",
+      "type": "string"
+     }
+    },
+    "required": [
+     "deal_id",
+     "archived"
+    ],
+    "title": "ArchiveResponse",
+    "type": "object"
+   },
    "Body_upload_file_api_deals__deal_id__files_post": {
     "properties": {
      "file": {
@@ -993,6 +1011,11 @@
    },
    "QueueRow": {
     "properties": {
+     "archived": {
+      "default": false,
+      "title": "Archived",
+      "type": "boolean"
+     },
      "call": {
       "anyOf": [
        {
@@ -1183,6 +1206,37 @@
      "status"
     ],
     "title": "ReconciliationItem",
+    "type": "object"
+   },
+   "RenameRequest": {
+    "properties": {
+     "name": {
+      "title": "Name",
+      "type": "string"
+     }
+    },
+    "required": [
+     "name"
+    ],
+    "title": "RenameRequest",
+    "type": "object"
+   },
+   "RenameResponse": {
+    "properties": {
+     "deal_id": {
+      "title": "Deal Id",
+      "type": "string"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     }
+    },
+    "required": [
+     "deal_id",
+     "name"
+    ],
+    "title": "RenameResponse",
     "type": "object"
    },
    "Renovation": {
@@ -1950,6 +2004,18 @@
   "/api/deals": {
    "get": {
     "operationId": "list_deals_api_deals_get",
+    "parameters": [
+     {
+      "in": "query",
+      "name": "include_archived",
+      "required": false,
+      "schema": {
+       "default": false,
+       "title": "Include Archived",
+       "type": "boolean"
+      }
+     }
+    ],
     "responses": {
      "200": {
       "content": {
@@ -1964,6 +2030,16 @@
        }
       },
       "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
      }
     },
     "summary": "List Deals"
@@ -1986,6 +2062,44 @@
    }
   },
   "/api/deals/{deal_id}": {
+   "delete": {
+    "description": "Archive, not delete: the event log is append-only. Restorable.",
+    "operationId": "archive_deal_api_deals__deal_id__delete",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "deal_id",
+      "required": true,
+      "schema": {
+       "title": "Deal Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ArchiveResponse"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Archive Deal"
+   },
    "get": {
     "operationId": "get_deal_api_deals__deal_id__get",
     "parameters": [
@@ -2022,6 +2136,53 @@
      }
     },
     "summary": "Get Deal"
+   },
+   "patch": {
+    "operationId": "rename_deal_api_deals__deal_id__patch",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "deal_id",
+      "required": true,
+      "schema": {
+       "title": "Deal Id",
+       "type": "string"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RenameRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/RenameResponse"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Rename Deal"
    }
   },
   "/api/deals/{deal_id}/artifacts/{name}": {
@@ -2452,6 +2613,45 @@
      }
     },
     "summary": "Confirm Patch"
+   }
+  },
+  "/api/deals/{deal_id}/restore": {
+   "post": {
+    "operationId": "restore_deal_api_deals__deal_id__restore_post",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "deal_id",
+      "required": true,
+      "schema": {
+       "title": "Deal Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ArchiveResponse"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Restore Deal"
    }
   },
   "/api/deals/{deal_id}/stream": {

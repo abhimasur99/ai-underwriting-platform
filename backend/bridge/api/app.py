@@ -42,10 +42,20 @@ def create_app(settings: Settings | None = None, runner: AgentRunner | None = No
     app = FastAPI(title="Bridge Loan Platform (sample data only)",
                   description="Screening-layer demo. Made-up data; illustrative thresholds.")
 
+    app.state.store = store
+
     def need(deal_id: str) -> str:
         if not store.deal_exists(deal_id):
             raise HTTPException(404, f"no deal {deal_id}")
         return deal_id
+
+    def _guard(fn, *args):
+        try:
+            return fn(*args)
+        except (DecisionError, InvalidTransition) as exc:
+            raise HTTPException(409, str(exc)) from exc
+        except patching.PatchError as exc:
+            raise HTTPException(422, str(exc)) from exc
 
     @app.get("/api/health")
     def health() -> dict[str, str]:
@@ -78,8 +88,30 @@ def create_app(settings: Settings | None = None, runner: AgentRunner | None = No
 
     # ---- queue and deal views
     @app.get("/api/deals", response_model=list[m.QueueRow])
-    def list_deals():
-        return [asdict(s) for s in projections.queue(store)]
+    def list_deals(include_archived: bool = False):
+        return [asdict(s) for s in projections.queue(store, include_archived)]
+
+    @app.delete("/api/deals/{deal_id}", response_model=m.ArchiveResponse)
+    def archive_deal(deal_id: str):
+        """Archive, not delete: the event log is append-only. Restorable."""
+        need(deal_id)
+        _guard(chief.archive, deal_id)
+        return {"deal_id": deal_id, "archived": True}
+
+    @app.post("/api/deals/{deal_id}/restore", response_model=m.ArchiveResponse)
+    def restore_deal(deal_id: str):
+        need(deal_id)
+        chief.restore(deal_id)
+        return {"deal_id": deal_id, "archived": False}
+
+    @app.patch("/api/deals/{deal_id}", response_model=m.RenameResponse)
+    def rename_deal(deal_id: str, body: m.RenameRequest):
+        need(deal_id)
+        try:
+            name = chief.rename(deal_id, body.name)
+        except DecisionError as exc:
+            raise HTTPException(422, str(exc)) from exc
+        return {"deal_id": deal_id, "name": name}
 
     @app.get("/api/deals/{deal_id}", response_model=m.DealDetail)
     def get_deal(deal_id: str):
@@ -161,14 +193,6 @@ def create_app(settings: Settings | None = None, runner: AgentRunner | None = No
         if store.get_deal(deal_id) is None or store.latest_result(deal_id) is None:
             raise HTTPException(409, "the deal has not been underwritten yet")
         return chat.handle(deal_id, body.message)
-
-    def _guard(fn, *args):
-        try:
-            return fn(*args)
-        except (DecisionError, InvalidTransition) as exc:
-            raise HTTPException(409, str(exc)) from exc
-        except patching.PatchError as exc:
-            raise HTTPException(422, str(exc)) from exc
 
     @app.post("/api/deals/{deal_id}/patches/{patch_id}/confirm", response_model=m.StateResponse)
     def confirm_patch(deal_id: str, patch_id: str):

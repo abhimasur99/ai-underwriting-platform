@@ -46,6 +46,7 @@ class QueueRow(BaseModel):
     created_at: str
     updated_at: str
     owner: str
+    archived: bool = False
 
 
 class ChiefChatRequest(BaseModel):
@@ -105,3 +106,17 @@ class WorkbookSheet(BaseModel):
 
 class WorkbookView(BaseModel):
     sheets: list[WorkbookSheet]
+
+
+class RenameRequest(BaseModel):
+    name: str
+
+
+class ArchiveResponse(BaseModel):
+    deal_id: str
+    archived: bool
+
+
+class RenameResponse(BaseModel):
+    deal_id: str
+    name: str

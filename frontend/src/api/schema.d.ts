@@ -33,10 +33,15 @@ export interface paths {
         get: operations["get_deal_api_deals__deal_id__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Archive Deal
+         * @description Archive, not delete: the event log is append-only. Restorable.
+         */
+        delete: operations["archive_deal_api_deals__deal_id__delete"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** Rename Deal */
+        patch: operations["rename_deal_api_deals__deal_id__patch"];
         trace?: never;
     };
     "/api/deals/{deal_id}/artifacts/{name}": {
@@ -192,6 +197,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/deals/{deal_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore Deal */
+        post: operations["restore_deal_api_deals__deal_id__restore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/deals/{deal_id}/stream": {
         parameters: {
             query?: never;
@@ -270,6 +292,13 @@ export interface components {
             amount: number;
             /** Name */
             name: string;
+        };
+        /** ArchiveResponse */
+        ArchiveResponse: {
+            /** Archived */
+            archived: boolean;
+            /** Deal Id */
+            deal_id: string;
         };
         /** Body_upload_file_api_deals__deal_id__files_post */
         Body_upload_file_api_deals__deal_id__files_post: {
@@ -624,6 +653,11 @@ export interface components {
         };
         /** QueueRow */
         QueueRow: {
+            /**
+             * Archived
+             * @default false
+             */
+            archived: boolean;
             /** Call */
             call: string | null;
             /** Created At */
@@ -685,6 +719,18 @@ export interface components {
              * @enum {string}
              */
             status: "pass" | "watch" | "decline";
+        };
+        /** RenameRequest */
+        RenameRequest: {
+            /** Name */
+            name: string;
+        };
+        /** RenameResponse */
+        RenameResponse: {
+            /** Deal Id */
+            deal_id: string;
+            /** Name */
+            name: string;
         };
         /** Renovation */
         Renovation: {
@@ -958,7 +1004,9 @@ export type $defs = Record<string, never>;
 export interface operations {
     list_deals_api_deals_get: {
         parameters: {
-            query?: never;
+            query?: {
+                include_archived?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -972,6 +1020,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["QueueRow"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1014,6 +1071,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DealDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_deal_api_deals__deal_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArchiveResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rename_deal_api_deals__deal_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RenameRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RenameResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1314,6 +1437,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StateResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_deal_api_deals__deal_id__restore_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArchiveResponse"];
                 };
             };
             /** @description Validation Error */
