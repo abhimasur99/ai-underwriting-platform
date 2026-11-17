@@ -58,7 +58,7 @@ function PatchCard({
         </div>
       ) : (
         <div className={`mt-2 font-medium ${status === 'confirmed' ? 'text-teal-700' : 'text-slate-400'}`}>
-          {status === 'confirmed' ? '✓ Confirmed' : 'Cancelled'}
+          {status === 'confirmed' ? 'Confirmed' : 'Cancelled'}
         </div>
       )}
     </div>
@@ -82,7 +82,9 @@ export default function ChiefChat({
   const [applying, setApplying] = useState<string | null>(null)
   const bottom = useRef<HTMLDivElement>(null)
 
-  useEffect(() => bottom.current?.scrollIntoView({ behavior: 'smooth' }), [msgs])
+  useEffect(() => {
+    bottom.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [msgs])
 
   const say = (m: Msg) => setMsgs((prev) => [...prev, m])
   const statusOf = (p: Patch) => resolved[p.patch_id] ?? 'proposed'
@@ -137,7 +139,7 @@ export default function ChiefChat({
   return (
     <div className="flex h-full flex-col">
       <div className="border-b border-slate-200 px-4 py-3">
-        <h2 className="text-sm font-semibold">Chief chat</h2>
+        <h2 className="eyebrow !text-ink">Chief chat</h2>
         <p className="text-xs text-slate-500">Reviewer only. The chief reads your message; code answers.</p>
       </div>
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
@@ -145,8 +147,8 @@ export default function ChiefChat({
           <div key={i} className={m.from === 'you' ? 'flex justify-end' : ''}>
             <div className={`max-w-[92%] ${m.from === 'you' ? '' : 'w-full'}`}>
               <div
-                className={`whitespace-pre-wrap rounded-2xl px-3.5 py-2 text-sm ${
-                  m.from === 'you' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-800'
+                className={`whitespace-pre-wrap px-3.5 py-2 text-sm leading-relaxed ${
+                  m.from === 'you' ? 'bg-ink text-paper' : 'border-l-2 border-ink bg-paper text-slate-800'
                 }`}
               >
                 {m.text}
@@ -165,7 +167,7 @@ export default function ChiefChat({
         ))}
         {waiting.map((p) => (
           <div key={p.patch_id}>
-            <div className="rounded-2xl bg-slate-100 px-3.5 py-2 text-sm text-slate-800">
+            <div className="border-l-2 border-ink bg-paper px-3.5 py-2 text-sm text-slate-800">
               A change is waiting for your decision:
             </div>
             <PatchCard patch={p} status="proposed" busy={applying === p.patch_id}
@@ -183,7 +185,7 @@ export default function ChiefChat({
                 <button
                   key={p}
                   onClick={() => setText(p)}
-                  className="rounded-full bg-white px-2.5 py-1 text-left text-[11px] text-slate-500 ring-1 ring-inset ring-slate-300 hover:bg-slate-50"
+                  className="rounded-[2px] border border-slate-300 bg-white px-2.5 py-1 text-left text-[11px] text-slate-500 hover:border-ink hover:text-ink"
                 >
                   {p.length > 44 ? `${p.slice(0, 42)}…` : p}
                 </button>
@@ -200,7 +202,7 @@ export default function ChiefChat({
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Ask or request a change"
-                className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+                className="min-w-0 flex-1 rounded-[2px] border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-ink"
               />
               <Button type="submit" tone="primary" disabled={busy || !text.trim()}>
                 Send

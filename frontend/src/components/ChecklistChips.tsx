@@ -20,30 +20,29 @@ const FACT_LABELS: Record<string, string> = {
 
 /** Document chips come from the completeness check (code); this only draws them. */
 export default function ChecklistChips({ checklist }: { checklist: Checklist | null }) {
-  if (!checklist) return null
+  // Before the first message there is no deal yet, so show the five required documents as empty.
+  const view = checklist ?? { required: Object.keys(DOC_LABELS), received: [], facts_missing: [] }
   return (
     <div>
       <div className="flex flex-wrap gap-2">
-        {checklist.required.map((doc) => {
-          const done = checklist.received.includes(doc)
+        {view.required.map((doc) => {
+          const done = view.received.includes(doc)
           return (
             <span
               key={doc}
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm ring-1 ring-inset ${
-                done
-                  ? 'bg-teal-50 text-teal-700 ring-teal-600/20'
-                  : 'bg-white text-slate-500 ring-slate-300'
+              className={`inline-flex items-center gap-2 rounded-[2px] border px-3 py-1 text-sm font-semibold ${
+                done ? 'border-teal-600/50 text-teal-700' : 'border-slate-300 text-slate-500'
               }`}
             >
-              <span aria-hidden>{done ? '✓' : '○'}</span>
+              <span aria-hidden className={`h-2 w-2 ${done ? 'bg-teal-600' : 'border border-slate-400'}`} />
               {DOC_LABELS[doc] ?? doc}
             </span>
           )
         })}
       </div>
-      {checklist.facts_missing.length > 0 && (
+      {view.facts_missing.length > 0 && (
         <p className="mt-2 text-xs text-slate-500">
-          Still need to hear: {checklist.facts_missing.map((f) => FACT_LABELS[f] ?? f).join(', ')}
+          Still need to hear: {view.facts_missing.map((f) => FACT_LABELS[f] ?? f).join(', ')}
         </p>
       )}
     </div>

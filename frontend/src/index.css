@@ -1,14 +1,61 @@
 @import "tailwindcss";
 
+/* Look: charcoal and warm off-white, Avenir-style sans (Mulish is the free stand-in), thin rules,
+   square corners, almost no colour. The status colours are muted on purpose. */
 @theme {
-  --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --color-coral-50: #fff1ef;
-  --color-coral-100: #ffdfdb;
-  --color-coral-200: #ffc2ba;
-  --color-coral-400: #ff8b7c;
-  --color-coral-500: #f2665a;
-  --color-coral-600: #d94a3e;
-  --color-coral-700: #b23a30;
+  --font-sans: "Mulish", "Avenir Next", Avenir, ui-sans-serif, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
+  --font-display: "Poppins", "Mulish", ui-sans-serif, sans-serif;
+
+  --color-ink: #131415;
+  --color-paper: #f8f8f4;
+
+  /* warm neutrals replace the default cool slate */
+  --color-slate-50: #f8f8f4;
+  --color-slate-100: #efefe9;
+  --color-slate-200: #e1e1da;
+  --color-slate-300: #cfcfc7;
+  --color-slate-400: #9a9a93;
+  --color-slate-500: #6e6e69;
+  --color-slate-600: #53534f;
+  --color-slate-700: #3a3b3a;
+  --color-slate-800: #232425;
+  --color-slate-900: #131415;
+
+  /* success: forest */
+  --color-teal-50: #eef4f0;
+  --color-teal-100: #d9e7de;
+  --color-teal-500: #3f7d62;
+  --color-teal-600: #2e6b55;
+  --color-teal-700: #245543;
+  /* caution: ochre */
+  --color-amber-50: #f8f1e2;
+  --color-amber-100: #f0e2c0;
+  --color-amber-300: #d9b25c;
+  --color-amber-400: #c99a3a;
+  --color-amber-600: #a8741a;
+  --color-amber-700: #8a5d12;
+  --color-amber-800: #6f4a0e;
+  /* stop: brick */
+  --color-coral-50: #f9eeec;
+  --color-coral-100: #f1d9d5;
+  --color-coral-200: #e3b8b1;
+  --color-coral-400: #c9695d;
+  --color-coral-500: #b5483c;
+  --color-coral-600: #a03b30;
+  --color-coral-700: #86312a;
+  /* information: navy */
+  --color-sky-50: #eceff6;
+  --color-sky-600: #2b3d6b;
+  --color-sky-700: #1f2f58;
+  --color-sky-800: #18254a;
+
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+  --radius-2xl: 2px;
+  --shadow-sm: none;
+  --shadow-xl: 0 12px 32px -12px rgba(19, 20, 21, 0.28);
 }
 
 html,
@@ -18,9 +65,42 @@ body,
 }
 
 body {
-  background: #f8fafc;
-  color: #0f172a;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-weight: 400;
   -webkit-font-smoothing: antialiased;
+  font-feature-settings: "tnum" 1;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+input,
+textarea {
+  font-family: inherit;
+}
+
+::placeholder {
+  color: var(--color-slate-400);
+}
+
+/* Small uppercase label used above sections and table headers. */
+.eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-slate-500);
 }
 
 /* React Flow */

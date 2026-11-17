@@ -46,7 +46,17 @@ const json = (body: unknown): RequestInit => ({
 
 export const api = {
   health: () => request<{ status: string; mode: string }>('/api/health'),
-  queue: () => request<QueueRow[]>('/api/deals'),
+  queue: (includeArchived = false) =>
+    request<QueueRow[]>(`/api/deals${includeArchived ? '?include_archived=true' : ''}`),
+  archive: (id: string) => request<S['ArchiveResponse']>(`/api/deals/${id}`, { method: 'DELETE' }),
+  restore: (id: string) =>
+    request<S['ArchiveResponse']>(`/api/deals/${id}/restore`, { method: 'POST' }),
+  rename: (id: string, name: string) =>
+    request<S['RenameResponse']>(`/api/deals/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    }),
   deal: (id: string) => request<DealDetail>(`/api/deals/${id}`),
   events: (id: string, after = 0) => request<ApiEvent[]>(`/api/deals/${id}/events?after=${after}`),
   workbook: (id: string) => request<WorkbookView>(`/api/deals/${id}/workbook`),

@@ -7,14 +7,14 @@ export default function MemoViewer({ dealId, bust }: { dealId: string; bust: num
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-4 border-b border-slate-200 bg-white px-4 py-2 text-xs text-slate-500">
         <span>One-page memo (PDF). Sample data; illustrative thresholds.</span>
-        <a className="ml-auto text-teal-700 hover:underline" href={src} target="_blank" rel="noreferrer">
+        <a className="ml-auto font-semibold text-ink underline underline-offset-4" href={src} target="_blank" rel="noreferrer">
           Open in new tab
         </a>
-        <a className="text-teal-700 hover:underline" href={workbookUrl(dealId)}>
+        <a className="font-semibold text-ink underline underline-offset-4" href={workbookUrl(dealId)}>
           Download workbook (.xlsx)
         </a>
       </div>
-      <iframe key={String(bust)} title="Memo" src={src} className="min-h-0 flex-1 bg-slate-200" />
+      <iframe key={String(bust)} title="Memo" src={src} className="min-h-0 flex-1 bg-slate-100" />
     </div>
   )
 }

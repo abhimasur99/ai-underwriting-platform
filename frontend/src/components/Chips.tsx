@@ -2,19 +2,20 @@ import type { ReactNode } from 'react'
 
 type Tone = 'teal' | 'amber' | 'coral' | 'slate' | 'sky'
 
+// Outlined, uppercase, square: status reads as a label, not a pastel pill.
 const TONES: Record<Tone, string> = {
-  teal: 'bg-teal-50 text-teal-700 ring-teal-600/20',
-  amber: 'bg-amber-50 text-amber-800 ring-amber-600/25',
-  coral: 'bg-coral-50 text-coral-700 ring-coral-600/25',
-  slate: 'bg-slate-100 text-slate-600 ring-slate-500/15',
-  sky: 'bg-sky-50 text-sky-700 ring-sky-600/20',
+  teal: 'border-teal-600/50 text-teal-700',
+  amber: 'border-amber-600/50 text-amber-700',
+  coral: 'border-coral-600/50 text-coral-700',
+  slate: 'border-slate-300 text-slate-500',
+  sky: 'border-sky-600/50 text-sky-700',
 }
 
 export function Chip({ tone, children, title }: { tone: Tone; children: ReactNode; title?: string }) {
   return (
     <span
       title={title}
-      className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${TONES[tone]}`}
+      className={`inline-flex items-center gap-1 whitespace-nowrap rounded-[2px] border px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] ${TONES[tone]}`}
     >
       {children}
     </span>
@@ -24,7 +25,7 @@ export function Chip({ tone, children, title }: { tone: Tone; children: ReactNod
 export function CallChip({ call }: { call: string | null | undefined }) {
   if (!call) return <span className="text-slate-400">–</span>
   const tone: Tone = call === 'screen' ? 'teal' : call === 'watch' ? 'amber' : 'coral'
-  return <Chip tone={tone}>{call.charAt(0).toUpperCase() + call.slice(1)}</Chip>
+  return <Chip tone={tone}>{call}</Chip>
 }
 
 const STATE_TONE: Record<string, Tone> = {
@@ -60,7 +61,7 @@ export function StageChip({ stage }: { stage: string }) {
 export function EscalationBadge() {
   return (
     <Chip tone="coral" title="The independent check kept failing after the retry limit; a human must look">
-      ⚠ check failed: escalated
+      Check failed · escalated
     </Chip>
   )
 }
@@ -81,9 +82,9 @@ export function Button({
   type?: 'button' | 'submit'
 }) {
   const styles = {
-    primary: 'bg-teal-600 text-white hover:bg-teal-700 disabled:bg-teal-600/40',
-    danger: 'bg-white text-coral-700 ring-1 ring-coral-200 hover:bg-coral-50 disabled:text-coral-700/40',
-    slate: 'bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 disabled:text-slate-400',
+    primary: 'border-ink bg-ink text-paper hover:bg-slate-700 hover:border-slate-700',
+    slate: 'border-ink text-ink hover:bg-ink hover:text-paper',
+    danger: 'border-coral-600 text-coral-700 hover:bg-coral-600 hover:text-white',
   }[tone]
   return (
     <button
@@ -91,7 +92,7 @@ export function Button({
       title={title}
       disabled={disabled}
       onClick={onClick}
-      className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed ${styles}`}
+      className={`rounded-[2px] border px-4 py-1.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-transparent disabled:text-slate-400 ${styles}`}
     >
       {children}
     </button>
@@ -99,16 +100,19 @@ export function Button({
 }
 
 /** Shows which mode the backend is in, so nobody mistakes offline fixtures for a live model. */
-export function ModeBadge({ mode }: { mode: string | null }) {
+export function ModeBadge({ mode, onDark = false }: { mode: string | null; onDark?: boolean }) {
   if (!mode) return null
   const live = mode === 'live'
+  const base = onDark ? 'border-white/30 text-paper/80' : 'border-slate-300 text-slate-500'
+  const liveTone = onDark ? 'border-white/60 text-white' : 'border-sky-600/50 text-sky-700'
   return (
-    <Chip
-      tone={live ? 'sky' : 'slate'}
+    <span
       title={live ? 'Claude writes the narrative and words the chat. Code computes every number.'
         : 'Offline: cached fixtures and templates. No model is called.'}
+      className={`inline-flex items-center gap-1.5 rounded-[2px] border px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] ${live ? liveTone : base}`}
     >
-      {live ? '● live model' : 'offline (cached)'}
-    </Chip>
+      <span className={`h-1.5 w-1.5 rounded-full ${live ? 'bg-current' : 'border border-current'}`} />
+      {live ? 'Live model' : 'Offline'}
+    </span>
   )
 }

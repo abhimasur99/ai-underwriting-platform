@@ -3,19 +3,12 @@ import { api } from '../api/client'
 import type { Checklist } from '../api/client'
 import { useDebounced, useStream } from '../api/hooks'
 import ChecklistChips from '../components/ChecklistChips'
-import { navigate } from '../lib/router'
+import { Page } from '../components/Shell'
 import { SAMPLE_FACTS } from '../lib/samples'
 
 interface Msg {
   from: 'agent' | 'you' | 'file'
   text: string
-}
-
-// StrictMode runs effects twice in development; this keeps that from creating two deals.
-let creating: Promise<string> | null = null
-function createOnce(): Promise<string> {
-  creating ??= api.createDeal().then((d) => d.deal_id)
-  return creating
 }
 
 const GREETING: Msg = {
@@ -26,7 +19,11 @@ const GREETING: Msg = {
     'This is a sample-data prototype, so please use sample data only.',
 }
 
-export default function Chat({ dealId }: { dealId: string | null }) {
+export default function Chat({ dealId: initialId }: { dealId: string | null }) {
+  // The deal is created on the first message or upload, not when the page opens, so browsing to
+  // "New deal" and leaving never litters the queue with empty deals.
+  const [dealId, setDealId] = useState<string | null>(initialId)
+  const creating = useRef<Promise<string> | null>(null)
   const [msgs, setMsgs] = useState<Msg[]>([GREETING])
   const [checklist, setChecklist] = useState<Checklist | null>(null)
   const [text, setText] = useState('')
@@ -37,14 +34,21 @@ export default function Chat({ dealId }: { dealId: string | null }) {
   const bottom = useRef<HTMLDivElement>(null)
   const picker = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    if (dealId) return
-    createOnce().then((id) => navigate(`chat/${id}`, true))
-  }, [dealId])
+  const ensureDeal = useCallback((): Promise<string> => {
+    if (initialId) return Promise.resolve(initialId)
+    creating.current ??= api.createDeal().then((d) => {
+      setDealId(d.deal_id)
+      setChecklist(d.checklist)
+      // Put the id in the address bar without remounting this page.
+      window.history.replaceState(null, '', `#/chat/${d.deal_id}`)
+      return d.deal_id
+    })
+    return creating.current
+  }, [initialId])
 
   useEffect(() => {
-    if (!dealId) return
-    api.intakeStatus(dealId).then((s) => {
+    if (!initialId) return
+    api.intakeStatus(initialId).then((s) => {
       setChecklist(s.checklist)
       if (s.stage !== 'Awaiting docs') {
         setSubmitted(true)
@@ -52,9 +56,11 @@ export default function Chat({ dealId }: { dealId: string | null }) {
         posted.current.add(s.message)
       }
     }, () => undefined)
-  }, [dealId])
+  }, [initialId])
 
-  useEffect(() => bottom.current?.scrollIntoView({ behavior: 'smooth' }), [msgs])
+  useEffect(() => {
+    bottom.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [msgs])
 
   // Status posted into the chat from deal state. Only plain sentences, never numbers or a call.
   const postStatus = useCallback(() => {
@@ -79,12 +85,12 @@ export default function Chat({ dealId }: { dealId: string | null }) {
 
   const send = async () => {
     const message = text.trim()
-    if (!message || !dealId || busy) return
+    if (!message || busy) return
     setText('')
     say({ from: 'you', text: message })
     setBusy(true)
     try {
-      afterReply(await api.chat(dealId, message))
+      afterReply(await api.chat(await ensureDeal(), message))
     } catch (e) {
       say({ from: 'agent', text: `Sorry, something went wrong: ${(e as Error).message}` })
     } finally {
@@ -93,12 +99,11 @@ export default function Chat({ dealId }: { dealId: string | null }) {
   }
 
   const upload = async (files: FileList | File[]) => {
-    if (!dealId) return
     setBusy(true)
     for (const file of Array.from(files)) {
       say({ from: 'file', text: file.name })
       try {
-        afterReply(await api.upload(dealId, file))
+        afterReply(await api.upload(await ensureDeal(), file))
       } catch (e) {
         say({ from: 'agent', text: `I couldn't take ${file.name}: ${(e as Error).message}` })
       }
@@ -107,18 +112,17 @@ export default function Chat({ dealId }: { dealId: string | null }) {
   }
 
   return (
-    <div className="mx-auto flex h-full max-w-2xl flex-col px-4 py-6">
-      <header className="flex items-start justify-between">
-        <div>
-          <h1 className="text-lg font-semibold">Bridge loan intake</h1>
-          <p className="text-xs text-slate-500">Sample data only · {dealId ?? 'starting…'}</p>
-        </div>
-        <a href="#/" className="text-xs text-slate-400 hover:text-slate-600">
-          Internal queue →
-        </a>
+    <Page external>
+    <div className="mx-auto flex h-full max-w-2xl flex-col px-6 pb-6 pt-8">
+      <header>
+        <div className="eyebrow">Intake</div>
+        <h1 className="mt-1 text-[30px] leading-tight">Submit a bridge loan package</h1>
+        <p className="mt-1 text-sm text-slate-500">
+          Sample data only{dealId ? ` · reference ${dealId}` : ' · a reference is assigned when you send your first message'}
+        </p>
       </header>
 
-      <div className="mt-4 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+      <div className="mt-5 border border-slate-200 bg-white p-3.5">
         <ChecklistChips checklist={checklist} />
       </div>
 
@@ -133,22 +137,22 @@ export default function Chat({ dealId }: { dealId: string | null }) {
           setDrag(false)
           if (e.dataTransfer.files.length) void upload(e.dataTransfer.files)
         }}
-        className={`mt-4 flex-1 space-y-3 overflow-y-auto rounded-lg border bg-white p-4 shadow-sm ${
-          drag ? 'border-teal-500 ring-2 ring-teal-500/30' : 'border-slate-200'
+        className={`mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto border bg-white p-4 ${
+          drag ? 'border-ink outline outline-2 outline-ink' : 'border-slate-200'
         }`}
       >
         {msgs.map((m, i) =>
           m.from === 'file' ? (
             <div key={i} className="flex justify-end">
-              <span className="rounded-md bg-slate-100 px-3 py-1.5 font-mono text-xs text-slate-600">
+              <span className="border border-slate-300 px-3 py-1.5 font-mono text-xs text-slate-600">
                 {m.text} uploaded
               </span>
             </div>
           ) : (
             <div key={i} className={`flex ${m.from === 'you' ? 'justify-end' : ''}`}>
               <div
-                className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-2 text-sm ${
-                  m.from === 'you' ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-800'
+                className={`max-w-[85%] whitespace-pre-wrap px-4 py-2.5 text-sm leading-relaxed ${
+                  m.from === 'you' ? 'bg-ink text-paper' : 'border-l-2 border-ink bg-paper text-slate-800'
                 }`}
               >
                 {m.text}
@@ -166,7 +170,7 @@ export default function Chat({ dealId }: { dealId: string | null }) {
             key={s.label}
             onClick={() => setText(s.text)}
             title={`Fills the box with the facts for ${s.folder}`}
-            className="rounded-full bg-white px-2.5 py-1 text-xs text-slate-500 ring-1 ring-inset ring-slate-300 hover:bg-slate-50"
+            className="rounded-[2px] border border-slate-300 bg-white px-2.5 py-1 text-xs text-slate-500 hover:border-ink hover:text-ink"
           >
             {s.label}
           </button>
@@ -184,7 +188,7 @@ export default function Chat({ dealId }: { dealId: string | null }) {
         <button
           type="button"
           onClick={() => picker.current?.click()}
-          className="rounded-md bg-white px-3 text-sm text-slate-600 ring-1 ring-slate-300 hover:bg-slate-50"
+          className="rounded-[2px] border border-ink px-4 text-sm font-semibold hover:bg-ink hover:text-paper"
           title="Attach files (or drop them on the chat)"
         >
           Attach
@@ -193,16 +197,17 @@ export default function Chat({ dealId }: { dealId: string | null }) {
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Type a message or drop files"
-          className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-teal-600 focus:ring-1 focus:ring-teal-600"
+          className="flex-1 rounded-[2px] border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-ink"
         />
         <button
           type="submit"
-          disabled={busy || !text.trim() || !dealId}
-          className="rounded-md bg-teal-600 px-4 text-sm font-medium text-white hover:bg-teal-700 disabled:bg-teal-600/40"
+          disabled={busy || !text.trim()}
+          className="rounded-[2px] border border-ink bg-ink px-5 text-sm font-semibold text-paper hover:bg-slate-700 disabled:border-slate-300 disabled:bg-transparent disabled:text-slate-400"
         >
           Send
         </button>
       </form>
     </div>
+    </Page>
   )
 }

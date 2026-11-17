@@ -90,7 +90,9 @@ export function deriveFlow(events: ApiEvent[]): Flow {
   }
 
   const running = AGENTS.some((id) => nodes[id].state === 'running')
-  nodes.intake = submitted
+  // Seeded deals skip the chat, so work having started also proves the package was submitted.
+  const started = AGENTS.some((id) => nodes[id].state !== 'idle')
+  nodes.intake = submitted || started
     ? { state: 'done', note: 'package submitted' }
     : touched
       ? { state: 'running', note: 'collecting documents' }

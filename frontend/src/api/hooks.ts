@@ -9,7 +9,8 @@ const EVENT_TYPES = [
   'file.classified', 'checklist.updated', 'state.changed', 'handoff.sent', 'handoff.returned',
   'tool.called', 'extraction.completed', 'underwriting.completed', 'check.completed',
   'check.retry', 'review.requested', 'patch.proposed', 'patch.confirmed', 'patch.cancelled',
-  'override.recorded', 'decision.recorded', 'memo.rendered', 'error',
+  'override.recorded', 'decision.recorded', 'memo.rendered', 'deal.archived',
+  'deal.restored', 'deal.renamed', 'error',
 ]
 
 /** Subscribe to an SSE stream and call `onEvent` for every frame. Reconnects on its own. */
@@ -41,11 +42,12 @@ export function useDebounced(fn: () => void, ms: number) {
   }, [ms])
 }
 
+/** The whole queue including archived rows; the page filters, so tab counts are exact. */
 export function useQueue() {
   const [rows, setRows] = useState<QueueRow[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const load = useCallback(() => {
-    api.queue().then(
+    api.queue(true).then(
       (r) => {
         setRows(r)
         setError(null)
@@ -56,7 +58,7 @@ export function useQueue() {
   useEffect(load, [load])
   const refresh = useDebounced(load, 120)
   useStream('/api/stream', refresh)
-  return { rows, error }
+  return { rows, error, reload: load }
 }
 
 /** A deal's detail and full event history, kept live by the deal's event stream. */
