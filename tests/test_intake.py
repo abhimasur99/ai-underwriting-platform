@@ -160,3 +160,40 @@ def test_status_message_while_in_review_is_just_under_review(tmp_path):
     chief.ingest_directory(deal_id, SRC)
     chief.process(deal_id)
     assert IntakeAgent(chief, CachedRunner()).status_message(deal_id) == "Under review."
+
+
+# ---- PDF, Word and Excel uploads
+def _doc(tmp_path, source, fmt, name):
+    from scripts.sample_docs import markdown_to_docx, markdown_to_pdf
+    path = tmp_path / name
+    md = (SRC / source).read_text()
+    (markdown_to_pdf if fmt == "pdf" else markdown_to_docx)(md, path)
+    return path.read_bytes()
+
+
+def test_content_hints_classify_pdf_and_word_with_generic_names(tmp_path):
+    c = classify("scan_0042.pdf", _doc(tmp_path, "deal_summary.md", "pdf", "a.pdf"))
+    assert (c.label, c.status) == ("deal_summary", "ok")
+    c = classify("attachment.docx", _doc(tmp_path, "purchase_contract.md", "docx", "b.docx"))
+    assert (c.label, c.status) == ("purchase_contract", "ok")
+
+
+def test_an_unreadable_document_is_not_guessed(tmp_path):
+    c = classify("attachment.pdf", b"not a pdf")
+    assert c.status == "unknown"
+
+
+def test_tables_are_accepted_as_csv_or_xlsx_only(agent):
+    a, deal_id = agent
+    out = a.handle(deal_id, files=[IncomingFile("rent_roll.pdf", b"%PDF-1.4")])
+    assert "csv, xlsx" in out["reply"] and out["checklist"]["received"] == []
+
+
+def test_uploading_a_replacement_in_another_format_leaves_one_file(agent, tmp_path):
+    a, deal_id = agent
+    a.handle(deal_id, files=[f("deal_summary.md")])
+    pdf = _doc(tmp_path, "deal_summary.md", "pdf", "x.pdf")
+    out = a.handle(deal_id, files=[IncomingFile("deal_summary.pdf", pdf)])
+    assert "Updated your deal summary" in out["reply"]
+    names = sorted(p.name for p in a.chief.deal_dir(deal_id).glob("deal_summary.*"))
+    assert names == ["deal_summary.pdf"]

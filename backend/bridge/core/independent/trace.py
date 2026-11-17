@@ -3,6 +3,7 @@ file, and a quote that contains the value."""
 import re
 from pathlib import Path
 
+from bridge.core.independent.textread import read_text
 from bridge.core.schema import Deal
 
 
@@ -42,7 +43,7 @@ def source_trace(deal: Deal, deal_dir: str | Path) -> list[str]:
         doc = src["doc"]
         if doc not in texts:
             file = directory / doc
-            texts[doc] = file.read_text() if file.exists() else None
+            texts[doc] = read_text(file) if file.exists() else None
         if texts[doc] is None:
             problems.append(f"{path}: document {doc} not found")
         elif not src.get("quote"):

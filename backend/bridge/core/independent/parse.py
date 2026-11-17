@@ -6,6 +6,8 @@ from pathlib import Path
 
 from openpyxl import load_workbook
 
+from bridge.core.independent.textread import locate, read_text
+
 
 def _money(text: str) -> float:
     return float(re.sub(r"[^\d.]", "", text))
@@ -62,8 +64,8 @@ def _table_amounts(text: str, section: str) -> dict[str, list[tuple[str, float]]
 
 def independent_parse(deal_dir: str | Path) -> dict:
     d = Path(deal_dir)
-    summary = (d / "deal_summary.md").read_text()
-    contract = (d / "purchase_contract.md").read_text()
+    summary = read_text(locate(d, "deal_summary"))
+    contract = read_text(locate(d, "purchase_contract"))
 
     def need(value, name):
         if value is None:

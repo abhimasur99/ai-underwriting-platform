@@ -30,7 +30,7 @@ from bridge.store import projections
 from bridge.store.db import Store, now
 
 DOC_LABELS = ["deal_summary", "purchase_contract", "rent_roll", "t12", "renovation_budget"]
-DOC_EXTENSIONS = (".md", ".txt", ".csv", ".xlsx")
+DOC_EXTENSIONS = (".md", ".txt", ".pdf", ".docx", ".csv", ".xlsx")
 
 
 class DecisionError(RuntimeError):
@@ -109,6 +109,9 @@ class Chief:
         target = self.deal_dir(deal_id) / f"{label}{ext}"
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(content)
+        for stale in target.parent.glob(f"{label}.*"):      # a replacement in another format
+            if stale != target:
+                stale.unlink()
         n = len(self.store.files(deal_id)) + 1
         file_id = f"f-{deal_id}-{n:03d}"
         self.store.add_file(file_id, deal_id, filename, label, str(target), len(content))

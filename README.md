@@ -13,7 +13,7 @@ Status: handoff stub. Sprint 4 replaces this with the final README (what it does
 
 ## Limits
 - Made-up sample data only. Thresholds in `config/rules.yaml` are illustrative, not any real lender's box.
-- Text, CSV, and XLSX inputs; no scanned-PDF OCR in the MVP.
+- Inputs: markdown, text, PDF (text layer) or Word for the summary and contract; CSV or XLSX for the tables. No OCR, so a scanned PDF is refused.
 - No sponsor credit, appraisal, or comps. No autonomous decisions: a human approves every output.
 - Localhost only, no authentication in the MVP.
 

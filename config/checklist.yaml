@@ -2,9 +2,9 @@
 required_documents:
   - {type: deal_summary,       label: "Deal summary and pro forma", accepted: [md, txt, pdf, docx]}
   - {type: purchase_contract,  label: "Purchase contract",          accepted: [md, txt, pdf, docx]}
-  - {type: rent_roll,          label: "Rent roll",                  accepted: [csv, xlsx, pdf]}
-  - {type: t12,                label: "T-12 operating statement",   accepted: [csv, xlsx, pdf]}
-  - {type: renovation_budget,  label: "Renovation budget",          accepted: [csv, xlsx, pdf]}
+  - {type: rent_roll,          label: "Rent roll",                  accepted: [csv, xlsx]}
+  - {type: t12,                label: "T-12 operating statement",   accepted: [csv, xlsx]}
+  - {type: renovation_budget,  label: "Renovation budget",          accepted: [csv, xlsx]}
 
 optional_documents: [sponsor_materials, appraisal, photos, insurance]
 
@@ -30,6 +30,10 @@ classification:
     renovation_budget: [reno, renovation, budget]
     purchase_contract: [contract, psa, purchase]
     deal_summary: [summary, package, offering, pro_forma]
+  # first lines of a PDF, Word or text document (used when the filename says nothing)
+  content_hints:
+    deal_summary: ["deal summary", "sources and uses", "loan request"]
+    purchase_contract: ["contract of sale", "purchase and sale", "purchase contract"]
   header_hints:
     rent_roll: [unit, tenant, lease_start, monthly_rent]
     t12: [line_item, category, total]

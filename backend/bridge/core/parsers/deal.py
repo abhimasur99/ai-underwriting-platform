@@ -6,6 +6,7 @@ Required fields that cannot be found are collected and raised together as
 import re
 from pathlib import Path
 
+from bridge.core.parsers.documents import find_text_document, read_document_text
 from bridge.core.parsers.errors import MissingRequiredFieldError, ParseError
 from bridge.core.parsers.markdown import (
     Bullet,
@@ -153,8 +154,10 @@ def _read_budget(directory: Path) -> list[LineItem]:
 
 def parse_deal_dir(directory: str | Path) -> Deal:
     d = Path(directory)
-    summary_text = (d / "deal_summary.md").read_text()
-    contract_text = (d / "purchase_contract.md").read_text()
+    summary_path = find_text_document(d, "deal_summary")
+    contract_path = find_text_document(d, "purchase_contract")
+    summary_text = read_document_text(summary_path)
+    contract_text = read_document_text(contract_path)
     summary, contract = parse_markdown(summary_text), parse_markdown(contract_text)
     flags: list[Flag] = []
     c = _Collector()
@@ -164,7 +167,7 @@ def parse_deal_dir(directory: str | Path) -> Deal:
     t12_lines, t12_name, t12_first, t12_last = _read_t12(d, flags)
     budget_items = _read_budget(d)
 
-    S, K = "deal_summary.md", "purchase_contract.md"
+    S, K = summary_path.name, contract_path.name
 
     def sb(label, section=None):   # summary bullet
         return summary.bullet(label, section)

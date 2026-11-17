@@ -3,11 +3,14 @@ config/checklist.yaml). A model only picks a label from the fixed enum if both f
 import csv
 import io
 import re
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
 from openpyxl import load_workbook
+
+from bridge.core.parsers.documents import UnreadableDocument, read_document_text
 
 CHECKLIST = Path(__file__).resolve().parents[4] / "config" / "checklist.yaml"
 
@@ -35,12 +38,29 @@ def _header(filename: str, content: bytes) -> set[str]:
     return {re.sub(r"[^a-z0-9]+", "_", h.strip().lower()).strip("_") for h in first}
 
 
+def _head(filename: str, content: bytes) -> str:
+    """The first lines of a text, PDF or Word document, lower-cased ('' if it cannot be read)."""
+    ext = Path(filename).suffix.lower()
+    if ext not in (".md", ".txt", ".pdf", ".docx"):
+        return ""
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / f"doc{ext}"
+        path.write_bytes(content)
+        try:
+            return read_document_text(path)[:800].lower()
+        except UnreadableDocument:
+            return ""
+
+
 def classify(filename: str, content: bytes, checklist_path: Path | None = None) -> Classification:
     cfg = yaml.safe_load((checklist_path or CHECKLIST).read_text())["classification"]
     stem = Path(filename).stem.lower()
     by_name = [label for label, hints in cfg["filename_hints"].items()
                if any(h in stem for h in hints)]
     header = _header(filename, content)
+    head = _head(filename, content)
+    by_content = [label for label, hints in cfg.get("content_hints", {}).items()
+                  if any(h in head for h in hints)]
     by_header: list[str] = []
     best = 0.0
     for label, hints in cfg["header_hints"].items():
@@ -52,6 +72,8 @@ def classify(filename: str, content: bytes, checklist_path: Path | None = None) 
             elif fraction == best:
                 by_header.append(label)
 
+    if len(by_content) == 1 and (not by_name or by_content[0] in by_name) and not by_header:
+        return Classification(by_content[0], "ok")
     if by_name and by_header:
         agree = [label for label in by_name if label in by_header]
         if len(agree) == 1:

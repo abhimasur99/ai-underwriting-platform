@@ -8,7 +8,7 @@ All JSON, validated by Pydantic models in `backend/bridge/core/schema.py`. Examp
  "source": {"kind": "document", "doc": "purchase_contract.md", "locator": "line 6", "quote": "Purchase price: $8,000,000"},
  "confidence": 0.98}
 ```
-Source kinds: `document` (file plus locator and quote), `derived` (computed by code, with `formula`), `chat` (recorded fact), `override` (reviewer change, with reason). A quoted string must appear in the source text or confidence is capped at 0.5.
+Source kinds: `document` (file plus locator and quote), `derived` (computed by code, with `formula`), `chat` (recorded fact), `override` (reviewer change, with reason). A quoted string must appear in the source text or confidence is capped at 0.5. For PDF and Word sources the locator's line number counts lines of the text the reader extracts (the Files tab shows that text), not printed lines on a page. Tables are CSV or XLSX only; a PDF rent roll, T-12 or budget is refused at intake.
 
 ## Deal record (abridged)
 ```json

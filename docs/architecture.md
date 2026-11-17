@@ -14,7 +14,7 @@ flowchart TD
     CHIEF <--> HUMAN[Human reviewer via internal UI]
     UW <--> UWT[Underwriter tools: calc, rules, workbook, memo]
     CHK <--> CKT[Checker tools: independent parse and calc, compare, audit]
-    EXTRACT --> PARSE[Parsers: csv, xlsx, pdf text]
+    EXTRACT --> PARSE[Parsers: csv, xlsx; summary and contract as md, txt, pdf text layer or docx]
     CHIEF --> STORE[(SQLite: deal record plus event log)]
     STORE --> VIEWS[Queue and workspace views via SSE]
 ```
@@ -65,7 +65,7 @@ Edits: a confirmed data patch bumps `deal_version` and re-enters at UNDERWRITING
 | `bridge/core/calc.py` | Pure metric and exit-sizing functions |
 | `bridge/core/rules.py` | Loads `config/rules.yaml`; returns call and reason codes |
 | `bridge/core/completeness.py` | Checklist status from labels and facts |
-| `bridge/core/parsers/` | CSV, XLSX, PDF text, classify |
+| `bridge/core/parsers/` | CSV, XLSX tables; markdown, text, PDF and Word documents (`documents.py`); classify |
 | `bridge/core/builders/` | `workbook.py`, `memo.py` |
 | `bridge/core/independent/` | Checker's own parser and formulas (no imports from `calc.py` or `parsers/`) |
 | `bridge/agents/runner.py` | `AgentRunner` interface; Claude and cached implementations |
