@@ -4,7 +4,7 @@ PY ?= python3.12
 VENV := .venv
 BIN := $(VENV)/bin
 
-.PHONY: setup test lint dev demo smoke fixtures openapi
+.PHONY: setup test lint dev dev-retry demo smoke fixtures openapi
 
 setup:
 	$(PY) -m venv $(VENV)
@@ -19,11 +19,16 @@ lint:
 	$(BIN)/ruff check .
 	cd frontend && npm run typecheck
 
+# BRIDGE_STEP_DELAY (seconds, 0 = off) makes each agent visibly "work" so the Flow tab is watchable.
 dev:
 	@trap 'kill 0' INT TERM EXIT; \
-	$(BIN)/uvicorn bridge.api.app:create_app --factory --app-dir backend --reload --port 8000 & \
+	BRIDGE_STEP_DELAY=$${BRIDGE_STEP_DELAY:-1} $(BIN)/uvicorn bridge.api.app:create_app --factory --app-dir backend --reload --port 8000 & \
 	(cd frontend && npm run dev) & \
 	wait
+
+# Same as dev, but the checker is made to disagree twice: shows the retry loop and escalation.
+dev-retry:
+	@BRIDGE_FORCE_MISMATCH=persist $(MAKE) dev
 
 demo:
 	$(BIN)/python scripts/run_deal.py data/deals/bronx_mf data/deals/queens_mixed_use data/deals/overleveraged_bk --fresh --quiet
@@ -37,3 +42,4 @@ fixtures:
 
 openapi:
 	$(BIN)/python scripts/export_openapi.py
+	cd frontend && npm run gen:api

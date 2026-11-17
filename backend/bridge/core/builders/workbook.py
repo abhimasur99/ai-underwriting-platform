@@ -281,7 +281,9 @@ def build_workbook(deal: Deal, result: UnderwritingResult, rules: RulesConfig,
             ("Loan to cost", "ltc", "0.00%"), ("Loan to value (as-is)", "ltv_as_is", "0.00%"),
             ("Loan to ARV", "loan_to_arv", "0.00%"), ("Take-out max", "takeout_max", "#,##0"),
             ("Refi cushion", "refi_cushion", "#,##0"), ("Exit DSCR", "exit_dscr", '0.00"x"')):
-        summary.append([label, f"={METRIC_CELLS[name]}"])
+        sheet_name, coord = METRIC_CELLS[name].split("!")
+        # Excel needs quotes around sheet names with spaces or symbols ('Exit & Stress'!B17)
+        summary.append([label, f"='{sheet_name}'!{coord}"])
         summary.cell(row=summary.max_row, column=2).number_format = number_format
     summary.append([])
     summary.append([rules.disclaimer])

@@ -23,6 +23,8 @@ class Settings:
     model: str
     database_path: Path
     runtime_dir: Path
+    step_delay: float = 0.0            # seconds each agent "works" (demo pacing; tests use 0)
+    force_mismatch: str | None = None  # "once" | "persist": demo of the retry loop
 
     @property
     def outputs_dir(self) -> Path:
@@ -41,4 +43,6 @@ def get_settings() -> Settings:
         model=os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5-5"),
         database_path=db,
         runtime_dir=db.parent,
+        step_delay=float(os.environ.get("BRIDGE_STEP_DELAY", "0") or 0),
+        force_mismatch=os.environ.get("BRIDGE_FORCE_MISMATCH") or None,
     )

@@ -1,1 +1,29 @@
 @import "tailwindcss";
+
+@theme {
+  --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --color-coral-50: #fff1ef;
+  --color-coral-100: #ffdfdb;
+  --color-coral-200: #ffc2ba;
+  --color-coral-400: #ff8b7c;
+  --color-coral-500: #f2665a;
+  --color-coral-600: #d94a3e;
+  --color-coral-700: #b23a30;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: #f8fafc;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* React Flow */
+.react-flow__attribution {
+  display: none;
+}

@@ -1,6 +1,24 @@
 {
  "components": {
   "schemas": {
+   "AmountRow": {
+    "properties": {
+     "amount": {
+      "title": "Amount",
+      "type": "number"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     }
+    },
+    "required": [
+     "name",
+     "amount"
+    ],
+    "title": "AmountRow",
+    "type": "object"
+   },
    "Body_upload_file_api_deals__deal_id__files_post": {
     "properties": {
      "file": {
@@ -48,9 +66,7 @@
    "ChatResponse": {
     "properties": {
      "checklist": {
-      "additionalProperties": true,
-      "title": "Checklist",
-      "type": "object"
+      "$ref": "#/components/schemas/ChecklistStatus"
      },
      "reply": {
       "title": "Reply",
@@ -62,6 +78,137 @@
      "checklist"
     ],
     "title": "ChatResponse",
+    "type": "object"
+   },
+   "CheckItem": {
+    "properties": {
+     "detail": {
+      "additionalProperties": true,
+      "default": {},
+      "title": "Detail",
+      "type": "object"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "status": {
+      "enum": [
+       "pass",
+       "warn",
+       "fail"
+      ],
+      "title": "Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "name",
+     "status"
+    ],
+    "title": "CheckItem",
+    "type": "object"
+   },
+   "CheckReport": {
+    "properties": {
+     "checks": {
+      "items": {
+       "$ref": "#/components/schemas/CheckItem"
+      },
+      "title": "Checks",
+      "type": "array"
+     },
+     "deal_id": {
+      "title": "Deal Id",
+      "type": "string"
+     },
+     "deal_version": {
+      "title": "Deal Version",
+      "type": "integer"
+     },
+     "flags": {
+      "default": [],
+      "items": {
+       "$ref": "#/components/schemas/Flag"
+      },
+      "title": "Flags",
+      "type": "array"
+     },
+     "mismatches": {
+      "default": [],
+      "items": {
+       "$ref": "#/components/schemas/Mismatch"
+      },
+      "title": "Mismatches",
+      "type": "array"
+     },
+     "status": {
+      "enum": [
+       "pass",
+       "warn",
+       "fail"
+      ],
+      "title": "Status",
+      "type": "string"
+     },
+     "summary": {
+      "default": "",
+      "title": "Summary",
+      "type": "string"
+     }
+    },
+    "required": [
+     "deal_id",
+     "deal_version",
+     "status",
+     "checks"
+    ],
+    "title": "CheckReport",
+    "type": "object"
+   },
+   "ChecklistStatus": {
+    "properties": {
+     "facts_missing": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Facts Missing",
+      "type": "array"
+     },
+     "missing": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Missing",
+      "type": "array"
+     },
+     "ready": {
+      "title": "Ready",
+      "type": "boolean"
+     },
+     "received": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Received",
+      "type": "array"
+     },
+     "required": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Required",
+      "type": "array"
+     }
+    },
+    "required": [
+     "required",
+     "received",
+     "missing",
+     "ready",
+     "facts_missing"
+    ],
+    "title": "ChecklistStatus",
     "type": "object"
    },
    "ChiefChatRequest": {
@@ -86,14 +233,12 @@
      "patch": {
       "anyOf": [
        {
-        "additionalProperties": true,
-        "type": "object"
+        "$ref": "#/components/schemas/Patch"
        },
        {
         "type": "null"
        }
-      ],
-      "title": "Patch"
+      ]
      },
      "reply": {
       "title": "Reply",
@@ -110,9 +255,7 @@
    "CreateDealResponse": {
     "properties": {
      "checklist": {
-      "additionalProperties": true,
-      "title": "Checklist",
-      "type": "object"
+      "$ref": "#/components/schemas/ChecklistStatus"
      },
      "deal_id": {
       "title": "Deal Id",
@@ -126,49 +269,112 @@
     "title": "CreateDealResponse",
     "type": "object"
    },
+   "Deal": {
+    "properties": {
+     "deal_id": {
+      "title": "Deal Id",
+      "type": "string"
+     },
+     "flags": {
+      "default": [],
+      "items": {
+       "$ref": "#/components/schemas/Flag"
+      },
+      "title": "Flags",
+      "type": "array"
+     },
+     "loan_request": {
+      "$ref": "#/components/schemas/LoanRequest"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "pro_forma": {
+      "$ref": "#/components/schemas/ProForma"
+     },
+     "property": {
+      "$ref": "#/components/schemas/Property"
+     },
+     "purchase": {
+      "$ref": "#/components/schemas/Purchase"
+     },
+     "renovation": {
+      "$ref": "#/components/schemas/Renovation"
+     },
+     "rent_roll": {
+      "$ref": "#/components/schemas/RentRoll"
+     },
+     "sources_uses": {
+      "$ref": "#/components/schemas/SourcesUses"
+     },
+     "sponsor": {
+      "$ref": "#/components/schemas/Sponsor"
+     },
+     "t12": {
+      "$ref": "#/components/schemas/T12"
+     },
+     "valuation": {
+      "$ref": "#/components/schemas/Valuation"
+     },
+     "version": {
+      "default": 1,
+      "title": "Version",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "deal_id",
+     "name",
+     "property",
+     "loan_request",
+     "valuation",
+     "purchase",
+     "renovation",
+     "sources_uses",
+     "pro_forma",
+     "rent_roll",
+     "t12",
+     "sponsor"
+    ],
+    "title": "Deal",
+    "type": "object"
+   },
    "DealDetail": {
     "properties": {
      "check": {
       "anyOf": [
        {
-        "additionalProperties": true,
-        "type": "object"
+        "$ref": "#/components/schemas/CheckReport"
        },
        {
         "type": "null"
        }
-      ],
-      "title": "Check"
+      ]
      },
      "checklist": {
-      "additionalProperties": true,
-      "title": "Checklist",
-      "type": "object"
+      "$ref": "#/components/schemas/ChecklistStatus"
      },
      "deal": {
       "anyOf": [
        {
-        "additionalProperties": true,
-        "type": "object"
+        "$ref": "#/components/schemas/Deal"
        },
        {
         "type": "null"
        }
-      ],
-      "title": "Deal"
+      ]
      },
      "files": {
       "items": {
-       "additionalProperties": true,
-       "type": "object"
+       "$ref": "#/components/schemas/FileRow"
       },
       "title": "Files",
       "type": "array"
      },
      "pending_patches": {
       "items": {
-       "additionalProperties": true,
-       "type": "object"
+       "$ref": "#/components/schemas/Patch"
       },
       "title": "Pending Patches",
       "type": "array"
@@ -176,14 +382,12 @@
      "result": {
       "anyOf": [
        {
-        "additionalProperties": true,
-        "type": "object"
+        "$ref": "#/components/schemas/UnderwritingResult"
        },
        {
         "type": "null"
        }
-      ],
-      "title": "Result"
+      ]
      },
      "status": {
       "$ref": "#/components/schemas/QueueRow"
@@ -227,12 +431,112 @@
     "title": "DecisionRequest",
     "type": "object"
    },
+   "Event": {
+    "description": "One row of the append-only event log; also the SSE payload.",
+    "properties": {
+     "actor": {
+      "title": "Actor",
+      "type": "string"
+     },
+     "deal_id": {
+      "title": "Deal Id",
+      "type": "string"
+     },
+     "deal_version": {
+      "title": "Deal Version",
+      "type": "integer"
+     },
+     "event_id": {
+      "title": "Event Id",
+      "type": "integer"
+     },
+     "payload": {
+      "additionalProperties": true,
+      "default": {},
+      "title": "Payload",
+      "type": "object"
+     },
+     "summary": {
+      "title": "Summary",
+      "type": "string"
+     },
+     "ts": {
+      "title": "Ts",
+      "type": "string"
+     },
+     "type": {
+      "title": "Type",
+      "type": "string"
+     }
+    },
+    "required": [
+     "event_id",
+     "deal_id",
+     "ts",
+     "actor",
+     "type",
+     "summary",
+     "deal_version"
+    ],
+    "title": "Event",
+    "type": "object"
+   },
+   "ExitAnalysis": {
+    "properties": {
+     "binding": {
+      "enum": [
+       "dscr",
+       "ltv",
+       "debt_yield"
+      ],
+      "title": "Binding",
+      "type": "string"
+     },
+     "caps": {
+      "$ref": "#/components/schemas/TakeoutCaps"
+     },
+     "exit_dscr": {
+      "title": "Exit Dscr",
+      "type": "number"
+     },
+     "noi": {
+      "title": "Noi",
+      "type": "number"
+     },
+     "payoff": {
+      "title": "Payoff",
+      "type": "number"
+     },
+     "rate": {
+      "title": "Rate",
+      "type": "number"
+     },
+     "refi_cushion": {
+      "title": "Refi Cushion",
+      "type": "number"
+     },
+     "takeout_max": {
+      "title": "Takeout Max",
+      "type": "number"
+     }
+    },
+    "required": [
+     "payoff",
+     "noi",
+     "rate",
+     "caps",
+     "binding",
+     "takeout_max",
+     "refi_cushion",
+     "exit_dscr"
+    ],
+    "title": "ExitAnalysis",
+    "type": "object"
+   },
    "FileResponse_": {
     "properties": {
      "checklist": {
-      "additionalProperties": true,
-      "title": "Checklist",
-      "type": "object"
+      "$ref": "#/components/schemas/ChecklistStatus"
      },
      "reply": {
       "title": "Reply",
@@ -251,6 +555,74 @@
     "title": "FileResponse_",
     "type": "object"
    },
+   "FileRow": {
+    "properties": {
+     "deal_id": {
+      "title": "Deal Id",
+      "type": "string"
+     },
+     "file_id": {
+      "title": "File Id",
+      "type": "string"
+     },
+     "filename": {
+      "title": "Filename",
+      "type": "string"
+     },
+     "label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Label"
+     },
+     "size": {
+      "title": "Size",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "file_id",
+     "deal_id",
+     "filename",
+     "size"
+    ],
+    "title": "FileRow",
+    "type": "object"
+   },
+   "Flag": {
+    "properties": {
+     "code": {
+      "title": "Code",
+      "type": "string"
+     },
+     "field": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Field"
+     },
+     "message": {
+      "title": "Message",
+      "type": "string"
+     }
+    },
+    "required": [
+     "code",
+     "message"
+    ],
+    "title": "Flag",
+    "type": "object"
+   },
    "HTTPValidationError": {
     "properties": {
      "detail": {
@@ -262,6 +634,361 @@
      }
     },
     "title": "HTTPValidationError",
+    "type": "object"
+   },
+   "IntakeStatus": {
+    "description": "What the external chat may show: a stage and a plain sentence, never ratios or a call.",
+    "properties": {
+     "checklist": {
+      "$ref": "#/components/schemas/ChecklistStatus"
+     },
+     "message": {
+      "title": "Message",
+      "type": "string"
+     },
+     "stage": {
+      "title": "Stage",
+      "type": "string"
+     }
+    },
+    "required": [
+     "stage",
+     "message",
+     "checklist"
+    ],
+    "title": "IntakeStatus",
+    "type": "object"
+   },
+   "LineItem": {
+    "properties": {
+     "amount": {
+      "title": "Amount",
+      "type": "number"
+     },
+     "item": {
+      "title": "Item",
+      "type": "string"
+     }
+    },
+    "required": [
+     "item",
+     "amount"
+    ],
+    "title": "LineItem",
+    "type": "object"
+   },
+   "LoanRequest": {
+    "properties": {
+     "initial_advance": {
+      "$ref": "#/components/schemas/Sourced_float_"
+     },
+     "loan_commitment": {
+      "$ref": "#/components/schemas/Sourced_float_"
+     },
+     "note_rate": {
+      "$ref": "#/components/schemas/Sourced_float_"
+     },
+     "points": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Sourced_float_"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "term_months": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Sourced_int_"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "required": [
+     "loan_commitment",
+     "initial_advance",
+     "note_rate"
+    ],
+    "title": "LoanRequest",
+    "type": "object"
+   },
+   "Metrics": {
+    "properties": {
+     "debt_yield_stabilized": {
+      "title": "Debt Yield Stabilized",
+      "type": "number"
+     },
+     "dscr_in_place": {
+      "title": "Dscr In Place",
+      "type": "number"
+     },
+     "implied_cap_rate": {
+      "title": "Implied Cap Rate",
+      "type": "number"
+     },
+     "loan_to_arv": {
+      "title": "Loan To Arv",
+      "type": "number"
+     },
+     "ltc": {
+      "title": "Ltc",
+      "type": "number"
+     },
+     "ltv_as_is": {
+      "title": "Ltv As Is",
+      "type": "number"
+     },
+     "total_cost": {
+      "title": "Total Cost",
+      "type": "number"
+     }
+    },
+    "required": [
+     "total_cost",
+     "ltc",
+     "ltv_as_is",
+     "loan_to_arv",
+     "dscr_in_place",
+     "debt_yield_stabilized",
+     "implied_cap_rate"
+    ],
+    "title": "Metrics",
+    "type": "object"
+   },
+   "Mismatch": {
+    "properties": {
+     "diff": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Diff"
+     },
+     "field": {
+      "title": "Field",
+      "type": "string"
+     },
+     "independent": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Independent"
+     },
+     "likely_cause": {
+      "default": "",
+      "title": "Likely Cause",
+      "type": "string"
+     },
+     "underwriter": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Underwriter"
+     }
+    },
+    "required": [
+     "field",
+     "underwriter",
+     "independent"
+    ],
+    "title": "Mismatch",
+    "type": "object"
+   },
+   "Patch": {
+    "properties": {
+     "deal_id": {
+      "title": "Deal Id",
+      "type": "string"
+     },
+     "kind": {
+      "enum": [
+       "data",
+       "narrative",
+       "override"
+      ],
+      "title": "Kind",
+      "type": "string"
+     },
+     "new": {
+      "title": "New"
+     },
+     "old": {
+      "title": "Old"
+     },
+     "patch_id": {
+      "title": "Patch Id",
+      "type": "string"
+     },
+     "path": {
+      "title": "Path",
+      "type": "string"
+     },
+     "reason": {
+      "default": "",
+      "title": "Reason",
+      "type": "string"
+     },
+     "status": {
+      "default": "proposed",
+      "enum": [
+       "proposed",
+       "confirmed",
+       "cancelled"
+      ],
+      "title": "Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "patch_id",
+     "deal_id",
+     "kind",
+     "path"
+    ],
+    "title": "Patch",
+    "type": "object"
+   },
+   "ProForma": {
+    "properties": {
+     "gpr": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Sourced_float_"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "opex": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Sourced_float_"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "other_income": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Sourced_float_"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "stabilized_noi": {
+      "$ref": "#/components/schemas/Sourced_float_"
+     },
+     "vacancy_pct": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Sourced_float_"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "required": [
+     "stabilized_noi"
+    ],
+    "title": "ProForma",
+    "type": "object"
+   },
+   "Property": {
+    "properties": {
+     "address": {
+      "$ref": "#/components/schemas/Sourced_str_"
+     },
+     "asset_type": {
+      "$ref": "#/components/schemas/Sourced_str_"
+     },
+     "occupied_units": {
+      "$ref": "#/components/schemas/Sourced_int_"
+     },
+     "unit_count": {
+      "$ref": "#/components/schemas/Sourced_int_"
+     },
+     "year_built": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Sourced_int_"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "required": [
+     "address",
+     "asset_type",
+     "unit_count",
+     "occupied_units"
+    ],
+    "title": "Property",
+    "type": "object"
+   },
+   "Purchase": {
+    "properties": {
+     "closing_date": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Sourced_str_"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "deposit": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Sourced_float_"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "purchase_price": {
+      "$ref": "#/components/schemas/Sourced_float_"
+     }
+    },
+    "required": [
+     "purchase_price"
+    ],
+    "title": "Purchase",
     "type": "object"
    },
    "QueueRow": {
@@ -339,6 +1066,496 @@
     "title": "QueueRow",
     "type": "object"
    },
+   "Reason": {
+    "properties": {
+     "code": {
+      "title": "Code",
+      "type": "string"
+     },
+     "severity": {
+      "enum": [
+       "watch",
+       "decline"
+      ],
+      "title": "Severity",
+      "type": "string"
+     },
+     "source_fields": {
+      "default": [],
+      "items": {
+       "type": "string"
+      },
+      "title": "Source Fields",
+      "type": "array"
+     },
+     "threshold": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Threshold"
+     },
+     "value": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Value"
+     }
+    },
+    "required": [
+     "code",
+     "severity"
+    ],
+    "title": "Reason",
+    "type": "object"
+   },
+   "ReconciliationItem": {
+    "properties": {
+     "a": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "A"
+     },
+     "b": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "B"
+     },
+     "detail": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Detail"
+     },
+     "gap": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Gap"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "status": {
+      "enum": [
+       "pass",
+       "watch",
+       "decline"
+      ],
+      "title": "Status",
+      "type": "string"
+     }
+    },
+    "required": [
+     "name",
+     "status"
+    ],
+    "title": "ReconciliationItem",
+    "type": "object"
+   },
+   "Renovation": {
+    "properties": {
+     "line_items": {
+      "items": {
+       "$ref": "#/components/schemas/LineItem"
+      },
+      "title": "Line Items",
+      "type": "array"
+     },
+     "renovation_budget": {
+      "$ref": "#/components/schemas/Sourced_float_"
+     }
+    },
+    "required": [
+     "renovation_budget",
+     "line_items"
+    ],
+    "title": "Renovation",
+    "type": "object"
+   },
+   "RentRoll": {
+    "properties": {
+     "annual_occupied_rent": {
+      "$ref": "#/components/schemas/Sourced_float_"
+     },
+     "units": {
+      "items": {
+       "$ref": "#/components/schemas/RentRollUnit"
+      },
+      "title": "Units",
+      "type": "array"
+     }
+    },
+    "required": [
+     "units",
+     "annual_occupied_rent"
+    ],
+    "title": "RentRoll",
+    "type": "object"
+   },
+   "RentRollUnit": {
+    "properties": {
+     "lease_end": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lease End"
+     },
+     "lease_start": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Lease Start"
+     },
+     "monthly_rent": {
+      "title": "Monthly Rent",
+      "type": "number"
+     },
+     "sqft": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sqft"
+     },
+     "status": {
+      "enum": [
+       "occupied",
+       "vacant"
+      ],
+      "title": "Status",
+      "type": "string"
+     },
+     "tenant": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Tenant"
+     },
+     "unit": {
+      "title": "Unit",
+      "type": "string"
+     },
+     "unit_type": {
+      "title": "Unit Type",
+      "type": "string"
+     }
+    },
+    "required": [
+     "unit",
+     "unit_type",
+     "status",
+     "monthly_rent"
+    ],
+    "title": "RentRollUnit",
+    "type": "object"
+   },
+   "RuleCheck": {
+    "description": "One row of the memo metrics table: value, thresholds, and status.",
+    "properties": {
+     "decline_threshold": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Decline Threshold"
+     },
+     "direction": {
+      "enum": [
+       "above",
+       "below"
+      ],
+      "title": "Direction",
+      "type": "string"
+     },
+     "label": {
+      "title": "Label",
+      "type": "string"
+     },
+     "metric": {
+      "title": "Metric",
+      "type": "string"
+     },
+     "status": {
+      "enum": [
+       "pass",
+       "watch",
+       "decline"
+      ],
+      "title": "Status",
+      "type": "string"
+     },
+     "value": {
+      "title": "Value",
+      "type": "number"
+     },
+     "watch_threshold": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Watch Threshold"
+     }
+    },
+    "required": [
+     "metric",
+     "label",
+     "value",
+     "direction",
+     "status"
+    ],
+    "title": "RuleCheck",
+    "type": "object"
+   },
+   "Source": {
+    "properties": {
+     "doc": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Doc"
+     },
+     "formula": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Formula"
+     },
+     "kind": {
+      "enum": [
+       "document",
+       "derived",
+       "chat",
+       "override"
+      ],
+      "title": "Kind",
+      "type": "string"
+     },
+     "locator": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Locator"
+     },
+     "quote": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Quote"
+     },
+     "reason": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reason"
+     }
+    },
+    "required": [
+     "kind"
+    ],
+    "title": "Source",
+    "type": "object"
+   },
+   "Sourced_float_": {
+    "properties": {
+     "confidence": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence",
+      "type": "number"
+     },
+     "source": {
+      "$ref": "#/components/schemas/Source"
+     },
+     "value": {
+      "title": "Value",
+      "type": "number"
+     }
+    },
+    "required": [
+     "value",
+     "source",
+     "confidence"
+    ],
+    "title": "Sourced[float]",
+    "type": "object"
+   },
+   "Sourced_int_": {
+    "properties": {
+     "confidence": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence",
+      "type": "number"
+     },
+     "source": {
+      "$ref": "#/components/schemas/Source"
+     },
+     "value": {
+      "title": "Value",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "value",
+     "source",
+     "confidence"
+    ],
+    "title": "Sourced[int]",
+    "type": "object"
+   },
+   "Sourced_str_": {
+    "properties": {
+     "confidence": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence",
+      "type": "number"
+     },
+     "source": {
+      "$ref": "#/components/schemas/Source"
+     },
+     "value": {
+      "title": "Value",
+      "type": "string"
+     }
+    },
+    "required": [
+     "value",
+     "source",
+     "confidence"
+    ],
+    "title": "Sourced[str]",
+    "type": "object"
+   },
+   "SourcesUses": {
+    "properties": {
+     "sources": {
+      "items": {
+       "$ref": "#/components/schemas/AmountRow"
+      },
+      "title": "Sources",
+      "type": "array"
+     },
+     "stated_total_sources": {
+      "$ref": "#/components/schemas/Sourced_float_"
+     },
+     "stated_total_uses": {
+      "$ref": "#/components/schemas/Sourced_float_"
+     },
+     "uses": {
+      "items": {
+       "$ref": "#/components/schemas/AmountRow"
+      },
+      "title": "Uses",
+      "type": "array"
+     }
+    },
+    "required": [
+     "sources",
+     "uses",
+     "stated_total_sources",
+     "stated_total_uses"
+    ],
+    "title": "SourcesUses",
+    "type": "object"
+   },
+   "Sponsor": {
+    "properties": {
+     "name": {
+      "$ref": "#/components/schemas/Sourced_str_"
+     }
+    },
+    "required": [
+     "name"
+    ],
+    "title": "Sponsor",
+    "type": "object"
+   },
    "StateResponse": {
     "properties": {
      "state": {
@@ -350,6 +1567,205 @@
      "state"
     ],
     "title": "StateResponse",
+    "type": "object"
+   },
+   "T12": {
+    "properties": {
+     "in_place_noi": {
+      "$ref": "#/components/schemas/Sourced_float_"
+     },
+     "lines": {
+      "items": {
+       "$ref": "#/components/schemas/T12Line"
+      },
+      "title": "Lines",
+      "type": "array"
+     },
+     "rental_income": {
+      "$ref": "#/components/schemas/Sourced_float_"
+     },
+     "total_expenses": {
+      "$ref": "#/components/schemas/Sourced_float_"
+     },
+     "total_income": {
+      "$ref": "#/components/schemas/Sourced_float_"
+     }
+    },
+    "required": [
+     "lines",
+     "rental_income",
+     "total_income",
+     "total_expenses",
+     "in_place_noi"
+    ],
+    "title": "T12",
+    "type": "object"
+   },
+   "T12Line": {
+    "properties": {
+     "category": {
+      "enum": [
+       "income",
+       "expense"
+      ],
+      "title": "Category",
+      "type": "string"
+     },
+     "line_item": {
+      "title": "Line Item",
+      "type": "string"
+     },
+     "months": {
+      "items": {
+       "type": "number"
+      },
+      "title": "Months",
+      "type": "array"
+     },
+     "total": {
+      "title": "Total",
+      "type": "number"
+     }
+    },
+    "required": [
+     "line_item",
+     "category",
+     "months",
+     "total"
+    ],
+    "title": "T12Line",
+    "type": "object"
+   },
+   "TakeoutCaps": {
+    "properties": {
+     "debt_yield": {
+      "title": "Debt Yield",
+      "type": "number"
+     },
+     "dscr": {
+      "title": "Dscr",
+      "type": "number"
+     },
+     "ltv": {
+      "title": "Ltv",
+      "type": "number"
+     }
+    },
+    "required": [
+     "dscr",
+     "ltv",
+     "debt_yield"
+    ],
+    "title": "TakeoutCaps",
+    "type": "object"
+   },
+   "UnderwritingResult": {
+    "properties": {
+     "artifacts": {
+      "additionalProperties": {
+       "type": "string"
+      },
+      "default": {},
+      "title": "Artifacts",
+      "type": "object"
+     },
+     "call": {
+      "enum": [
+       "screen",
+       "watch",
+       "decline"
+      ],
+      "title": "Call",
+      "type": "string"
+     },
+     "deal_id": {
+      "title": "Deal Id",
+      "type": "string"
+     },
+     "deal_version": {
+      "title": "Deal Version",
+      "type": "integer"
+     },
+     "exit": {
+      "$ref": "#/components/schemas/ExitAnalysis"
+     },
+     "flags": {
+      "default": [],
+      "items": {
+       "$ref": "#/components/schemas/Flag"
+      },
+      "title": "Flags",
+      "type": "array"
+     },
+     "metrics": {
+      "$ref": "#/components/schemas/Metrics"
+     },
+     "narrative": {
+      "additionalProperties": {
+       "type": "string"
+      },
+      "default": {},
+      "title": "Narrative",
+      "type": "object"
+     },
+     "open_questions": {
+      "default": [],
+      "items": {
+       "type": "string"
+      },
+      "title": "Open Questions",
+      "type": "array"
+     },
+     "overrides": {
+      "default": [],
+      "items": {
+       "type": "string"
+      },
+      "title": "Overrides",
+      "type": "array"
+     },
+     "reasons": {
+      "items": {
+       "$ref": "#/components/schemas/Reason"
+      },
+      "title": "Reasons",
+      "type": "array"
+     },
+     "reconciliation": {
+      "items": {
+       "$ref": "#/components/schemas/ReconciliationItem"
+      },
+      "title": "Reconciliation",
+      "type": "array"
+     },
+     "rule_checks": {
+      "default": [],
+      "items": {
+       "$ref": "#/components/schemas/RuleCheck"
+      },
+      "title": "Rule Checks",
+      "type": "array"
+     },
+     "rules_version": {
+      "title": "Rules Version",
+      "type": "string"
+     },
+     "stress": {
+      "$ref": "#/components/schemas/ExitAnalysis"
+     }
+    },
+    "required": [
+     "deal_id",
+     "deal_version",
+     "rules_version",
+     "call",
+     "reasons",
+     "metrics",
+     "exit",
+     "stress",
+     "reconciliation"
+    ],
+    "title": "UnderwritingResult",
     "type": "object"
    },
    "ValidationError": {
@@ -390,6 +1806,136 @@
      "type"
     ],
     "title": "ValidationError",
+    "type": "object"
+   },
+   "Valuation": {
+    "properties": {
+     "arv": {
+      "$ref": "#/components/schemas/Sourced_float_"
+     },
+     "as_is_value": {
+      "$ref": "#/components/schemas/Sourced_float_"
+     }
+    },
+    "required": [
+     "as_is_value",
+     "arv"
+    ],
+    "title": "Valuation",
+    "type": "object"
+   },
+   "WorkbookCell": {
+    "properties": {
+     "col": {
+      "title": "Col",
+      "type": "integer"
+     },
+     "error": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Error"
+     },
+     "format": {
+      "default": "General",
+      "title": "Format",
+      "type": "string"
+     },
+     "formula": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Formula"
+     },
+     "ref": {
+      "title": "Ref",
+      "type": "string"
+     },
+     "row": {
+      "title": "Row",
+      "type": "integer"
+     },
+     "value": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "integer"
+       },
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Value"
+     }
+    },
+    "required": [
+     "ref",
+     "row",
+     "col"
+    ],
+    "title": "WorkbookCell",
+    "type": "object"
+   },
+   "WorkbookSheet": {
+    "properties": {
+     "cells": {
+      "items": {
+       "$ref": "#/components/schemas/WorkbookCell"
+      },
+      "title": "Cells",
+      "type": "array"
+     },
+     "cols": {
+      "title": "Cols",
+      "type": "integer"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "rows": {
+      "title": "Rows",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "name",
+     "rows",
+     "cols",
+     "cells"
+    ],
+    "title": "WorkbookSheet",
+    "type": "object"
+   },
+   "WorkbookView": {
+    "properties": {
+     "sheets": {
+      "items": {
+       "$ref": "#/components/schemas/WorkbookSheet"
+      },
+      "title": "Sheets",
+      "type": "array"
+     }
+    },
+    "required": [
+     "sheets"
+    ],
+    "title": "WorkbookView",
     "type": "object"
    }
   }
@@ -699,7 +2245,13 @@
      "200": {
       "content": {
        "application/json": {
-        "schema": {}
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/Event"
+         },
+         "title": "Response Get Events Api Deals  Deal Id  Events Get",
+         "type": "array"
+        }
        }
       },
       "description": "Successful Response"
@@ -765,6 +2317,45 @@
      }
     },
     "summary": "Upload File"
+   }
+  },
+  "/api/deals/{deal_id}/intake-status": {
+   "get": {
+    "operationId": "intake_status_api_deals__deal_id__intake_status_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "deal_id",
+      "required": true,
+      "schema": {
+       "title": "Deal Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/IntakeStatus"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Intake Status"
    }
   },
   "/api/deals/{deal_id}/patches/{patch_id}/cancel": {
@@ -918,6 +2509,45 @@
      }
     },
     "summary": "Deal Stream"
+   }
+  },
+  "/api/deals/{deal_id}/workbook": {
+   "get": {
+    "operationId": "workbook_api_deals__deal_id__workbook_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "deal_id",
+      "required": true,
+      "schema": {
+       "title": "Deal Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/WorkbookView"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Workbook"
    }
   },
   "/api/health": {

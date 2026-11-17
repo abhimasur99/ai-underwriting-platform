@@ -73,3 +73,22 @@ def test_summary_and_flags_carry_the_call_and_reasons(built):
     for reason in result.reasons:
         assert reason.code in summary
     assert "illustrative" in summary.lower()
+
+
+def test_every_formula_evaluates_and_quotes_its_sheet_names(built):
+    """Excel rejects `=Exit & Stress!B17`: a sheet name with a space or symbol must be quoted.
+    Every formula in every sheet must also evaluate without error."""
+    import re
+    wb, _ = built
+    ev = Evaluator(wb)
+    plain = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+    for ws in wb.worksheets:
+        for row in ws.iter_rows():
+            for c in row:
+                if not (isinstance(c.value, str) and c.value.startswith("=")):
+                    continue
+                for m in re.finditer(r"('[^']+'|[^\s=+\-*/(),<>!']+)!", c.value):
+                    name = m.group(1)
+                    assert name.startswith("'") or plain.fullmatch(name), (
+                        f"{ws.title}!{c.coordinate}: unquoted sheet name {name!r} in {c.value}")
+                ev.value(ws.title, c.coordinate)        # raises if it cannot be evaluated

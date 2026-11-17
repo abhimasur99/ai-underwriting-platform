@@ -55,12 +55,21 @@ Header: deal id and name, tabs (Flow, Review), status chip. The chief chat is do
 | `GET /api/deals/{id}/artifacts/{memo.pdf or workbook.xlsx}` | Latest outputs |
 | `POST /api/deals/{id}/chief-chat` | Internal chat; returns reply and optional patch proposal |
 | `POST /api/deals/{id}/patches/{patch_id}/confirm` | Apply a proposed patch |
+| `POST /api/deals/{id}/patches/{patch_id}/cancel` | Cancel a proposed patch |
 | `POST /api/deals/{id}/decision` | Approve, send back, or reject |
+| `GET /api/deals/{id}/intake-status` | Stage, one plain sentence and the checklist, for the external chat. Never ratios, reasons or a call |
+| `GET /api/deals/{id}/workbook` | The workbook's cells as JSON (formula, recalculated value, number format) for the grid viewer |
 
-SSE event payload: `{event_id, deal_id, ts, type, actor, summary, deal_version}`. The frontend types are generated from the OpenAPI spec.
+SSE frames are named by event type; the payload is `{event_id, deal_id, ts, type, actor, summary, deal_version}`. The browser's `EventSource` only delivers named frames to a listener per type, so the hook lists the types from `docs/data-contracts.md`. The frontend types are generated from the OpenAPI spec (`make openapi`); CI fails if the spec or the generated types are stale.
 
 ## 5. Frontend structure
-`src/pages/{Chat,Queue,Workspace}.tsx`, `src/components/{FlowGraph,NodeDrawer,ChiefChat,MemoViewer,WorkbookViewer,ChecklistChips,Timeline}.tsx`, `src/api/` (client, generated types, SSE hook). Tailwind only; no component library.
+Hash routes (no router library): `#/` Queue, `#/chat[/D-0001]` intake, `#/deals/D-0001[/flow|review]` workspace.
+
+`src/pages/{Chat,Queue,Workspace}.tsx`, `src/components/{FlowGraph,NodeDrawer,ChiefChat,MemoViewer,WorkbookViewer,ChecklistChips,Timeline,DecisionPackage,DecisionBar,Chips}.tsx`, `src/lib/{flow,metrics,format,router,samples}.ts`, `src/api/{client,hooks}.ts` plus the generated `schema.d.ts`. Tailwind only; no component library. The Flow state is derived from the event log by pure functions in `lib/flow.ts`; the UI keeps no workflow state of its own.
+
+Demo conveniences (none bypass the checklist or the rules): "Bronx / Queens / Brooklyn facts" chips fill the intake box with the facts a sponsor would type; suggested prompts sit above the chief chat; `make dev` sets `BRIDGE_STEP_DELAY` so each agent visibly works (default 1 s); `make dev-retry` forces the checker to disagree twice to show the retry loop and escalation (decisions D23, D24).
+
+The memo opens in the browser's own PDF viewer (inline). The workbook viewer is read-only; formula cells are marked and show their formula on hover.
 
 ## 6. Priority order if time is short
 Workspace (Flow and Review) first, then Queue, then Chat intake. A seeded queue and a scripted chat are acceptable for the demo.

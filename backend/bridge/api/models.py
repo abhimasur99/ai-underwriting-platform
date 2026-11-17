@@ -1,10 +1,13 @@
 """Request and response models (they become the OpenAPI schema the frontend types come from)."""
 from pydantic import BaseModel
 
+from bridge.core.completeness import ChecklistStatus
+from bridge.core.schema import CheckReport, Deal, Patch, UnderwritingResult
+
 
 class CreateDealResponse(BaseModel):
     deal_id: str
-    checklist: dict
+    checklist: ChecklistStatus
 
 
 class ChatRequest(BaseModel):
@@ -14,13 +17,20 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     reply: str
-    checklist: dict
+    checklist: ChecklistStatus
 
 
 class FileResponse_(BaseModel):
     reply: str
-    checklist: dict
+    checklist: ChecklistStatus
     submitted: bool = False
+
+
+class IntakeStatus(BaseModel):
+    """What the external chat may show: a stage and a plain sentence, never ratios or a call."""
+    stage: str
+    message: str
+    checklist: ChecklistStatus
 
 
 class QueueRow(BaseModel):
@@ -45,7 +55,7 @@ class ChiefChatRequest(BaseModel):
 class ChiefChatResponse(BaseModel):
     reply: str
     intent: str
-    patch: dict | None = None
+    patch: Patch | None = None
 
 
 class DecisionRequest(BaseModel):
@@ -57,12 +67,41 @@ class StateResponse(BaseModel):
     state: str
 
 
+class FileRow(BaseModel):
+    file_id: str
+    deal_id: str
+    filename: str
+    label: str | None = None
+    size: int
+
+
 class DealDetail(BaseModel):
     status: QueueRow
-    deal: dict | None
-    result: dict | None
-    check: dict | None
+    deal: Deal | None
+    result: UnderwritingResult | None
+    check: CheckReport | None
     versions: list[int]
-    files: list[dict]
-    checklist: dict
-    pending_patches: list[dict]
+    files: list[FileRow]
+    checklist: ChecklistStatus
+    pending_patches: list[Patch]
+
+
+class WorkbookCell(BaseModel):
+    ref: str
+    row: int
+    col: int
+    value: float | int | str | None = None
+    formula: str | None = None
+    format: str = "General"
+    error: str | None = None
+
+
+class WorkbookSheet(BaseModel):
+    name: str
+    rows: int
+    cols: int
+    cells: list[WorkbookCell]
+
+
+class WorkbookView(BaseModel):
+    sheets: list[WorkbookSheet]

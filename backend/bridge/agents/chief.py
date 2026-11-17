@@ -40,8 +40,9 @@ class DecisionError(RuntimeError):
 class Chief:
     def __init__(self, store: Store, runner: AgentRunner, outputs_dir: Path, uploads_dir: Path,
                  rules: RulesConfig | None = None, faults: FaultPlan | None = None,
-                 max_retries: int = MAX_RETRIES):
+                 max_retries: int = MAX_RETRIES, pace: float = 0.0):
         self.store, self.runner = store, runner
+        self.pace = pace          # demo pacing only: how long each agent visibly "works"
         self.outputs_dir, self.uploads_dir = Path(outputs_dir), Path(uploads_dir)
         self.rules = rules or load_rules()
         self.faults, self.max_retries = faults, max_retries
@@ -73,6 +74,8 @@ class Chief:
                     inputs_ref=inputs_ref, ts=now())
         rec.event("chief", "handoff.sent", f"chief -> {to}: {task}",
                   h.model_dump(by_alias=True))
+        if self.pace:
+            time.sleep(self.pace)
         return h, time.monotonic()
 
     def _returned(self, rec: Recorder, h: Handoff, started: float, status: str = "ok",

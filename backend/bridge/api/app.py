@@ -17,6 +17,8 @@ from bridge.agents.underwriter import FaultPlan
 from bridge.api import models as m
 from bridge.api.sse import event_stream
 from bridge.core import completeness
+from bridge.core.builders.workbook_view import workbook_view
+from bridge.core.schema import Event
 from bridge.settings import Settings, get_settings
 from bridge.store import projections
 from bridge.store.db import Store
@@ -31,7 +33,11 @@ def create_app(settings: Settings | None = None, runner: AgentRunner | None = No
     settings = settings or get_settings()
     runner = runner or _default_runner(settings)
     store = Store(settings.database_path)
-    chief = Chief(store, runner, settings.outputs_dir, settings.uploads_dir, faults=faults)
+    if faults is None and settings.force_mismatch:
+        faults = FaultPlan("ltc", 0.0078, frozenset({1} if settings.force_mismatch == "once"
+                                                    else {1, 2, 3}))
+    chief = Chief(store, runner, settings.outputs_dir, settings.uploads_dir, faults=faults,
+                  pace=settings.step_delay)
     intake, chat = IntakeAgent(chief, runner), ChiefChat(chief, runner)
     app = FastAPI(title="Bridge Loan Platform (sample data only)",
                   description="Screening-layer demo. Made-up data; illustrative thresholds.")
@@ -92,10 +98,10 @@ def create_app(settings: Settings | None = None, runner: AgentRunner | None = No
             "pending_patches": [p.model_dump() for p in store.patches(deal_id, status="proposed")],
         }
 
-    @app.get("/api/deals/{deal_id}/events")
+    @app.get("/api/deals/{deal_id}/events", response_model=list[Event])
     def get_events(deal_id: str, after: int = 0):
         need(deal_id)
-        return [e.model_dump() for e in store.events(deal_id, after)]
+        return store.events(deal_id, after)
 
     @app.get("/api/deals/{deal_id}/stream")
     async def deal_stream(deal_id: str, request: Request, after: int = 0, once: bool = False):
@@ -114,6 +120,24 @@ def create_app(settings: Settings | None = None, runner: AgentRunner | None = No
         return StreamingResponse(gen, media_type="text/event-stream",
                                  headers={"Cache-Control": "no-cache"})
 
+    @app.get("/api/deals/{deal_id}/intake-status", response_model=m.IntakeStatus)
+    def intake_status(deal_id: str):
+        need(deal_id)
+        st = projections.status(store, deal_id)
+        labels = [f["label"] for f in store.files(deal_id) if f["label"]]
+        return {"stage": st.stage, "message": intake.status_message(deal_id),
+                "checklist": completeness.status(labels, store.facts(deal_id))}
+
+    @app.get("/api/deals/{deal_id}/workbook", response_model=m.WorkbookView)
+    def workbook(deal_id: str):
+        need(deal_id)
+        deal = store.get_deal(deal_id)
+        row = store.latest_result(deal_id, deal.version) if deal else None
+        path = Path(row["result"]["artifacts"].get("workbook", "")) if row else None
+        if not path or not path.exists():
+            raise HTTPException(404, "not generated yet")
+        return workbook_view(path)
+
     @app.get("/api/deals/{deal_id}/artifacts/{name}")
     def artifact(deal_id: str, name: str):
         need(deal_id)
@@ -125,7 +149,10 @@ def create_app(settings: Settings | None = None, runner: AgentRunner | None = No
         path = Path(row["result"]["artifacts"].get(key, "")) if row else None
         if not path or not path.exists():
             raise HTTPException(404, "not generated yet")
-        return FileResponse(path, media_type=media, filename=name)
+        # the memo opens inline (the UI shows it in a viewer); the workbook downloads
+        return FileResponse(path, media_type=media, filename=name,
+                            content_disposition_type="inline" if name.endswith(".pdf")
+                            else "attachment")
 
     # ---- internal chat, patches, decision
     @app.post("/api/deals/{deal_id}/chief-chat", response_model=m.ChiefChatResponse)

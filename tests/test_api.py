@@ -181,3 +181,45 @@ def test_openapi_lists_every_route_from_the_spec(client):
               "/api/deals/{deal_id}/artifacts/{name}", "/api/deals/{deal_id}/chief-chat",
               "/api/deals/{deal_id}/patches/{patch_id}/confirm", "/api/deals/{deal_id}/decision"]:
         assert p in paths, p
+
+
+def test_workbook_route_returns_cells_with_formulas_and_values(client):
+    deal_id = submitted_deal(client)
+    wb = client.get(f"/api/deals/{deal_id}/workbook").json()
+    names = [s["name"] for s in wb["sheets"]]
+    assert {"Summary", "Inputs", "Metrics", "Exit & Stress", "Flags"} <= set(names)
+    metrics = next(s for s in wb["sheets"] if s["name"] == "Metrics")
+    formulas = [c for c in metrics["cells"] if c["formula"]]
+    assert formulas and all(c["value"] is not None and c["error"] is None for c in formulas)
+    ltc = next(c for c in formulas if c["ref"] == "B3")
+    assert ltc["value"] == pytest.approx(0.7065217391)
+
+
+def test_workbook_route_before_underwriting_is_404(client):
+    deal_id = client.post("/api/deals").json()["deal_id"]
+    assert client.get(f"/api/deals/{deal_id}/workbook").status_code == 404
+
+
+def test_intake_status_is_plain_words_only(client):
+    deal_id = submitted_deal(client)
+    out = client.get(f"/api/deals/{deal_id}/intake-status").json()
+    assert out["message"] == "Under review." or "review" in out["message"].lower()
+    text = json.dumps(out)
+    for word in ("ltc", "dscr", "screen", "watch", "decline"):
+        assert word not in text.lower().replace("checklist", "")
+
+
+def test_pacing_and_forced_mismatch_come_from_settings(tmp_path, monkeypatch):
+    monkeypatch.setenv("BRIDGE_STEP_DELAY", "0.25")
+    monkeypatch.setenv("BRIDGE_FORCE_MISMATCH", "persist")
+    from bridge.settings import get_settings
+    s = get_settings()
+    assert s.step_delay == 0.25 and s.force_mismatch == "persist"
+
+
+def test_memo_opens_inline_and_workbook_downloads(client):
+    deal_id = submitted_deal(client)
+    memo = client.get(f"/api/deals/{deal_id}/artifacts/memo.pdf")
+    assert memo.headers["content-disposition"].startswith("inline")
+    book = client.get(f"/api/deals/{deal_id}/artifacts/workbook.xlsx")
+    assert book.headers["content-disposition"].startswith("attachment")
