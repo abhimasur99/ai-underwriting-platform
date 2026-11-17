@@ -9,7 +9,7 @@ Work one sprint at a time. Stop at done-when and show the result before starting
 | 0 Setup, 1 Core, 2 Agents, 3 UI, 3b Restyle and queue housekeeping | Done, tagged (`sprint-0` to `sprint-3b`) |
 | 3c Files and deals | Done, tagged `sprint-3c` |
 | 3d Deal page rebuild | Done, tagged `sprint-3d` |
-| 3e Intake and chat | Built, awaiting review |
+| 3e Intake and chat | Done, tagged `sprint-3e` |
 | 3f What-ifs and sizing | Planned |
 | 3g Draft broker reply | Planned |
 | 3h Underwriter case (assumptions) | Optional: decide after 3g |
