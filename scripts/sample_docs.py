@@ -10,7 +10,7 @@ from pathlib import Path
 
 from docx import Document
 from openpyxl import Workbook
-from reportlab.lib.pagesizes import letter
+from reportlab.lib.pagesizes import landscape, letter
 from reportlab.lib.utils import simpleSplit
 from reportlab.pdfgen import canvas
 
@@ -164,3 +164,54 @@ def write_xlsx(path: Path, header: list, rows: list, sheet: str = "Sheet1") -> N
     wb.properties.created = wb.properties.modified = FIXED_TIME
     wb.save(str(path))
     freeze_zip(path)
+
+
+# ---------------------------------------------------------------- PDF tables
+def _cell_text(value) -> str:
+    if value is None or value == "":
+        return ""
+    if isinstance(value, float) and value.is_integer():
+        value = int(value)
+    if isinstance(value, int) and abs(value) >= 1000:
+        return f"{value:,}"
+    return str(value)
+
+
+def table_to_pdf(header: list, rows: list, path: Path, title: str, size: float = 8) -> None:
+    """A table as a printed report would show it: landscape, a title, a header row repeated on
+    every page, a page footer, and empty cells simply left blank (not drawn)."""
+    page_w, page_h = landscape(letter)
+    left, right, top, bottom = 36, 36, page_h - 44, 44
+    grid = [[_cell_text(c) for c in header]] + [[_cell_text(c) for c in row] for row in rows]
+    natural = [max(len(r[i]) for r in grid) * size * 0.55 + 14 for i in range(len(header))]
+    scale = min(1.0, (page_w - left - right) / sum(natural))
+    xs = [left + sum(natural[:i]) * scale for i in range(len(header))]
+    line_h = size + 5
+    per_page = int((top - bottom - 30) // line_h) - 1
+    pages = [grid[1:][i:i + per_page] for i in range(0, max(len(rows), 1), per_page)]
+
+    c = canvas.Canvas(str(path), pagesize=(page_w, page_h), invariant=1, pageCompression=0)
+    c.setTitle(title)
+    c.setAuthor("Sample data (fictional)")
+    c.setCreator("Bridge Loan Platform sample generator")
+    for number, body in enumerate(pages, start=1):
+        y = top
+        c.setFont("Helvetica-Bold", size + 4)
+        c.drawString(left, y, title)
+        y -= 26
+        c.setFont("Helvetica-Bold", size)
+        for x, cell in zip(xs, grid[0], strict=True):
+            c.drawString(x, y, cell)
+        c.setLineWidth(0.5)
+        c.line(left, y - 3, page_w - right, y - 3)
+        y -= line_h
+        c.setFont("Helvetica", size)
+        for row in body:
+            for x, cell in zip(xs, row, strict=True):
+                if cell:
+                    c.drawString(x, y, cell)
+            y -= line_h
+        c.setFont("Helvetica", size - 1)
+        c.drawString(page_w / 2 - 30, 24, f"Page {number} of {len(pages)}")
+        c.showPage()
+    c.save()

@@ -61,7 +61,7 @@ def read_document_text(path: str | Path) -> str:
 
 
 # ---------------------------------------------------------------- PDF
-def _chunks(path: Path) -> Iterator[tuple[int, float, float, float, str]]:
+def pdf_chunks(path: Path) -> Iterator[tuple[int, float, float, float, str]]:
     """(page, x, y, font_size, text) for every text chunk, in page coordinates."""
     reader = PdfReader(str(path))
     if reader.is_encrypted:
@@ -81,7 +81,7 @@ def _chunks(path: Path) -> Iterator[tuple[int, float, float, float, str]]:
 
 
 def _pdf_to_markdown(path: Path) -> str:
-    chunks = list(_chunks(path))
+    chunks = list(pdf_chunks(path))
     if not chunks:
         raise UnreadableDocument(f"{path.name} has no text layer (a scan? OCR is not supported)")
     # group chunks into lines: same page, y within 1.5 points

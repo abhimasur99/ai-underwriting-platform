@@ -104,6 +104,7 @@ DEALS = [
 #   A  markdown summary and contract, CSV tables (the original three)
 #   B  PDF summary and contract, XLSX tables
 #   C  PDF summary, Word contract, CSV rent roll, XLSX T-12 and budget
+#   D  everything as PDF, tables included (printed reports)
 # ---------------------------------------------------------------------------------------------
 RENO_SHARES = [("Unit interior renovations", 0.42), ("Kitchens and baths", 0.16),
                ("Roof and facade", 0.13), ("Boiler and heating", 0.08),
@@ -211,7 +212,7 @@ NEW_DEALS = [
        plan="Complete unit renovations, lease up the vacant units at market, refinance into a "
             "bank take-out.",
        closing_date="2027-01-28", deposit=460000, seller="Sample Bank REO Trust (fictional)",
-       expected_call="watch", kit="B",
+       expected_call="watch", kit="D",
        base={"studio": (450, 1250), "1br": (600, 1500), "2br": (820, 1800)},
        story="Only 17 of 30 units are occupied. The call is Watch because leverage is high "
              "(LTC and LTV just above 75%); there is no occupancy rule, so the weak in-place "

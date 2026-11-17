@@ -178,3 +178,21 @@ def test_source_trace_flags_a_missing_document(tmp_path):
     deal = parse_deal_dir(d)
     Path(d / "purchase_contract.md").unlink()
     assert any("purchase_price" in p for p in trace.source_trace(deal, d))
+
+
+def test_the_checkers_own_pdf_table_reader_agrees_on_a_deal_whose_tables_are_pdfs(tmp_path):
+    import csv
+    import shutil
+
+    from bridge.core.independent.parse import independent_parse
+
+    from scripts.sample_docs import table_to_pdf
+    src = DEALS_DIR / "queens_mixed_use"
+    folder = tmp_path / "deal"
+    shutil.copytree(src, folder, ignore=shutil.ignore_patterns("cached", "expected.json"))
+    for stem in ("rent_roll", "t12", "renovation_budget"):
+        with (folder / f"{stem}.csv").open(newline="") as fh:
+            grid = list(csv.reader(fh))
+        (folder / f"{stem}.csv").unlink()
+        table_to_pdf(grid[0], grid[1:], folder / f"{stem}.pdf", title=f"{stem} sample")
+    assert independent_parse(folder) == independent_parse(src)

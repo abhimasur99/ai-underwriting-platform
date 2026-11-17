@@ -21,6 +21,6 @@ Expected reason codes: `LTC_WATCH`, `LTV_AS_IS_WATCH`.
 Files:
 - `deal_summary.pdf`
 - `purchase_contract.pdf`
-- `renovation_budget.xlsx`
-- `rent_roll.xlsx`
-- `t12.xlsx`
+- `renovation_budget.pdf`
+- `rent_roll.pdf`
+- `t12.pdf`

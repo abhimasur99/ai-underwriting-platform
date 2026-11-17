@@ -2,9 +2,9 @@
 required_documents:
   - {type: deal_summary,       label: "Deal summary and pro forma", accepted: [md, txt, pdf, docx]}
   - {type: purchase_contract,  label: "Purchase contract",          accepted: [md, txt, pdf, docx]}
-  - {type: rent_roll,          label: "Rent roll",                  accepted: [csv, xlsx]}
-  - {type: t12,                label: "T-12 operating statement",   accepted: [csv, xlsx]}
-  - {type: renovation_budget,  label: "Renovation budget",          accepted: [csv, xlsx]}
+  - {type: rent_roll,          label: "Rent roll",                  accepted: [csv, xlsx, pdf]}
+  - {type: t12,                label: "T-12 operating statement",   accepted: [csv, xlsx, pdf]}
+  - {type: renovation_budget,  label: "Renovation budget",          accepted: [csv, xlsx, pdf]}
 
 optional_documents: [sponsor_materials, appraisal, photos, insurance]
 
@@ -21,8 +21,8 @@ upload_limits:
   max_file_mb: 25
   allowed_extensions: [csv, xlsx, pdf, docx, md, txt, jpg, png]
 
-# Cheap deterministic classification at upload time. Only if both hints fail does an internal model
-# pick a label from the fixed enum (it never returns free text to the external chat).
+# Cheap deterministic classification at upload time (filename, then columns, then the document's first
+# lines). If every hint fails, or two disagree, the chat asks the person to confirm the type.
 classification:
   filename_hints:
     rent_roll: [rent_roll, rentroll, rent-roll]
@@ -34,6 +34,9 @@ classification:
   content_hints:
     deal_summary: ["deal summary", "sources and uses", "loan request"]
     purchase_contract: ["contract of sale", "purchase and sale", "purchase contract"]
+    rent_roll: ["rent roll", "tenant roster"]
+    t12: ["t-12", "t12", "trailing 12", "trailing twelve", "operating statement"]
+    renovation_budget: ["renovation budget", "construction budget", "rehab budget", "capex budget"]
   header_hints:
     rent_roll: [unit, tenant, lease_start, monthly_rent]
     t12: [line_item, category, total]

@@ -1,0 +1,293 @@
+%PDF-1.3
+%“Œ‹ž ReportLab Generated PDF document (opensource)
+1 0 obj
+<<
+/F1 2 0 R /F2 3 0 R
+>>
+endobj
+2 0 obj
+<<
+/BaseFont /Helvetica /Encoding /WinAnsiEncoding /Name /F1 /Subtype /Type1 /Type /Font
+>>
+endobj
+3 0 obj
+<<
+/BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding /Name /F2 /Subtype /Type1 /Type /Font
+>>
+endobj
+4 0 obj
+<<
+/Contents 8 0 R /MediaBox [ 0 0 792 612 ] /Parent 7 0 R /Resources <<
+/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>> /Rotate 0 /Trans <<
+
+>> 
+  /Type /Page
+>>
+endobj
+5 0 obj
+<<
+/PageMode /UseNone /Pages 7 0 R /Type /Catalog
+>>
+endobj
+6 0 obj
+<<
+/Author (Sample data \(fictional\)) /CreationDate (D:20000101000000+00'00') /Creator (Bridge Loan Platform sample generator) /Keywords () /ModDate (D:20000101000000+00'00') /Producer (ReportLab PDF Library - \(opensource\)) 
+  /Subject (unspecified) /Title (Rent roll: Yonkers multifamily, 30 units \(lease-up\)) /Trapped /False
+>>
+endobj
+7 0 obj
+<<
+/Count 1 /Kids [ 4 0 R ] /Type /Pages
+>>
+endobj
+8 0 obj
+<<
+/Length 8795
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+BT /F2 12 Tf 14.4 TL ET
+BT 1 0 0 1 36 568 Tm (Rent roll: Yonkers multifamily, 30 units \(lease-up\)) Tj T* ET
+BT /F2 8 Tf 9.6 TL ET
+BT 1 0 0 1 36 542 Tm (unit) Tj T* ET
+BT 1 0 0 1 67.6 542 Tm (unit_type) Tj T* ET
+BT 1 0 0 1 121.2 542 Tm (sqft) Tj T* ET
+BT 1 0 0 1 152.8 542 Tm (status) Tj T* ET
+BT 1 0 0 1 202 542 Tm (tenant) Tj T* ET
+BT 1 0 0 1 260 542 Tm (lease_start) Tj T* ET
+BT 1 0 0 1 322.4 542 Tm (lease_end) Tj T* ET
+BT 1 0 0 1 380.4 542 Tm (monthly_rent) Tj T* ET
+.5 w
+n 36 539 m 756 539 l S
+BT /F1 8 Tf 9.6 TL ET
+BT 1 0 0 1 36 529 Tm (101) Tj T* ET
+BT 1 0 0 1 67.6 529 Tm (studio) Tj T* ET
+BT 1 0 0 1 121.2 529 Tm (450) Tj T* ET
+BT 1 0 0 1 152.8 529 Tm (occupied) Tj T* ET
+BT 1 0 0 1 202 529 Tm (Tenant 101) Tj T* ET
+BT 1 0 0 1 260 529 Tm (2024-02-01) Tj T* ET
+BT 1 0 0 1 322.4 529 Tm (2025-01-31) Tj T* ET
+BT 1 0 0 1 380.4 529 Tm (1,250) Tj T* ET
+BT 1 0 0 1 36 516 Tm (102) Tj T* ET
+BT 1 0 0 1 67.6 516 Tm (1br) Tj T* ET
+BT 1 0 0 1 121.2 516 Tm (600) Tj T* ET
+BT 1 0 0 1 152.8 516 Tm (occupied) Tj T* ET
+BT 1 0 0 1 202 516 Tm (Tenant 102) Tj T* ET
+BT 1 0 0 1 260 516 Tm (2024-02-18) Tj T* ET
+BT 1 0 0 1 322.4 516 Tm (2025-02-17) Tj T* ET
+BT 1 0 0 1 380.4 516 Tm (1,470) Tj T* ET
+BT 1 0 0 1 36 503 Tm (103) Tj T* ET
+BT 1 0 0 1 67.6 503 Tm (1br) Tj T* ET
+BT 1 0 0 1 121.2 503 Tm (600) Tj T* ET
+BT 1 0 0 1 152.8 503 Tm (vacant) Tj T* ET
+BT 1 0 0 1 380.4 503 Tm (0) Tj T* ET
+BT 1 0 0 1 36 490 Tm (104) Tj T* ET
+BT 1 0 0 1 67.6 490 Tm (2br) Tj T* ET
+BT 1 0 0 1 121.2 490 Tm (820) Tj T* ET
+BT 1 0 0 1 152.8 490 Tm (vacant) Tj T* ET
+BT 1 0 0 1 380.4 490 Tm (0) Tj T* ET
+BT 1 0 0 1 36 477 Tm (105) Tj T* ET
+BT 1 0 0 1 67.6 477 Tm (1br) Tj T* ET
+BT 1 0 0 1 121.2 477 Tm (600) Tj T* ET
+BT 1 0 0 1 152.8 477 Tm (occupied) Tj T* ET
+BT 1 0 0 1 202 477 Tm (Tenant 105) Tj T* ET
+BT 1 0 0 1 260 477 Tm (2024-04-09) Tj T* ET
+BT 1 0 0 1 322.4 477 Tm (2025-04-09) Tj T* ET
+BT 1 0 0 1 380.4 477 Tm (1,530) Tj T* ET
+BT 1 0 0 1 36 464 Tm (106) Tj T* ET
+BT 1 0 0 1 67.6 464 Tm (2br) Tj T* ET
+BT 1 0 0 1 121.2 464 Tm (820) Tj T* ET
+BT 1 0 0 1 152.8 464 Tm (vacant) Tj T* ET
+BT 1 0 0 1 380.4 464 Tm (0) Tj T* ET
+BT 1 0 0 1 36 451 Tm (107) Tj T* ET
+BT 1 0 0 1 67.6 451 Tm (studio) Tj T* ET
+BT 1 0 0 1 121.2 451 Tm (450) Tj T* ET
+BT 1 0 0 1 152.8 451 Tm (occupied) Tj T* ET
+BT 1 0 0 1 202 451 Tm (Tenant 107) Tj T* ET
+BT 1 0 0 1 260 451 Tm (2024-05-13) Tj T* ET
+BT 1 0 0 1 322.4 451 Tm (2025-05-13) Tj T* ET
+BT 1 0 0 1 380.4 451 Tm (1,220) Tj T* ET
+BT 1 0 0 1 36 438 Tm (108) Tj T* ET
+BT 1 0 0 1 67.6 438 Tm (1br) Tj T* ET
+BT 1 0 0 1 121.2 438 Tm (600) Tj T* ET
+BT 1 0 0 1 152.8 438 Tm (vacant) Tj T* ET
+BT 1 0 0 1 380.4 438 Tm (0) Tj T* ET
+BT 1 0 0 1 36 425 Tm (201) Tj T* ET
+BT 1 0 0 1 67.6 425 Tm (studio) Tj T* ET
+BT 1 0 0 1 121.2 425 Tm (450) Tj T* ET
+BT 1 0 0 1 152.8 425 Tm (occupied) Tj T* ET
+BT 1 0 0 1 202 425 Tm (Tenant 201) Tj T* ET
+BT 1 0 0 1 260 425 Tm (2024-03-03) Tj T* ET
+BT 1 0 0 1 322.4 425 Tm (2025-03-03) Tj T* ET
+BT 1 0 0 1 380.4 425 Tm (1,280) Tj T* ET
+BT 1 0 0 1 36 412 Tm (202) Tj T* ET
+BT 1 0 0 1 67.6 412 Tm (1br) Tj T* ET
+BT 1 0 0 1 121.2 412 Tm (600) Tj T* ET
+BT 1 0 0 1 152.8 412 Tm (occupied) Tj T* ET
+BT 1 0 0 1 202 412 Tm (Tenant 202) Tj T* ET
+BT 1 0 0 1 260 412 Tm (2024-03-20) Tj T* ET
+BT 1 0 0 1 322.4 412 Tm (2025-03-20) Tj T* ET
+BT 1 0 0 1 380.4 412 Tm (1,500) Tj T* ET
+BT 1 0 0 1 36 399 Tm (203) Tj T* ET
+BT 1 0 0 1 67.6 399 Tm (1br) Tj T* ET
+BT 1 0 0 1 121.2 399 Tm (600) Tj T* ET
+BT 1 0 0 1 152.8 399 Tm (vacant) Tj T* ET
+BT 1 0 0 1 380.4 399 Tm (0) Tj T* ET
+BT 1 0 0 1 36 386 Tm (204) Tj T* ET
+BT 1 0 0 1 67.6 386 Tm (2br) Tj T* ET
+BT 1 0 0 1 121.2 386 Tm (820) Tj T* ET
+BT 1 0 0 1 152.8 386 Tm (occupied) Tj T* ET
+BT 1 0 0 1 202 386 Tm (Tenant 204) Tj T* ET
+BT 1 0 0 1 260 386 Tm (2024-04-23) Tj T* ET
+BT 1 0 0 1 322.4 386 Tm (2025-04-23) Tj T* ET
+BT 1 0 0 1 380.4 386 Tm (1,815) Tj T* ET
+BT 1 0 0 1 36 373 Tm (205) Tj T* ET
+BT 1 0 0 1 67.6 373 Tm (1br) Tj T* ET
+BT 1 0 0 1 121.2 373 Tm (600) Tj T* ET
+BT 1 0 0 1 152.8 373 Tm (vacant) Tj T* ET
+BT 1 0 0 1 380.4 373 Tm (0) Tj T* ET
+BT 1 0 0 1 36 360 Tm (206) Tj T* ET
+BT 1 0 0 1 67.6 360 Tm (2br) Tj T* ET
+BT 1 0 0 1 121.2 360 Tm (820) Tj T* ET
+BT 1 0 0 1 152.8 360 Tm (vacant) Tj T* ET
+BT 1 0 0 1 380.4 360 Tm (0) Tj T* ET
+BT 1 0 0 1 36 347 Tm (207) Tj T* ET
+BT 1 0 0 1 67.6 347 Tm (studio) Tj T* ET
+BT 1 0 0 1 121.2 347 Tm (450) Tj T* ET
+BT 1 0 0 1 152.8 347 Tm (occupied) Tj T* ET
+BT 1 0 0 1 202 347 Tm (Tenant 207) Tj T* ET
+BT 1 0 0 1 260 347 Tm (2024-06-13) Tj T* ET
+BT 1 0 0 1 322.4 347 Tm (2025-06-13) Tj T* ET
+BT 1 0 0 1 380.4 347 Tm (1,250) Tj T* ET
+BT 1 0 0 1 36 334 Tm (208) Tj T* ET
+BT 1 0 0 1 67.6 334 Tm (1br) Tj T* ET
+BT 1 0 0 1 121.2 334 Tm (600) Tj T* ET
+BT 1 0 0 1 152.8 334 Tm (vacant) Tj T* ET
+BT 1 0 0 1 380.4 334 Tm (0) Tj T* ET
+BT 1 0 0 1 36 321 Tm (301) Tj T* ET
+BT 1 0 0 1 67.6 321 Tm (studio) Tj T* ET
+BT 1 0 0 1 121.2 321 Tm (450) Tj T* ET
+BT 1 0 0 1 152.8 321 Tm (occupied) Tj T* ET
+BT 1 0 0 1 202 321 Tm (Tenant 301) Tj T* ET
+BT 1 0 0 1 260 321 Tm (2024-04-03) Tj T* ET
+BT 1 0 0 1 322.4 321 Tm (2025-04-03) Tj T* ET
+BT 1 0 0 1 380.4 321 Tm (1,235) Tj T* ET
+BT 1 0 0 1 36 308 Tm (302) Tj T* ET
+BT 1 0 0 1 67.6 308 Tm (1br) Tj T* ET
+BT 1 0 0 1 121.2 308 Tm (600) Tj T* ET
+BT 1 0 0 1 152.8 308 Tm (occupied) Tj T* ET
+BT 1 0 0 1 202 308 Tm (Tenant 302) Tj T* ET
+BT 1 0 0 1 260 308 Tm (2024-04-20) Tj T* ET
+BT 1 0 0 1 322.4 308 Tm (2025-04-20) Tj T* ET
+BT 1 0 0 1 380.4 308 Tm (1,530) Tj T* ET
+BT 1 0 0 1 36 295 Tm (303) Tj T* ET
+BT 1 0 0 1 67.6 295 Tm (1br) Tj T* ET
+BT 1 0 0 1 121.2 295 Tm (600) Tj T* ET
+BT 1 0 0 1 152.8 295 Tm (occupied) Tj T* ET
+BT 1 0 0 1 202 295 Tm (Tenant 303) Tj T* ET
+BT 1 0 0 1 260 295 Tm (2024-05-07) Tj T* ET
+BT 1 0 0 1 322.4 295 Tm (2025-05-07) Tj T* ET
+BT 1 0 0 1 380.4 295 Tm (1,500) Tj T* ET
+BT 1 0 0 1 36 282 Tm (304) Tj T* ET
+BT 1 0 0 1 67.6 282 Tm (2br) Tj T* ET
+BT 1 0 0 1 121.2 282 Tm (820) Tj T* ET
+BT 1 0 0 1 152.8 282 Tm (vacant) Tj T* ET
+BT 1 0 0 1 380.4 282 Tm (0) Tj T* ET
+BT 1 0 0 1 36 269 Tm (305) Tj T* ET
+BT 1 0 0 1 67.6 269 Tm (1br) Tj T* ET
+BT 1 0 0 1 121.2 269 Tm (600) Tj T* ET
+BT 1 0 0 1 152.8 269 Tm (vacant) Tj T* ET
+BT 1 0 0 1 380.4 269 Tm (0) Tj T* ET
+BT 1 0 0 1 36 256 Tm (306) Tj T* ET
+BT 1 0 0 1 67.6 256 Tm (2br) Tj T* ET
+BT 1 0 0 1 121.2 256 Tm (820) Tj T* ET
+BT 1 0 0 1 152.8 256 Tm (occupied) Tj T* ET
+BT 1 0 0 1 202 256 Tm (Tenant 306) Tj T* ET
+BT 1 0 0 1 260 256 Tm (2024-06-27) Tj T* ET
+BT 1 0 0 1 322.4 256 Tm (2025-06-27) Tj T* ET
+BT 1 0 0 1 380.4 256 Tm (1,785) Tj T* ET
+BT 1 0 0 1 36 243 Tm (307) Tj T* ET
+BT 1 0 0 1 67.6 243 Tm (studio) Tj T* ET
+BT 1 0 0 1 121.2 243 Tm (450) Tj T* ET
+BT 1 0 0 1 152.8 243 Tm (vacant) Tj T* ET
+BT 1 0 0 1 380.4 243 Tm (0) Tj T* ET
+BT 1 0 0 1 36 230 Tm (401) Tj T* ET
+BT 1 0 0 1 67.6 230 Tm (studio) Tj T* ET
+BT 1 0 0 1 121.2 230 Tm (450) Tj T* ET
+BT 1 0 0 1 152.8 230 Tm (occupied) Tj T* ET
+BT 1 0 0 1 202 230 Tm (Tenant 401) Tj T* ET
+BT 1 0 0 1 260 230 Tm (2024-05-04) Tj T* ET
+BT 1 0 0 1 322.4 230 Tm (2025-05-04) Tj T* ET
+BT 1 0 0 1 380.4 230 Tm (1,265) Tj T* ET
+BT 1 0 0 1 36 217 Tm (402) Tj T* ET
+BT 1 0 0 1 67.6 217 Tm (1br) Tj T* ET
+BT 1 0 0 1 121.2 217 Tm (600) Tj T* ET
+BT 1 0 0 1 152.8 217 Tm (vacant) Tj T* ET
+BT 1 0 0 1 380.4 217 Tm (0) Tj T* ET
+BT 1 0 0 1 36 204 Tm (403) Tj T* ET
+BT 1 0 0 1 67.6 204 Tm (1br) Tj T* ET
+BT 1 0 0 1 121.2 204 Tm (600) Tj T* ET
+BT 1 0 0 1 152.8 204 Tm (occupied) Tj T* ET
+BT 1 0 0 1 202 204 Tm (Tenant 403) Tj T* ET
+BT 1 0 0 1 260 204 Tm (2024-06-07) Tj T* ET
+BT 1 0 0 1 322.4 204 Tm (2025-06-07) Tj T* ET
+BT 1 0 0 1 380.4 204 Tm (1,530) Tj T* ET
+BT 1 0 0 1 36 191 Tm (404) Tj T* ET
+BT 1 0 0 1 67.6 191 Tm (2br) Tj T* ET
+BT 1 0 0 1 121.2 191 Tm (820) Tj T* ET
+BT 1 0 0 1 152.8 191 Tm (vacant) Tj T* ET
+BT 1 0 0 1 380.4 191 Tm (0) Tj T* ET
+BT 1 0 0 1 36 178 Tm (405) Tj T* ET
+BT 1 0 0 1 67.6 178 Tm (1br) Tj T* ET
+BT 1 0 0 1 121.2 178 Tm (600) Tj T* ET
+BT 1 0 0 1 152.8 178 Tm (occupied) Tj T* ET
+BT 1 0 0 1 202 178 Tm (Tenant 405) Tj T* ET
+BT 1 0 0 1 260 178 Tm (2024-07-11) Tj T* ET
+BT 1 0 0 1 322.4 178 Tm (2025-07-11) Tj T* ET
+BT 1 0 0 1 380.4 178 Tm (1,470) Tj T* ET
+BT 1 0 0 1 36 165 Tm (406) Tj T* ET
+BT 1 0 0 1 67.6 165 Tm (2br) Tj T* ET
+BT 1 0 0 1 121.2 165 Tm (820) Tj T* ET
+BT 1 0 0 1 152.8 165 Tm (occupied) Tj T* ET
+BT 1 0 0 1 202 165 Tm (Tenant 406) Tj T* ET
+BT 1 0 0 1 260 165 Tm (2024-07-28) Tj T* ET
+BT 1 0 0 1 322.4 165 Tm (2025-07-28) Tj T* ET
+BT 1 0 0 1 380.4 165 Tm (1,815) Tj T* ET
+BT 1 0 0 1 36 152 Tm (407) Tj T* ET
+BT 1 0 0 1 67.6 152 Tm (studio) Tj T* ET
+BT 1 0 0 1 121.2 152 Tm (450) Tj T* ET
+BT 1 0 0 1 152.8 152 Tm (occupied) Tj T* ET
+BT 1 0 0 1 202 152 Tm (Tenant 407) Tj T* ET
+BT 1 0 0 1 260 152 Tm (2024-08-14) Tj T* ET
+BT 1 0 0 1 322.4 152 Tm (2025-08-14) Tj T* ET
+BT 1 0 0 1 380.4 152 Tm (1,235) Tj T* ET
+BT /F1 7 Tf 8.4 TL ET
+BT 1 0 0 1 366 24 Tm (Page 1 of 1) Tj T* ET
+ 
+endstream
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000061 00000 n 
+0000000102 00000 n 
+0000000209 00000 n 
+0000000321 00000 n 
+0000000514 00000 n 
+0000000582 00000 n 
+0000000932 00000 n 
+0000000991 00000 n 
+trailer
+<<
+/ID 
+[<cc4fe4945483de7cf9fd981ca6360353><cc4fe4945483de7cf9fd981ca6360353>]
+% ReportLab generated PDF document -- digest (opensource)
+
+/Info 6 0 R
+/Root 5 0 R
+/Size 9
+>>
+startxref
+9837
+%%EOF

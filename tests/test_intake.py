@@ -183,10 +183,41 @@ def test_an_unreadable_document_is_not_guessed(tmp_path):
     assert c.status == "unknown"
 
 
-def test_tables_are_accepted_as_csv_or_xlsx_only(agent):
+def test_a_pdf_table_is_accepted_and_classified_by_its_title(agent, tmp_path):
+    from scripts.sample_docs import table_to_pdf
     a, deal_id = agent
-    out = a.handle(deal_id, files=[IncomingFile("rent_roll.pdf", b"%PDF-1.4")])
-    assert "csv, xlsx" in out["reply"] and out["checklist"]["received"] == []
+    import csv
+    with (SRC / "rent_roll.csv").open(newline="") as fh:
+        grid = list(csv.reader(fh))
+    path = tmp_path / "x.pdf"
+    table_to_pdf(grid[0], grid[1:], path, title="Rent roll: Sample property")
+    c = classify("export_2026.pdf", path.read_bytes())
+    assert (c.label, c.status) == ("rent_roll", "ok")
+    out = a.handle(deal_id, files=[IncomingFile("export_2026.pdf", path.read_bytes())])
+    assert "Got your rent roll" in out["reply"] and out["checklist"]["received"] == ["rent_roll"]
+
+
+def test_a_pdf_with_no_table_is_refused_at_upload_with_a_helpful_reply(agent, tmp_path):
+    from reportlab.pdfgen import canvas
+    a, deal_id = agent
+    path = tmp_path / "rent_roll.pdf"
+    c = canvas.Canvas(str(path))
+    c.drawString(72, 700, "Our rent roll is attached in the email body.")
+    c.save()
+    out = a.handle(deal_id, files=[IncomingFile("rent_roll.pdf", path.read_bytes())])
+    assert "couldn't find a table" in out["reply"] and "CSV or Excel" in out["reply"]
+    assert out["checklist"]["received"] == []
+
+
+def test_a_scanned_pdf_is_refused_at_upload_with_a_helpful_reply(agent, tmp_path):
+    from reportlab.pdfgen import canvas
+    a, deal_id = agent
+    path = tmp_path / "deal_summary.pdf"
+    c = canvas.Canvas(str(path))
+    c.rect(50, 50, 100, 100)
+    c.save()
+    out = a.handle(deal_id, files=[IncomingFile("deal_summary.pdf", path.read_bytes())])
+    assert "can't read text" in out["reply"] and out["checklist"]["received"] == []
 
 
 def test_uploading_a_replacement_in_another_format_leaves_one_file(agent, tmp_path):

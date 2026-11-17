@@ -653,7 +653,7 @@
    "value": 296160.0,
    "source": {
     "kind": "derived",
-    "doc": "rent_roll.xlsx",
+    "doc": "rent_roll.pdf",
     "locator": "rows 2-31",
     "quote": null,
     "formula": "12 * sum(monthly_rent where status == occupied)",
@@ -859,7 +859,7 @@
    "value": 290310.0,
    "source": {
     "kind": "derived",
-    "doc": "t12.xlsx",
+    "doc": "t12.pdf",
     "locator": "rows 2-11",
     "quote": null,
     "formula": "total of the Gross rental income line",
@@ -871,7 +871,7 @@
    "value": 296310.0,
    "source": {
     "kind": "derived",
-    "doc": "t12.xlsx",
+    "doc": "t12.pdf",
     "locator": "rows 2-11",
     "quote": null,
     "formula": "sum of income line totals",
@@ -883,7 +883,7 @@
    "value": 128000.0,
    "source": {
     "kind": "derived",
-    "doc": "t12.xlsx",
+    "doc": "t12.pdf",
     "locator": "rows 2-11",
     "quote": null,
     "formula": "sum of expense line totals",
@@ -895,7 +895,7 @@
    "value": 168310.0,
    "source": {
     "kind": "derived",
-    "doc": "t12.xlsx",
+    "doc": "t12.pdf",
     "locator": "rows 2-11",
     "quote": null,
     "formula": "total income - total expenses",

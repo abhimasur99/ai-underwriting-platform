@@ -5,6 +5,7 @@ says anything about underwriting. Reply text is composed here from checklist sta
 runner's job is limited to reading the person's message (facts, and whether they are asking for a
 decision). Tools: classify_file, record_fact (allowlisted keys), submit_deal (only when ready).
 """
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -15,6 +16,9 @@ from bridge.agents.recorder import Recorder
 from bridge.agents.runner import AgentRunner
 from bridge.core.completeness import DEFAULT_CHECKLIST_PATH
 from bridge.core.parsers.classify import classify
+from bridge.core.parsers.documents import read_document_text
+from bridge.core.parsers.errors import ParseError
+from bridge.core.parsers.pdftable import pdf_grid
 from bridge.store import projections
 
 HUMAN = {"deal_summary": "deal summary", "purchase_contract": "purchase contract",
@@ -31,6 +35,7 @@ FACT_HUMAN = {"property_address": "address", "asset_type": "asset type", "unit_c
               "renovation_budget": "renovation budget", "sponsor_name": "sponsor name"}
 REFUSAL = ("I can't discuss underwriting results, rates, or approval odds. The team will follow "
            "up after review.")
+TABLE_LABELS = {"rent_roll", "t12", "renovation_budget"}
 SAMPLE_REMINDER = "This is a sample-data prototype, so please use sample data only."
 
 
@@ -111,9 +116,34 @@ class IntakeAgent:
         if ext not in self.accepted[label]:
             ok = ", ".join(sorted(self.accepted[label]))
             return f"For the {HUMAN[label]} I can accept: {ok}."
+        problem = self._unreadable(f, label, ext)
+        if problem:
+            return problem
         replaced = any(x["label"] == label for x in existing)
         self.chief.register_file(deal_id, f.filename, f.content, label)
         return f"{'Updated' if replaced else 'Got'} your {HUMAN[label]}."
+
+    @staticmethod
+    def _unreadable(f: IncomingFile, label: str, ext: str) -> str | None:
+        """PDF and Word files are read right away, so a problem is reported in the chat now
+        instead of as a stopped deal later. Returns the reply to give, or None if it reads."""
+        if ext not in ("pdf", "docx"):
+            return None
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / f"doc.{ext}"
+            path.write_bytes(f.content)
+            try:
+                if label in TABLE_LABELS:
+                    pdf_grid(path)          # tables are only accepted as pdf here
+                else:
+                    read_document_text(path)
+            except ParseError:
+                if label in TABLE_LABELS:
+                    return (f"I couldn't find a table in {f.filename}. Could you send the "
+                            f"{HUMAN[label]} as a CSV or Excel file?")
+                return (f"I can't read text from {f.filename} (it may be a scan). Could you "
+                        f"send a text PDF or a Word file?")
+        return None
 
     def _next_step(self, checklist: dict) -> str:
         if checklist["ready"]:

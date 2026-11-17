@@ -6,7 +6,7 @@ from pathlib import Path
 
 from openpyxl import load_workbook
 
-from bridge.core.independent.textread import locate, read_text
+from bridge.core.independent.textread import locate, pdf_grid, read_text
 
 
 def _money(text: str) -> float:
@@ -21,7 +21,9 @@ def _cell(c) -> str:
 
 def _grid(path: Path) -> list[dict[str, str]]:
     """Rows of a CSV or XLSX as dicts keyed by lower-cased header."""
-    if path.suffix == ".xlsx":
+    if path.suffix == ".pdf":
+        raw = pdf_grid(path)
+    elif path.suffix == ".xlsx":
         sheet = load_workbook(path, read_only=True, data_only=True).worksheets[0]
         raw = [[_cell(c) for c in r] for r in sheet.iter_rows(values_only=True)]
     else:
@@ -32,7 +34,7 @@ def _grid(path: Path) -> list[dict[str, str]]:
 
 
 def _find(directory: Path, stem: str) -> Path:
-    for ext in ("csv", "xlsx"):
+    for ext in ("csv", "xlsx", "pdf"):
         if (directory / f"{stem}.{ext}").exists():
             return directory / f"{stem}.{ext}"
     raise FileNotFoundError(f"{stem} not found in {directory}")

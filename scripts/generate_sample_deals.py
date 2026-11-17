@@ -24,7 +24,7 @@ MONTHS = ["2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04",
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from deal_specs import BASE_TYPES, DEALS  # noqa: E402
-from sample_docs import markdown_to_docx, markdown_to_pdf, write_xlsx  # noqa: E402
+from sample_docs import markdown_to_docx, markdown_to_pdf, table_to_pdf, write_xlsx  # noqa: E402
 
 # File formats per kit (see deal_specs.py). The original three stay markdown and CSV.
 KITS = {
@@ -34,6 +34,8 @@ KITS = {
           "renovation_budget": "xlsx"},
     "C": {"deal_summary": "pdf", "purchase_contract": "docx", "rent_roll": "csv", "t12": "xlsx",
           "renovation_budget": "xlsx"},
+    "D": {"deal_summary": "pdf", "purchase_contract": "pdf", "rent_roll": "pdf", "t12": "pdf",
+          "renovation_budget": "pdf"},
 }
 SHEETS = {"rent_roll": "Rent roll", "t12": "T-12", "renovation_budget": "Renovation budget"}
 
@@ -78,9 +80,11 @@ def write_csv(path, header, rows):
         w.writerows(rows)
 
 
-def write_table(folder, stem, fmt, header, rows):
+def write_table(folder, stem, fmt, header, rows, name=""):
     if fmt == "csv":
         write_csv(folder / f"{stem}.csv", header, rows)
+    elif fmt == "pdf":
+        table_to_pdf(header, rows, folder / f"{stem}.pdf", f"{SHEETS[stem]}: {name}")
     else:
         write_xlsx(folder / f"{stem}.xlsx", header,
                    [[None if v == "" else v for v in row] for row in rows], SHEETS[stem])
@@ -342,6 +346,9 @@ def main():
         d = dict(spec)
         folder = ROOT / "data" / "deals" / d["slug"]
         folder.mkdir(parents=True, exist_ok=True)
+        for stem in KITS["A"]:                       # a kit change must not leave old formats behind
+            for stale in folder.glob(f"{stem}.*"):
+                stale.unlink()
 
         units = make_units(d)
         occupied = [u for u in units if u[3] == "occupied"]
@@ -352,7 +359,7 @@ def main():
         d["rent_roll_annual"] = rr_monthly * 12
         kit = KITS[d.get("kit", "A")]
         write_table(folder, "rent_roll", kit["rent_roll"],
-                    ["unit", "unit_type", "sqft", "status", "tenant", "lease_start", "lease_end", "monthly_rent"], units)
+                    ["unit", "unit_type", "sqft", "status", "tenant", "lease_start", "lease_end", "monthly_rent"], units, d["name"])
 
         lines = build_t12(d, rr_monthly)
         rows, inc, exp = [], 0, 0
@@ -366,14 +373,14 @@ def main():
                     rental_total = tot
             else:
                 exp += tot
-        write_table(folder, "t12", kit["t12"], ["line_item", "category"] + MONTHS + ["total"], rows)
+        write_table(folder, "t12", kit["t12"], ["line_item", "category"] + MONTHS + ["total"], rows, d["name"])
         d["t12_rental_income"] = rental_total
         d["t12_total_income"] = inc
         d["t12_total_expenses"] = exp
         d["in_place_noi"] = inc - exp
 
         assert sum(a for _, a in d["reno"]) == d["renovation_budget"], d["slug"]
-        write_table(folder, "renovation_budget", kit["renovation_budget"], ["line_item", "amount"], d["reno"])
+        write_table(folder, "renovation_budget", kit["renovation_budget"], ["line_item", "amount"], d["reno"], d["name"])
 
         pf = dict(d["pro_forma"])
         pf["egi"] = pf["gpr"] - pf["gpr"] * pf["vacancy_pct"] + pf["other_income"]
