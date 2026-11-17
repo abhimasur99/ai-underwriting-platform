@@ -76,6 +76,15 @@ class FileRow(BaseModel):
     filename: str
     label: str | None = None
     size: int
+    uploaded_at: str = ""
+
+
+class FileText(BaseModel):
+    file_id: str
+    filename: str
+    label: str | None
+    kind: str                 # "text" or "table"
+    lines: list[str]
 
 
 class DealDetail(BaseModel):

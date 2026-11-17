@@ -18,6 +18,8 @@ from bridge.api import models as m
 from bridge.api.sse import event_stream
 from bridge.core import completeness
 from bridge.core.builders.workbook_view import workbook_view
+from bridge.core.parsers.errors import ParseError
+from bridge.core.parsers.view import document_lines
 from bridge.core.schema import Event
 from bridge.settings import Settings, get_settings
 from bridge.store import projections
@@ -125,10 +127,30 @@ def create_app(settings: Settings | None = None, runner: AgentRunner | None = No
             "result": row["result"] if row else None,
             "check": row["check"] if row else None,
             "versions": store.versions(deal_id),
-            "files": store.files(deal_id),
+            "files": _current_files(deal_id),
             "checklist": completeness.status(labels, store.facts(deal_id)).model_dump(),
             "pending_patches": [p.model_dump() for p in store.patches(deal_id, status="proposed")],
         }
+
+    def _current_files(deal_id: str) -> list[dict]:
+        """One row per document type: the latest upload (an earlier one was replaced)."""
+        latest: dict[str, dict] = {}
+        for row in store.files(deal_id):                # oldest first, so the last one wins
+            latest[row["label"] or row["file_id"]] = row
+        return list(latest.values())
+
+    @app.get("/api/deals/{deal_id}/files/{file_id}/text", response_model=m.FileText)
+    def file_text(deal_id: str, file_id: str):
+        need(deal_id)
+        row = next((f for f in _current_files(deal_id) if f["file_id"] == file_id), None)
+        if row is None or not Path(row["path"]).exists():
+            raise HTTPException(404, "no such file (it may have been replaced)")
+        try:
+            kind, lines = document_lines(Path(row["path"]), row["label"])
+        except ParseError as exc:
+            raise HTTPException(422, str(exc)) from exc
+        return {"file_id": file_id, "filename": row["filename"], "label": row["label"],
+                "kind": kind, "lines": lines}
 
     @app.get("/api/deals/{deal_id}/events", response_model=list[Event])
     def get_events(deal_id: str, after: int = 0):

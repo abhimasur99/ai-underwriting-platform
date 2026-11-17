@@ -146,6 +146,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/deals/{deal_id}/files/{file_id}/text": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** File Text */
+        get: operations["file_text_api_deals__deal_id__files__file_id__text_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/deals/{deal_id}/intake-status": {
         parameters: {
             query?: never;
@@ -526,6 +543,24 @@ export interface components {
             label?: string | null;
             /** Size */
             size: number;
+            /**
+             * Uploaded At
+             * @default
+             */
+            uploaded_at: string;
+        };
+        /** FileText */
+        FileText: {
+            /** File Id */
+            file_id: string;
+            /** Filename */
+            filename: string;
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string | null;
+            /** Lines */
+            lines: string[];
         };
         /** Flag */
         Flag: {
@@ -1352,6 +1387,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FileResponse_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    file_text_api_deals__deal_id__files__file_id__text_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deal_id: string;
+                file_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FileText"];
                 };
             };
             /** @description Validation Error */

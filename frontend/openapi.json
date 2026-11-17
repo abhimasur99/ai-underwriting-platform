@@ -601,6 +601,11 @@
      "size": {
       "title": "Size",
       "type": "integer"
+     },
+     "uploaded_at": {
+      "default": "",
+      "title": "Uploaded At",
+      "type": "string"
      }
     },
     "required": [
@@ -610,6 +615,49 @@
      "size"
     ],
     "title": "FileRow",
+    "type": "object"
+   },
+   "FileText": {
+    "properties": {
+     "file_id": {
+      "title": "File Id",
+      "type": "string"
+     },
+     "filename": {
+      "title": "Filename",
+      "type": "string"
+     },
+     "kind": {
+      "title": "Kind",
+      "type": "string"
+     },
+     "label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Label"
+     },
+     "lines": {
+      "items": {
+       "type": "string"
+      },
+      "title": "Lines",
+      "type": "array"
+     }
+    },
+    "required": [
+     "file_id",
+     "filename",
+     "label",
+     "kind",
+     "lines"
+    ],
+    "title": "FileText",
     "type": "object"
    },
    "Flag": {
@@ -2488,6 +2536,54 @@
      }
     },
     "summary": "Upload File"
+   }
+  },
+  "/api/deals/{deal_id}/files/{file_id}/text": {
+   "get": {
+    "operationId": "file_text_api_deals__deal_id__files__file_id__text_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "deal_id",
+      "required": true,
+      "schema": {
+       "title": "Deal Id",
+       "type": "string"
+      }
+     },
+     {
+      "in": "path",
+      "name": "file_id",
+      "required": true,
+      "schema": {
+       "title": "File Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FileText"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "File Text"
    }
   },
   "/api/deals/{deal_id}/intake-status": {

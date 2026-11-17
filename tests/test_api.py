@@ -299,3 +299,32 @@ def test_the_queue_puts_what_needs_the_reviewer_first(client):
     waiting = client.post("/api/deals").json()["deal_id"]
     ready = submitted_deal(client)
     assert [r["deal_id"] for r in client.get("/api/deals").json()] == [ready, waiting]
+
+
+def test_a_documents_text_matches_the_line_a_source_points_to(client):
+    deal_id = submitted_deal(client)
+    detail = client.get(f"/api/deals/{deal_id}").json()
+    loan = detail["deal"]["loan_request"]["loan_commitment"]["source"]
+    summary = next(f for f in detail["files"] if f["label"] == "deal_summary")
+    out = client.get(f"/api/deals/{deal_id}/files/{summary['file_id']}/text").json()
+    line = int(loan["locator"].removeprefix("line "))
+    assert out["kind"] == "text" and out["filename"] == "deal_summary.md"
+    assert loan["quote"] in out["lines"][line - 1]          # the Files tab can highlight it
+
+
+def test_a_table_is_shown_as_numbered_rows_with_the_header_first(client):
+    deal_id = submitted_deal(client)
+    files = client.get(f"/api/deals/{deal_id}").json()["files"]
+    rent_roll = next(f for f in files if f["label"] == "rent_roll")
+    out = client.get(f"/api/deals/{deal_id}/files/{rent_roll['file_id']}/text").json()
+    assert out["kind"] == "table"
+    assert out["lines"][0].startswith("unit | unit_type | sqft") and "101" in out["lines"][1]
+
+
+def test_an_unknown_file_is_404_and_a_replaced_file_is_listed_once(client):
+    deal_id = submitted_deal(client)
+    assert client.get(f"/api/deals/{deal_id}/files/f-nope/text").status_code == 404
+    again = (SRC / "t12.csv").read_bytes() + b"\n"                # a corrected copy, new size
+    client.post(f"/api/deals/{deal_id}/files", files={"file": ("t12.csv", again)})
+    labels = [f["label"] for f in client.get(f"/api/deals/{deal_id}").json()["files"]]
+    assert labels.count("t12") == 1 and len(labels) == 5
