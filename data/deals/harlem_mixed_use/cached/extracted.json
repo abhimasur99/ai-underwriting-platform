@@ -1,0 +1,772 @@
+{
+ "deal_id": "D-0046",
+ "name": "Harlem mixed-use, 12 residential + 3 retail",
+ "version": 1,
+ "property": {
+  "address": {
+   "value": "512 Sample Avenue, New York, NY 10027",
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 8",
+    "quote": "- Address: 512 Sample Avenue, New York, NY 10027 (fictional)",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "asset_type": {
+   "value": "mixed_use",
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 9",
+    "quote": "- Asset type: mixed_use",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "unit_count": {
+   "value": 15,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 10",
+    "quote": "- Units: 15",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "occupied_units": {
+   "value": 14,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 12",
+    "quote": "- In-place occupancy: 14 of 15 units",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "year_built": {
+   "value": 1925,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 11",
+    "quote": "- Year built: 1925",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  }
+ },
+ "loan_request": {
+  "loan_commitment": {
+   "value": 3700000.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 21",
+    "quote": "- Loan commitment requested: $3,700,000",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "initial_advance": {
+   "value": 3100000.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 22",
+    "quote": "- Initial advance at closing: $3,100,000",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "note_rate": {
+   "value": 0.105,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 25",
+    "quote": "- Note rate: 10.50% interest-only",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "term_months": {
+   "value": 18,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 24",
+    "quote": "- Term: 18 months",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "points": {
+   "value": 2.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 26",
+    "quote": "- Origination: 2.00 points",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  }
+ },
+ "valuation": {
+  "as_is_value": {
+   "value": 4600000.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 45",
+    "quote": "- As-is value (broker opinion): $4,600,000",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "arv": {
+   "value": 7000000.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 46",
+    "quote": "- After-repair value (ARV): $7,000,000, based on stabilized NOI at a 5.99% cap rate",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  }
+ },
+ "purchase": {
+  "purchase_price": {
+   "value": 4600000.0,
+   "source": {
+    "kind": "document",
+    "doc": "purchase_contract.docx",
+    "locator": "line 6",
+    "quote": "- Purchase price: $4,600,000",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "deposit": {
+   "value": 460000.0,
+   "source": {
+    "kind": "document",
+    "doc": "purchase_contract.docx",
+    "locator": "line 7",
+    "quote": "- Deposit: $460,000",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "closing_date": {
+   "value": "2027-01-20",
+   "source": {
+    "kind": "document",
+    "doc": "purchase_contract.docx",
+    "locator": "line 8",
+    "quote": "- Scheduled closing date: 2027-01-20",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  }
+ },
+ "renovation": {
+  "renovation_budget": {
+   "value": 700000.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 40",
+    "quote": "| Renovation budget | $700,000 |",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "line_items": [
+   {
+    "item": "Unit interior renovations",
+    "amount": 294000.0
+   },
+   {
+    "item": "Kitchens and baths",
+    "amount": 112000.0
+   },
+   {
+    "item": "Roof and facade",
+    "amount": 91000.0
+   },
+   {
+    "item": "Boiler and heating",
+    "amount": 56000.0
+   },
+   {
+    "item": "Electrical and plumbing",
+    "amount": 56000.0
+   },
+   {
+    "item": "Common areas",
+    "amount": 35000.0
+   },
+   {
+    "item": "Soft costs (architect, permits)",
+    "amount": 35000.0
+   },
+   {
+    "item": "Contingency",
+    "amount": 21000.0
+   }
+  ]
+ },
+ "sources_uses": {
+  "sources": [
+   {
+    "name": "Senior bridge loan",
+    "amount": 3700000.0
+   },
+   {
+    "name": "Sponsor equity",
+    "amount": 1600000.0
+   }
+  ],
+  "uses": [
+   {
+    "name": "Purchase price",
+    "amount": 4600000.0
+   },
+   {
+    "name": "Renovation budget",
+    "amount": 700000.0
+   }
+  ],
+  "stated_total_sources": {
+   "value": 5300000.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 35",
+    "quote": "| Total sources | $5,300,000 |",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "stated_total_uses": {
+   "value": 5300000.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 41",
+    "quote": "| Total uses | $5,300,000 |",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  }
+ },
+ "pro_forma": {
+  "stabilized_noi": {
+   "value": 419220.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 61",
+    "quote": "| Stabilized NOI | $419,220 |",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "gpr": {
+   "value": 627600.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 56",
+    "quote": "| Gross potential rent | $627,600 |",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "vacancy_pct": {
+   "value": 0.05,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 57",
+    "quote": "| Vacancy and credit loss (5%) | -$31,380 |",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "other_income": {
+   "value": 8000.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 58",
+    "quote": "| Other income | $8,000 |",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  },
+  "opex": {
+   "value": 185000.0,
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 60",
+    "quote": "| Operating expenses | -$185,000 |",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  }
+ },
+ "rent_roll": {
+  "units": [
+   {
+    "unit": "201",
+    "unit_type": "1br",
+    "status": "occupied",
+    "monthly_rent": 2150.0,
+    "sqft": 650.0,
+    "tenant": "Tenant 201",
+    "lease_start": "2024-03-03",
+    "lease_end": "2025-03-03"
+   },
+   {
+    "unit": "202",
+    "unit_type": "2br",
+    "status": "occupied",
+    "monthly_rent": 2650.0,
+    "sqft": 880.0,
+    "tenant": "Tenant 202",
+    "lease_start": "2024-03-20",
+    "lease_end": "2025-03-20"
+   },
+   {
+    "unit": "203",
+    "unit_type": "1br",
+    "status": "occupied",
+    "monthly_rent": 2050.0,
+    "sqft": 650.0,
+    "tenant": "Tenant 203",
+    "lease_start": "2024-04-06",
+    "lease_end": "2025-04-06"
+   },
+   {
+    "unit": "204",
+    "unit_type": "2br",
+    "status": "occupied",
+    "monthly_rent": 2675.0,
+    "sqft": 880.0,
+    "tenant": "Tenant 204",
+    "lease_start": "2024-04-23",
+    "lease_end": "2025-04-23"
+   },
+   {
+    "unit": "301",
+    "unit_type": "1br",
+    "status": "occupied",
+    "monthly_rent": 2075.0,
+    "sqft": 650.0,
+    "tenant": "Tenant 301",
+    "lease_start": "2024-04-03",
+    "lease_end": "2025-04-03"
+   },
+   {
+    "unit": "302",
+    "unit_type": "2br",
+    "status": "occupied",
+    "monthly_rent": 2700.0,
+    "sqft": 880.0,
+    "tenant": "Tenant 302",
+    "lease_start": "2024-04-20",
+    "lease_end": "2025-04-20"
+   },
+   {
+    "unit": "303",
+    "unit_type": "1br",
+    "status": "vacant",
+    "monthly_rent": 0.0,
+    "sqft": 650.0,
+    "tenant": null,
+    "lease_start": null,
+    "lease_end": null
+   },
+   {
+    "unit": "304",
+    "unit_type": "2br",
+    "status": "occupied",
+    "monthly_rent": 2600.0,
+    "sqft": 880.0,
+    "tenant": "Tenant 304",
+    "lease_start": "2024-05-24",
+    "lease_end": "2025-05-24"
+   },
+   {
+    "unit": "401",
+    "unit_type": "1br",
+    "status": "occupied",
+    "monthly_rent": 2125.0,
+    "sqft": 650.0,
+    "tenant": "Tenant 401",
+    "lease_start": "2024-05-04",
+    "lease_end": "2025-05-04"
+   },
+   {
+    "unit": "402",
+    "unit_type": "2br",
+    "status": "occupied",
+    "monthly_rent": 2625.0,
+    "sqft": 880.0,
+    "tenant": "Tenant 402",
+    "lease_start": "2024-05-21",
+    "lease_end": "2025-05-21"
+   },
+   {
+    "unit": "403",
+    "unit_type": "1br",
+    "status": "occupied",
+    "monthly_rent": 2150.0,
+    "sqft": 650.0,
+    "tenant": "Tenant 403",
+    "lease_start": "2024-06-07",
+    "lease_end": "2025-06-07"
+   },
+   {
+    "unit": "404",
+    "unit_type": "2br",
+    "status": "occupied",
+    "monthly_rent": 2650.0,
+    "sqft": 880.0,
+    "tenant": "Tenant 404",
+    "lease_start": "2024-06-24",
+    "lease_end": "2025-06-24"
+   },
+   {
+    "unit": "R1",
+    "unit_type": "retail",
+    "status": "occupied",
+    "monthly_rent": 7500.0,
+    "sqft": 1500.0,
+    "tenant": "Tenant R1",
+    "lease_start": "2023-09-01",
+    "lease_end": "2028-08-30"
+   },
+   {
+    "unit": "R2",
+    "unit_type": "retail",
+    "status": "occupied",
+    "monthly_rent": 5600.0,
+    "sqft": 1200.0,
+    "tenant": "Tenant R2",
+    "lease_start": "2023-09-01",
+    "lease_end": "2028-08-30"
+   },
+   {
+    "unit": "R3",
+    "unit_type": "retail",
+    "status": "occupied",
+    "monthly_rent": 4400.0,
+    "sqft": 900.0,
+    "tenant": "Tenant R3",
+    "lease_start": "2023-09-01",
+    "lease_end": "2028-08-30"
+   }
+  ],
+  "annual_occupied_rent": {
+   "value": 527400.0,
+   "source": {
+    "kind": "derived",
+    "doc": "rent_roll.csv",
+    "locator": "rows 2-16",
+    "quote": null,
+    "formula": "12 * sum(monthly_rent where status == occupied)",
+    "reason": null
+   },
+   "confidence": 1.0
+  }
+ },
+ "t12": {
+  "lines": [
+   {
+    "line_item": "Gross rental income",
+    "category": "income",
+    "months": [
+     42807.0,
+     43071.0,
+     43291.0,
+     43203.0,
+     42939.0,
+     43247.0,
+     43027.0,
+     43291.0,
+     42895.0,
+     43159.0,
+     43203.0,
+     42851.0
+    ],
+    "total": 516984.0
+   },
+   {
+    "line_item": "Other income",
+    "category": "income",
+    "months": [
+     500.0,
+     500.0,
+     500.0,
+     500.0,
+     500.0,
+     500.0,
+     500.0,
+     500.0,
+     500.0,
+     500.0,
+     500.0,
+     500.0
+    ],
+    "total": 6000.0
+   },
+   {
+    "line_item": "Real estate taxes",
+    "category": "expense",
+    "months": [
+     5250.0,
+     5250.0,
+     5250.0,
+     5250.0,
+     5250.0,
+     5250.0,
+     5250.0,
+     5250.0,
+     5250.0,
+     5250.0,
+     5250.0,
+     5250.0
+    ],
+    "total": 63000.0
+   },
+   {
+    "line_item": "Insurance",
+    "category": "expense",
+    "months": [
+     1900.0,
+     1900.0,
+     1900.0,
+     1900.0,
+     1900.0,
+     1900.0,
+     1900.0,
+     1900.0,
+     1900.0,
+     1900.0,
+     1900.0,
+     1900.0
+    ],
+    "total": 22800.0
+   },
+   {
+    "line_item": "Utilities",
+    "category": "expense",
+    "months": [
+     2333.0,
+     2333.0,
+     2333.0,
+     2333.0,
+     2333.0,
+     2333.0,
+     2333.0,
+     2333.0,
+     2333.0,
+     2333.0,
+     2333.0,
+     2337.0
+    ],
+    "total": 28000.0
+   },
+   {
+    "line_item": "Repairs and maintenance",
+    "category": "expense",
+    "months": [
+     1750.0,
+     1750.0,
+     1750.0,
+     1750.0,
+     1750.0,
+     1750.0,
+     1750.0,
+     1750.0,
+     1750.0,
+     1750.0,
+     1750.0,
+     1750.0
+    ],
+    "total": 21000.0
+   },
+   {
+    "line_item": "Payroll",
+    "category": "expense",
+    "months": [
+     1317.0,
+     1317.0,
+     1317.0,
+     1317.0,
+     1317.0,
+     1317.0,
+     1317.0,
+     1317.0,
+     1317.0,
+     1317.0,
+     1317.0,
+     1313.0
+    ],
+    "total": 15800.0
+   },
+   {
+    "line_item": "Management fee",
+    "category": "expense",
+    "months": [
+     1025.0,
+     1025.0,
+     1025.0,
+     1025.0,
+     1025.0,
+     1025.0,
+     1025.0,
+     1025.0,
+     1025.0,
+     1025.0,
+     1025.0,
+     1025.0
+    ],
+    "total": 12300.0
+   },
+   {
+    "line_item": "Contract services",
+    "category": "expense",
+    "months": [
+     583.0,
+     583.0,
+     583.0,
+     583.0,
+     583.0,
+     583.0,
+     583.0,
+     583.0,
+     583.0,
+     583.0,
+     583.0,
+     587.0
+    ],
+    "total": 7000.0
+   },
+   {
+    "line_item": "Administrative and other",
+    "category": "expense",
+    "months": [
+     425.0,
+     425.0,
+     425.0,
+     425.0,
+     425.0,
+     425.0,
+     425.0,
+     425.0,
+     425.0,
+     425.0,
+     425.0,
+     425.0
+    ],
+    "total": 5100.0
+   }
+  ],
+  "rental_income": {
+   "value": 516984.0,
+   "source": {
+    "kind": "derived",
+    "doc": "t12.xlsx",
+    "locator": "rows 2-11",
+    "quote": null,
+    "formula": "total of the Gross rental income line",
+    "reason": null
+   },
+   "confidence": 1.0
+  },
+  "total_income": {
+   "value": 522984.0,
+   "source": {
+    "kind": "derived",
+    "doc": "t12.xlsx",
+    "locator": "rows 2-11",
+    "quote": null,
+    "formula": "sum of income line totals",
+    "reason": null
+   },
+   "confidence": 1.0
+  },
+  "total_expenses": {
+   "value": 175000.0,
+   "source": {
+    "kind": "derived",
+    "doc": "t12.xlsx",
+    "locator": "rows 2-11",
+    "quote": null,
+    "formula": "sum of expense line totals",
+    "reason": null
+   },
+   "confidence": 1.0
+  },
+  "in_place_noi": {
+   "value": 347984.0,
+   "source": {
+    "kind": "derived",
+    "doc": "t12.xlsx",
+    "locator": "rows 2-11",
+    "quote": null,
+    "formula": "total income - total expenses",
+    "reason": null
+   },
+   "confidence": 1.0
+  }
+ },
+ "sponsor": {
+  "name": {
+   "value": "Morningside Property Group LLC",
+   "source": {
+    "kind": "document",
+    "doc": "deal_summary.pdf",
+    "locator": "line 16",
+    "quote": "- Morningside Property Group LLC (fictional)",
+    "formula": null,
+    "reason": null
+   },
+   "confidence": 0.98
+  }
+ },
+ "flags": []
+}

@@ -34,8 +34,12 @@ dev-live:
 dev-retry:
 	@BRIDGE_FORCE_MISMATCH=persist $(MAKE) dev
 
+# Every sample deal that runs straight to a call (ridgewood_missing_arv stops at needs input; upload
+# its followup/deal_summary.pdf in the UI to see it continue).
+DEMO_DEALS := $(addprefix data/deals/,bronx_mf queens_mixed_use overleveraged_bk statenisland_mf harlem_mixed_use bronx_mf_64 yonkers_leaseup astoria_richarv washheights_gap mountvernon_exit)
+
 demo:
-	$(BIN)/python scripts/run_deal.py data/deals/bronx_mf data/deals/queens_mixed_use data/deals/overleveraged_bk --fresh --quiet
+	$(BIN)/python scripts/run_deal.py $(DEMO_DEALS) --fresh --quiet
 
 smoke:
 	$(BIN)/python scripts/smoke.py

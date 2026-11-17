@@ -6,7 +6,12 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 DEALS_DIR = ROOT / "data" / "deals"
-DEAL_NAMES = ["bronx_mf", "queens_mixed_use", "overleveraged_bk"]
+ORIGINAL_DEALS = ["bronx_mf", "queens_mixed_use", "overleveraged_bk"]
+# Every sample deal that runs straight to a call (the "needs input" deal is tested on its own).
+DEAL_NAMES = ORIGINAL_DEALS + [
+    "statenisland_mf", "harlem_mixed_use", "bronx_mf_64", "yonkers_leaseup", "astoria_richarv",
+    "washheights_gap", "mountvernon_exit"]
+NEEDS_INPUT_DEAL = "ridgewood_missing_arv"
 
 
 @pytest.fixture(params=DEAL_NAMES)

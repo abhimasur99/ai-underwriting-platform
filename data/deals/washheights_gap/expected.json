@@ -1,0 +1,73 @@
+{
+  "deal_id": "D-0050",
+  "name": "Washington Heights multifamily, 36 units",
+  "expected_call": "watch",
+  "expected_reason_codes": [
+    "RENT_ROLL_VS_T12_WATCH"
+  ],
+  "answer_key": {
+    "purchase_price": 7400000,
+    "renovation_budget": 1000000,
+    "loan_commitment": 5600000,
+    "initial_advance": 4600000,
+    "equity": 2800000,
+    "as_is_value": 7400000,
+    "arv": 10800000,
+    "note_rate": 0.105,
+    "term_months": 18,
+    "unit_count": 36,
+    "occupied_units": 33,
+    "asset_type": "multifamily",
+    "stabilized_noi": 599900.0,
+    "in_place_noi": 450265,
+    "rent_roll_annual": 660000,
+    "t12_rental_income": 617265,
+    "t12_total_income": 625265,
+    "t12_total_expenses": 175000,
+    "sources_stated_total": 8400000,
+    "uses_stated_total": 8400000
+  },
+  "metrics": {
+    "total_cost": 8400000,
+    "ltc": 0.6666666666666666,
+    "ltv_as_is": 0.6216216216216216,
+    "loan_to_arv": 0.5185185185185185,
+    "dscr_in_place": 0.9322256728778467,
+    "debt_yield_stabilized": 0.107125,
+    "implied_cap_rate": 0.055546296296296295,
+    "payoff": 5600000.0,
+    "takeout_caps": {
+      "dscr": 7998666.666666667,
+      "ltv": 7559999.999999999,
+      "debt_yield": 7057647.058823529
+    },
+    "takeout_binding": "debt_yield",
+    "takeout_max": 7057647.058823529,
+    "refi_cushion": 1457647.0588235287,
+    "exit_dscr": 1.7854166666666667,
+    "stress": {
+      "noi": 539910.0,
+      "rate": 0.06999999999999999,
+      "takeout_caps": {
+        "dscr": 6170400.0,
+        "ltv": 7559999.999999999,
+        "debt_yield": 6351882.352941176
+      },
+      "takeout_binding": "dscr",
+      "takeout_max": 6170400.0,
+      "refi_cushion": 570400.0,
+      "exit_dscr": 1.3773214285714288
+    },
+    "rr_vs_t12_gap": 0.06923282544774124,
+    "sources_vs_uses_gap": 0.0,
+    "unit_count_match": true
+  },
+  "note": "Reference values computed by scripts/generate_sample_deals.py from config/rules.yaml.",
+  "files": [
+    "deal_summary.pdf",
+    "purchase_contract.pdf",
+    "renovation_budget.xlsx",
+    "rent_roll.xlsx",
+    "t12.xlsx"
+  ]
+}

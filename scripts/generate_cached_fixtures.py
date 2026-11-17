@@ -13,14 +13,20 @@ sys.path.insert(0, str(ROOT / "backend"))
 
 from bridge.core.narrative import default_narrative  # noqa: E402
 from bridge.core.parsers import parse_deal_dir  # noqa: E402
+from bridge.core.parsers.errors import MissingRequiredFieldError  # noqa: E402
 from bridge.core.underwrite import underwrite  # noqa: E402
 
 
 def main() -> None:
     for deal_dir in sorted((ROOT / "data" / "deals").iterdir()):
-        if not (deal_dir / "deal_summary.md").exists():
+        if not deal_dir.is_dir() or not list(deal_dir.glob("deal_summary.*")):
             continue
-        deal = parse_deal_dir(deal_dir)
+        try:
+            deal = parse_deal_dir(deal_dir)
+        except MissingRequiredFieldError as exc:
+            # A deal that must stop at "needs input" has nothing to cache: the parsers decide.
+            print(f"no cached fixtures (needs input: {', '.join(exc.missing)}): {deal_dir.name}")
+            continue
         cached = deal_dir / "cached"
         cached.mkdir(exist_ok=True)
         (cached / "extracted.json").write_text(deal.model_dump_json(indent=1) + "\n")

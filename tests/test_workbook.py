@@ -59,11 +59,11 @@ def test_recalculated_values_match_answer_key(built, expected):
     assert get("sources_vs_uses_gap") == pytest.approx(m["sources_vs_uses_gap"], abs=1e-4)
 
 
-def test_inputs_sheet_lists_value_and_source(built):
+def test_inputs_sheet_lists_value_and_source(built, expected):
     wb, _ = built
     rows = {r[0].value: r for r in wb["Inputs"].iter_rows(min_row=2) if r[0].value}
-    assert rows["loan_commitment"][1].value in (6_500_000, 4_300_000, 4_050_000)
-    assert "deal_summary.md" in rows["loan_commitment"][2].value
+    assert rows["loan_commitment"][1].value == expected["answer_key"]["loan_commitment"]
+    assert "deal_summary." in rows["loan_commitment"][2].value
 
 
 def test_summary_and_flags_carry_the_call_and_reasons(built):

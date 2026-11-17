@@ -1,0 +1,71 @@
+{
+  "deal_id": "D-0047",
+  "name": "Bronx multifamily, 64 units, light renovation",
+  "expected_call": "screen",
+  "expected_reason_codes": [],
+  "answer_key": {
+    "purchase_price": 11200000,
+    "renovation_budget": 1000000,
+    "loan_commitment": 8000000,
+    "initial_advance": 7100000,
+    "equity": 4200000,
+    "as_is_value": 11200000,
+    "arv": 16700000,
+    "note_rate": 0.0975,
+    "term_months": 18,
+    "unit_count": 64,
+    "occupied_units": 60,
+    "asset_type": "multifamily",
+    "stabilized_noi": 960280.0,
+    "in_place_noi": 814950,
+    "rent_roll_annual": 1181280,
+    "t12_rental_income": 1157950,
+    "t12_total_income": 1179950,
+    "t12_total_expenses": 365000,
+    "sources_stated_total": 12200000,
+    "uses_stated_total": 12200000
+  },
+  "metrics": {
+    "total_cost": 12200000,
+    "ltc": 0.6557377049180327,
+    "ltv_as_is": 0.6339285714285714,
+    "loan_to_arv": 0.47904191616766467,
+    "dscr_in_place": 1.1772481040086673,
+    "debt_yield_stabilized": 0.120035,
+    "implied_cap_rate": 0.057501796407185626,
+    "payoff": 8000000.0,
+    "takeout_caps": {
+      "dscr": 12803733.333333334,
+      "ltv": 11690000.0,
+      "debt_yield": 11297411.764705881
+    },
+    "takeout_binding": "debt_yield",
+    "takeout_max": 11297411.764705881,
+    "refi_cushion": 3297411.7647058815,
+    "exit_dscr": 2.000583333333333,
+    "stress": {
+      "noi": 864252.0,
+      "rate": 0.06999999999999999,
+      "takeout_caps": {
+        "dscr": 9877165.714285715,
+        "ltv": 11690000.0,
+        "debt_yield": 10167670.588235293
+      },
+      "takeout_binding": "dscr",
+      "takeout_max": 9877165.714285715,
+      "refi_cushion": 1877165.7142857146,
+      "exit_dscr": 1.5433071428571428
+    },
+    "rr_vs_t12_gap": 0.02014767477006779,
+    "sources_vs_uses_gap": 0.0,
+    "unit_count_match": true
+  },
+  "note": "Reference values computed by scripts/generate_sample_deals.py from config/rules.yaml.",
+  "files": [
+    "deal_summary.pdf",
+    "purchase_contract.pdf",
+    "renovation_budget.xlsx",
+    "rent_roll.xlsx",
+    "t12.xlsx"
+  ]
+}

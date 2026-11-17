@@ -13,11 +13,18 @@ def test_call_and_reasons_match_answer_key(deal_dir, expected):
     assert [r.code for r in result.reasons] == expected["expected_reason_codes"]
 
 
-def test_three_deals_give_screen_watch_decline():
+def test_every_sample_deal_gets_the_call_it_was_built_for(deal_dir, expected):
+    assert underwrite(parse_deal_dir(deal_dir)).call == expected["expected_call"]
+
+
+def test_the_sample_set_has_a_balanced_mix_of_calls():
+    """Decision D32: a queue that is mostly declines would imply the platform exists to reject."""
+    import json
+
     from tests.conftest import DEAL_NAMES, DEALS_DIR
-    calls = {n: underwrite(parse_deal_dir(DEALS_DIR / n)).call for n in DEAL_NAMES}
-    assert calls == {"bronx_mf": "screen", "queens_mixed_use": "watch",
-                     "overleveraged_bk": "decline"}
+    calls = [json.loads((DEALS_DIR / n / "expected.json").read_text())["expected_call"]
+             for n in DEAL_NAMES]
+    assert {c: calls.count(c) for c in set(calls)} == {"screen": 4, "watch": 4, "decline": 2}
 
 
 def test_metrics_match_answer_key(deal_dir, expected):

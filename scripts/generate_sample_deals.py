@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the three sample deals and their answer keys (expected.json).
+"""Generate the sample deals (documents in several file formats) and their answer keys.
 
 Sample, made-up data only. Deterministic: no randomness, so reruns give identical files.
 
@@ -11,6 +11,7 @@ Usage: python3 scripts/generate_sample_deals.py   (needs PyYAML)
 """
 import csv
 import json
+import sys
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -21,92 +22,20 @@ RULES = yaml.safe_load((ROOT / "config" / "rules.yaml").read_text())
 MONTHS = ["2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04",
           "2026-05", "2026-06", "2026-07", "2026-08", "2026-09", "2026-10"]
 
-BASE_TYPES = {
-    "bronx_mf": {"studio": (450, 1320), "1br": (620, 1640), "2br": (840, 1980)},
-    "queens_mixed_use": {"1br": (650, 1950), "2br": (880, 2450)},
-    "overleveraged_bk": {"studio": (400, 1150), "1br": (560, 1400), "2br": (760, 1750)},
-}
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from deal_specs import BASE_TYPES, DEALS  # noqa: E402
+from sample_docs import markdown_to_docx, markdown_to_pdf, write_xlsx  # noqa: E402
 
-DEALS = [
-    {
-        "slug": "bronx_mf", "deal_id": "D-0042", "name": "Bronx multifamily, 40 units",
-        "address": "1200 Sample Avenue, Bronx, NY 10456 (fictional)", "asset_type": "multifamily",
-        "year_built": 1928, "floors": [(1, 10), (2, 10), (3, 10), (4, 10)],
-        "types": ["studio", "studio", "1br", "1br", "1br", "1br", "2br", "2br", "2br", "2br"],
-        "vacant": {"104", "207", "310", "408"}, "step": 20, "retail": [],
-        "t12_factors": [0.970, 0.975, 0.980, 0.985, 0.980, 0.975, 0.980, 0.985, 0.980, 0.975, 0.980, 0.985],
-        "other_income_annual": 12000,
-        "expenses": {"Real estate taxes": 118000, "Insurance": 42000, "Utilities": 61000,
-                     "Repairs and maintenance": 38000, "Payroll": 44000, "Management fee": 28800,
-                     "Contract services": 12000, "Administrative and other": 14000},
-        "purchase_price": 8000000, "renovation_budget": 1200000, "equity": 2700000,
-        "loan_commitment": 6500000, "initial_advance": 5300000, "as_is_value": 8000000, "arv": 12500000,
-        "note_rate": 0.105, "term_months": 18, "points": 0.02,
-        "sources_stated_total": 9200000, "uses_stated_total": 9200000,
-        "pro_forma": {"gpr": 1070400, "vacancy_pct": 0.05, "other_income": 20000, "opex": 336880},
-        "reno": [("Unit interior renovations", 540000), ("Kitchens and baths", 220000),
-                 ("Roof and facade", 150000), ("Boiler and heating", 90000),
-                 ("Electrical and plumbing risers", 80000), ("Common areas and lobby", 50000),
-                 ("Soft costs (architect, permits)", 40000), ("Contingency", 30000)],
-        "sponsor": "Harborline Residential LLC (fictional)",
-        "sponsor_bio": "Sample sponsor with 6 prior renovations in the Bronx and Upper Manhattan (fictional).",
-        "plan": "Renovate 24 units and all common systems, re-lease at market, refinance into a bank take-out.",
-        "closing_date": "2026-12-15", "deposit": 800000, "seller": "Sample Seller Holdings LP (fictional)",
-        "expected_call": "screen",
-    },
-    {
-        "slug": "queens_mixed_use", "deal_id": "D-0043", "name": "Queens mixed-use, 18 residential + 2 retail",
-        "address": "47-10 Sample Boulevard, Queens, NY 11101 (fictional)", "asset_type": "mixed_use",
-        "year_built": 1931, "floors": [(2, 6), (3, 6), (4, 6)],
-        "types": ["1br", "1br", "2br", "2br", "2br", "1br"], "vacant": {"304"}, "step": 25,
-        "retail": [("R1", 1400, 4800), ("R2", 1100, 3600)],
-        "t12_factors": [0.980, 0.980, 0.985, 0.980, 0.975, 0.985, 0.980, 0.980, 0.985, 0.980, 0.980, 0.975],
-        "other_income_annual": 5000,
-        "expenses": {"Real estate taxes": 62000, "Insurance": 21000, "Utilities": 28000,
-                     "Repairs and maintenance": 22000, "Payroll": 18000, "Management fee": 14000,
-                     "Contract services": 6000, "Administrative and other": 7000},
-        "purchase_price": 5000000, "renovation_budget": 800000, "equity": 1500000,
-        "loan_commitment": 4300000, "initial_advance": 3500000, "as_is_value": 5000000, "arv": 7000000,
-        "note_rate": 0.105, "term_months": 18, "points": 0.02,
-        "sources_stated_total": 5800000, "uses_stated_total": 5800000,
-        "pro_forma": {"gpr": 668000, "vacancy_pct": 0.05, "other_income": 5400, "opex": 240000},
-        "reno": [("Unit interior renovations", 300000), ("Storefront and retail fit-out", 120000),
-                 ("Roof and facade", 120000), ("Boiler and heating", 70000),
-                 ("Electrical and plumbing", 60000), ("Common areas", 40000),
-                 ("Soft costs (architect, permits)", 50000), ("Contingency", 40000)],
-        "sponsor": "Larchmont Partners LLC (fictional)",
-        "sponsor_bio": "Sample sponsor with 3 prior mixed-use projects in Queens (fictional).",
-        "plan": "Renovate residential units and storefronts, re-lease, refinance into a bank take-out.",
-        "closing_date": "2026-12-22", "deposit": 500000, "seller": "Sample Estate Trust (fictional)",
-        "expected_call": "watch",
-    },
-    {
-        "slug": "overleveraged_bk", "deal_id": "D-0044", "name": "Brooklyn multifamily, 22 units (should fail)",
-        "address": "310 Sample Street, Brooklyn, NY 11216 (fictional)", "asset_type": "multifamily",
-        "year_built": 1925, "floors": [(1, 6), (2, 6), (3, 5), (4, 5)],
-        "types": ["studio", "1br", "1br", "2br", "1br", "studio"], "vacant": {"202", "403"}, "step": 15,
-        "retail": [],
-        "t12_factors": [0.880, 0.885, 0.890, 0.880, 0.885, 0.890, 0.885, 0.880, 0.890, 0.885, 0.880, 0.890],
-        "other_income_annual": 8000,
-        "expenses": {"Real estate taxes": 48000, "Insurance": 17000, "Utilities": 24000,
-                     "Repairs and maintenance": 18000, "Payroll": 12000, "Management fee": 12000,
-                     "Contract services": 5000, "Administrative and other": 14000},
-        "purchase_price": 4000000, "renovation_budget": 600000, "equity": 400000,
-        "loan_commitment": 4050000, "initial_advance": 3450000, "as_is_value": 4000000, "arv": 5000000,
-        "note_rate": 0.115, "term_months": 12, "points": 0.02,
-        "sources_stated_total": 4450000, "uses_stated_total": 4600000,
-        "pro_forma": {"gpr": 420000, "vacancy_pct": 0.05, "other_income": 1000, "opex": 120000},
-        "reno": [("Unit interior renovations", 260000), ("Roof and facade", 90000),
-                 ("Boiler and heating", 60000), ("Electrical and plumbing", 50000),
-                 ("Common areas", 40000), ("Soft costs (architect, permits)", 60000),
-                 ("Contingency", 40000)],
-        "sponsor": "Northgate Capital Group LLC (fictional)",
-        "sponsor_bio": "Sample sponsor, first project of this size (fictional).",
-        "plan": "Light renovation and re-lease, refinance in 12 months.",
-        "closing_date": "2026-12-10", "deposit": 200000, "seller": "Sample Owner Corp (fictional)",
-        "expected_call": "decline",
-    },
-]
+# File formats per kit (see deal_specs.py). The original three stay markdown and CSV.
+KITS = {
+    "A": {"deal_summary": "md", "purchase_contract": "md", "rent_roll": "csv", "t12": "csv",
+          "renovation_budget": "csv"},
+    "B": {"deal_summary": "pdf", "purchase_contract": "pdf", "rent_roll": "xlsx", "t12": "xlsx",
+          "renovation_budget": "xlsx"},
+    "C": {"deal_summary": "pdf", "purchase_contract": "docx", "rent_roll": "csv", "t12": "xlsx",
+          "renovation_budget": "xlsx"},
+}
+SHEETS = {"rent_roll": "Rent roll", "t12": "T-12", "renovation_budget": "Renovation budget"}
 
 
 def money(x):
@@ -115,7 +44,7 @@ def money(x):
 
 def make_units(spec):
     units = []
-    base = BASE_TYPES[spec["slug"]]
+    base = spec.get("base") or BASE_TYPES[spec["slug"]]
     for floor, count in spec["floors"]:
         for i in range(count):
             unit = f"{floor}{i + 1:02d}"
@@ -147,6 +76,24 @@ def write_csv(path, header, rows):
         w = csv.writer(f)
         w.writerow(header)
         w.writerows(rows)
+
+
+def write_table(folder, stem, fmt, header, rows):
+    if fmt == "csv":
+        write_csv(folder / f"{stem}.csv", header, rows)
+    else:
+        write_xlsx(folder / f"{stem}.xlsx", header,
+                   [[None if v == "" else v for v in row] for row in rows], SHEETS[stem])
+
+
+def write_doc(folder, stem, fmt, md, title):
+    path = folder / f"{stem}.{fmt}"
+    if fmt == "md":
+        path.write_text(md)
+    elif fmt == "pdf":
+        markdown_to_pdf(md, path, title)
+    else:
+        markdown_to_docx(md, path, title)
 
 
 def build_t12(spec, rr_monthly):
@@ -251,8 +198,11 @@ def evaluate(d, m, rules):
     return "screen", reasons
 
 
-def summary_md(d, pf):
+def summary_md(d, pf, omit_arv=False):
     a = d
+    arv_line = "" if omit_arv else (
+        f"- After-repair value (ARV): {money(a['arv'])}, based on stabilized NOI at a "
+        f"{a['stabilized_noi'] / a['arv'] * 100:.2f}% cap rate\n")
     return f"""# Deal summary: {a['name']}
 
 Deal ID: {a['deal_id']} (sample, fictional data)
@@ -293,8 +243,7 @@ Submitted by: Sample Broker LLC (fictional)
 
 ## Valuation
 - As-is value (broker opinion): {money(a['as_is_value'])}
-- After-repair value (ARV): {money(a['arv'])}, based on stabilized NOI at a {a['stabilized_noi'] / a['arv'] * 100:.2f}% cap rate
-
+{arv_line}
 ## Business plan
 {a['plan']}
 
@@ -323,8 +272,72 @@ def contract_md(a):
 """
 
 
+def pct(x):
+    return f"{x * 100:.2f}%"
+
+
+def deal_readme(d, m, call, reasons, expected):
+    units = d["unit_count"]
+    codes = ", ".join(f"`{r['code']}`" for r in reasons) or "none"
+    files = "\n".join(f"- `{f}`" for f in expected["files"])
+    extra = ""
+    if d.get("omit_arv"):
+        extra = ("\nFirst run: **Needs input** (the summary omits the ARV). Upload "
+                 "`followup/deal_summary.pdf` to continue; the deal then runs to **Screen**.\n")
+    return f"""# Sample deal: {d['name']} ({d['deal_id']})
+
+Expected call: **{call.capitalize()}**. {d['story']} All data is fictional.
+{extra}
+| Item | Value |
+| --- | --- |
+| Units | {units} ({d['occupied_units']} occupied) |
+| Total cost | {money(m['total_cost'])} ({money(d['purchase_price'])} purchase + {money(d['renovation_budget'])} renovation) |
+| Loan commitment | {money(d['loan_commitment'])} ({money(d['initial_advance'])} initial advance + {money(d['loan_commitment'] - d['initial_advance'])} holdback) |
+| As-is value / ARV | {money(d['as_is_value'])} / {money(d['arv'])} |
+| Stabilized NOI (borrower pro forma) | {money(d['stabilized_noi'])} |
+| LTC / LTV (as-is) / loan-to-ARV | {pct(m['ltc'])} / {pct(m['ltv_as_is'])} / {pct(m['loan_to_arv'])} |
+| Debt yield (stabilized) / implied cap rate | {pct(m['debt_yield_stabilized'])} / {pct(m['implied_cap_rate'])} |
+| Exit DSCR | {m['exit_dscr']:.2f}x |
+| Take-out max (binding: {m['takeout_binding'].replace('_', ' ')}) | {money(m['takeout_max'])}, cushion {money(m['refi_cushion'])} |
+| Stress (NOI -10%, rate +100 bps) | take-out {money(m['stress']['takeout_max'])}, cushion {money(m['stress']['refi_cushion'])} |
+| Rent roll vs T-12 gap | {pct(m['rr_vs_t12_gap'])} |
+
+Expected reason codes: {codes}.
+
+Files:
+{files}
+"""
+
+
+def catalog(deals):
+    rows = []
+    for d in deals:
+        m, kit = d["_m"], KITS[d.get("kit", "A")]
+        formats = "/".join(dict.fromkeys(kit.values()))
+        call = "Needs input, then " + d["_call"].capitalize() if d.get("omit_arv") else d["_call"].capitalize()
+        rows.append(f"| {d['deal_id']} | {d['name']} | {call} | {d['unit_count']} | {money(d['loan_commitment'])} | "
+                    f"{pct(m['ltc'])} | {pct(m['implied_cap_rate'])} | {formats} | {d['story']} |")
+    counts = {c: sum(1 for d in deals if d["_call"] == c and not d.get("omit_arv"))
+              for c in ("screen", "watch", "decline")}
+    pending = sum(1 for d in deals if d.get("omit_arv"))
+    return f"""# Sample deal catalog
+
+Generated by `scripts/generate_sample_deals.py` (do not edit by hand). {len(deals)} fictional deals:
+{counts['screen']} Screen, {counts['watch']} Watch, {counts['decline']} Decline and {pending} that first stops at Needs
+input (and screens once its corrected file is uploaded). The call is computed by the rules from the
+numbers, and a deal that lands on the wrong call has its inputs changed, never the rules (decision D32).
+Thresholds are illustrative, not any real lender's box.
+
+| Deal | Name | Call | Units | Loan | LTC | Implied cap | Formats | What it shows |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+""" + "\n".join(rows) + """
+
+File formats: `md` and `csv` are the original kit; `pdf`, `docx` and `xlsx` are the realistic kits.
+"""
+
+
 def main():
-    out = {}
+    out, done = {}, []
     for spec in DEALS:
         d = dict(spec)
         folder = ROOT / "data" / "deals" / d["slug"]
@@ -337,8 +350,9 @@ def main():
         d["occupied_units"] = len(occupied)
         d["rent_roll_rows"] = len(units)
         d["rent_roll_annual"] = rr_monthly * 12
-        write_csv(folder / "rent_roll.csv",
-                  ["unit", "unit_type", "sqft", "status", "tenant", "lease_start", "lease_end", "monthly_rent"], units)
+        kit = KITS[d.get("kit", "A")]
+        write_table(folder, "rent_roll", kit["rent_roll"],
+                    ["unit", "unit_type", "sqft", "status", "tenant", "lease_start", "lease_end", "monthly_rent"], units)
 
         lines = build_t12(d, rr_monthly)
         rows, inc, exp = [], 0, 0
@@ -352,21 +366,26 @@ def main():
                     rental_total = tot
             else:
                 exp += tot
-        write_csv(folder / "t12.csv", ["line_item", "category"] + MONTHS + ["total"], rows)
+        write_table(folder, "t12", kit["t12"], ["line_item", "category"] + MONTHS + ["total"], rows)
         d["t12_rental_income"] = rental_total
         d["t12_total_income"] = inc
         d["t12_total_expenses"] = exp
         d["in_place_noi"] = inc - exp
 
         assert sum(a for _, a in d["reno"]) == d["renovation_budget"], d["slug"]
-        write_csv(folder / "renovation_budget.csv", ["line_item", "amount"], d["reno"])
+        write_table(folder, "renovation_budget", kit["renovation_budget"], ["line_item", "amount"], d["reno"])
 
         pf = dict(d["pro_forma"])
         pf["egi"] = pf["gpr"] - pf["gpr"] * pf["vacancy_pct"] + pf["other_income"]
         pf["noi"] = pf["egi"] - pf["opex"]
         d["stabilized_noi"] = pf["noi"]
-        (folder / "deal_summary.md").write_text(summary_md(d, pf))
-        (folder / "purchase_contract.md").write_text(contract_md(d))
+        omit = bool(d.get("omit_arv"))
+        write_doc(folder, "deal_summary", kit["deal_summary"], summary_md(d, pf, omit), f"Deal summary {d['deal_id']}")
+        write_doc(folder, "purchase_contract", kit["purchase_contract"], contract_md(d), f"Contract {d['deal_id']}")
+        if omit:        # the corrected summary the sponsor sends after being asked for the ARV
+            follow = folder / "followup"
+            follow.mkdir(exist_ok=True)
+            write_doc(follow, "deal_summary", kit["deal_summary"], summary_md(d, pf), f"Deal summary {d['deal_id']} (corrected)")
 
         m = reference_metrics(d, RULES)
         call, reasons = evaluate(d, m, RULES)
@@ -383,9 +402,21 @@ def main():
             "answer_key": key_fields, "metrics": m,
             "note": "Reference values computed by scripts/generate_sample_deals.py from config/rules.yaml.",
         }
+        if d["kit"] != "A":
+            expected["files"] = sorted(p.name for p in folder.iterdir()
+                                       if p.is_file() and p.name not in ("expected.json", "README.md"))
+        if omit:
+            expected["initial_state"] = "needs_input"
+            expected["followup_file"] = "followup/deal_summary.pdf"
+            expected["note"] += " The deal summary omits the ARV, so the first run stops at NEEDS_INPUT."
         (folder / "expected.json").write_text(json.dumps(expected, indent=2))
+        if d["kit"] != "A":
+            (folder / "README.md").write_text(deal_readme(d, m, call, reasons, expected))
+        d["_m"], d["_call"], d["_reasons"] = m, call, reasons
+        done.append(d)
         out[d["slug"]] = expected
 
+    (ROOT / "docs" / "deals-catalog.md").write_text(catalog(done))
     print(json.dumps({k: {"call": v["expected_call"], "reasons": v["expected_reason_codes"],
                           "key": {kk: v["answer_key"][kk] for kk in ("in_place_noi", "stabilized_noi", "rent_roll_annual", "t12_rental_income")},
                           "m": {kk: (round(vv, 4) if isinstance(vv, float) else vv) for kk, vv in v["metrics"].items() if kk != "stress" and kk != "takeout_caps"},

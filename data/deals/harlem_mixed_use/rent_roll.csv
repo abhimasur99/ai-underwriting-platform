@@ -1,0 +1,16 @@
+unit,unit_type,sqft,status,tenant,lease_start,lease_end,monthly_rent
+201,1br,650,occupied,Tenant 201,2024-03-03,2025-03-03,2150
+202,2br,880,occupied,Tenant 202,2024-03-20,2025-03-20,2650
+203,1br,650,occupied,Tenant 203,2024-04-06,2025-04-06,2050
+204,2br,880,occupied,Tenant 204,2024-04-23,2025-04-23,2675
+301,1br,650,occupied,Tenant 301,2024-04-03,2025-04-03,2075
+302,2br,880,occupied,Tenant 302,2024-04-20,2025-04-20,2700
+303,1br,650,vacant,,,,0
+304,2br,880,occupied,Tenant 304,2024-05-24,2025-05-24,2600
+401,1br,650,occupied,Tenant 401,2024-05-04,2025-05-04,2125
+402,2br,880,occupied,Tenant 402,2024-05-21,2025-05-21,2625
+403,1br,650,occupied,Tenant 403,2024-06-07,2025-06-07,2150
+404,2br,880,occupied,Tenant 404,2024-06-24,2025-06-24,2650
+R1,retail,1500,occupied,Tenant R1,2023-09-01,2028-08-30,7500
+R2,retail,1200,occupied,Tenant R2,2023-09-01,2028-08-30,5600
+R3,retail,900,occupied,Tenant R3,2023-09-01,2028-08-30,4400

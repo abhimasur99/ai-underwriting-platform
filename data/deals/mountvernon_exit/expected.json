@@ -1,0 +1,78 @@
+{
+  "deal_id": "D-0051",
+  "name": "Mount Vernon multifamily, 20 units",
+  "expected_call": "decline",
+  "expected_reason_codes": [
+    "LTC_WATCH",
+    "LTV_AS_IS_WATCH",
+    "LOAN_TO_ARV_WATCH",
+    "EXIT_DSCR_DECLINE",
+    "REFI_CUSHION_NEGATIVE_BASE",
+    "IMPLIED_CAP_RATE_LOW"
+  ],
+  "answer_key": {
+    "purchase_price": 3800000,
+    "renovation_budget": 600000,
+    "loan_commitment": 3400000,
+    "initial_advance": 2900000,
+    "equity": 1000000,
+    "as_is_value": 3800000,
+    "arv": 5200000,
+    "note_rate": 0.1125,
+    "term_months": 12,
+    "unit_count": 20,
+    "occupied_units": 18,
+    "asset_type": "multifamily",
+    "stabilized_noi": 211025.0,
+    "in_place_noi": 204308,
+    "rent_roll_annual": 305340,
+    "t12_rental_income": 299308,
+    "t12_total_income": 302308,
+    "t12_total_expenses": 98000,
+    "sources_stated_total": 4400000,
+    "uses_stated_total": 4400000
+  },
+  "metrics": {
+    "total_cost": 4400000,
+    "ltc": 0.7727272727272727,
+    "ltv_as_is": 0.7631578947368421,
+    "loan_to_arv": 0.6538461538461539,
+    "dscr_in_place": 0.6262314176245211,
+    "debt_yield_stabilized": 0.062066176470588236,
+    "implied_cap_rate": 0.040581730769230766,
+    "payoff": 3400000.0,
+    "takeout_caps": {
+      "dscr": 2813666.666666667,
+      "ltv": 3640000.0,
+      "debt_yield": 2482647.058823529
+    },
+    "takeout_binding": "debt_yield",
+    "takeout_max": 2482647.058823529,
+    "refi_cushion": -917352.9411764708,
+    "exit_dscr": 1.034436274509804,
+    "stress": {
+      "noi": 189922.5,
+      "rate": 0.06999999999999999,
+      "takeout_caps": {
+        "dscr": 2170542.8571428573,
+        "ltv": 3640000.0,
+        "debt_yield": 2234382.3529411764
+      },
+      "takeout_binding": "dscr",
+      "takeout_max": 2170542.8571428573,
+      "refi_cushion": -1229457.1428571427,
+      "exit_dscr": 0.7979936974789917
+    },
+    "rr_vs_t12_gap": 0.02015315327355099,
+    "sources_vs_uses_gap": 0.0,
+    "unit_count_match": true
+  },
+  "note": "Reference values computed by scripts/generate_sample_deals.py from config/rules.yaml.",
+  "files": [
+    "deal_summary.pdf",
+    "purchase_contract.pdf",
+    "renovation_budget.xlsx",
+    "rent_roll.xlsx",
+    "t12.xlsx"
+  ]
+}

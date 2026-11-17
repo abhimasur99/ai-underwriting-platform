@@ -77,6 +77,10 @@ def test_every_dollar_percent_and_multiple_in_the_memo_traces_to_the_result_or_d
     text = pdf_text(path)
     pool = {float(n) for blob in (result.model_dump_json(), deal.model_dump_json())
             for n in re.findall(r"-?\d+(?:\.\d+)?", blob)}
+    # the memo also shows the holdback, which code derives (it equals the renovation budget only
+    # when the whole budget is held back, as in the first three sample deals)
+    loan = deal.loan_request
+    pool.add(loan.loan_commitment.value - loan.initial_advance.value)
 
     def near(value: float, tolerance: float) -> bool:
         return any(abs(value - p) <= tolerance for p in pool)

@@ -1,0 +1,73 @@
+{
+  "deal_id": "D-0049",
+  "name": "Astoria multifamily, 18 units (ARV looks rich)",
+  "expected_call": "watch",
+  "expected_reason_codes": [
+    "IMPLIED_CAP_RATE_LOW"
+  ],
+  "answer_key": {
+    "purchase_price": 5600000,
+    "renovation_budget": 800000,
+    "loan_commitment": 4300000,
+    "initial_advance": 3500000,
+    "equity": 2100000,
+    "as_is_value": 5600000,
+    "arv": 9000000,
+    "note_rate": 0.105,
+    "term_months": 18,
+    "unit_count": 18,
+    "occupied_units": 17,
+    "asset_type": "multifamily",
+    "stabilized_noi": 429700.0,
+    "in_place_noi": 378398,
+    "rent_roll_annual": 512520,
+    "t12_rental_income": 502398,
+    "t12_total_income": 506398,
+    "t12_total_expenses": 128000,
+    "sources_stated_total": 6400000,
+    "uses_stated_total": 6400000
+  },
+  "metrics": {
+    "total_cost": 6400000,
+    "ltc": 0.671875,
+    "ltv_as_is": 0.625,
+    "loan_to_arv": 0.4777777777777778,
+    "dscr_in_place": 1.0296544217687076,
+    "debt_yield_stabilized": 0.09993023255813953,
+    "implied_cap_rate": 0.047744444444444444,
+    "payoff": 4300000.0,
+    "takeout_caps": {
+      "dscr": 5729333.333333334,
+      "ltv": 6300000.0,
+      "debt_yield": 5055294.117647058
+    },
+    "takeout_binding": "debt_yield",
+    "takeout_max": 5055294.117647058,
+    "refi_cushion": 755294.1176470583,
+    "exit_dscr": 1.6655038759689922,
+    "stress": {
+      "noi": 386730.0,
+      "rate": 0.06999999999999999,
+      "takeout_caps": {
+        "dscr": 4419771.428571429,
+        "ltv": 6300000.0,
+        "debt_yield": 4549764.705882353
+      },
+      "takeout_binding": "dscr",
+      "takeout_max": 4419771.428571429,
+      "refi_cushion": 119771.4285714291,
+      "exit_dscr": 1.2848172757475085
+    },
+    "rr_vs_t12_gap": 0.02014737319814171,
+    "sources_vs_uses_gap": 0.0,
+    "unit_count_match": true
+  },
+  "note": "Reference values computed by scripts/generate_sample_deals.py from config/rules.yaml.",
+  "files": [
+    "deal_summary.pdf",
+    "purchase_contract.docx",
+    "renovation_budget.xlsx",
+    "rent_roll.csv",
+    "t12.xlsx"
+  ]
+}

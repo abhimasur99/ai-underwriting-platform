@@ -1,0 +1,74 @@
+{
+  "deal_id": "D-0048",
+  "name": "Yonkers multifamily, 30 units (lease-up)",
+  "expected_call": "watch",
+  "expected_reason_codes": [
+    "LTC_WATCH",
+    "LTV_AS_IS_WATCH"
+  ],
+  "answer_key": {
+    "purchase_price": 4600000,
+    "renovation_budget": 900000,
+    "loan_commitment": 4200000,
+    "initial_advance": 3500000,
+    "equity": 1300000,
+    "as_is_value": 4600000,
+    "arv": 7600000,
+    "note_rate": 0.11,
+    "term_months": 18,
+    "unit_count": 30,
+    "occupied_units": 17,
+    "asset_type": "multifamily",
+    "stabilized_noi": 469900.0,
+    "in_place_noi": 168310,
+    "rent_roll_annual": 296160,
+    "t12_rental_income": 290310,
+    "t12_total_income": 296310,
+    "t12_total_expenses": 128000,
+    "sources_stated_total": 5500000,
+    "uses_stated_total": 5500000
+  },
+  "metrics": {
+    "total_cost": 5500000,
+    "ltc": 0.7636363636363637,
+    "ltv_as_is": 0.7608695652173914,
+    "loan_to_arv": 0.5526315789473685,
+    "dscr_in_place": 0.43716883116883115,
+    "debt_yield_stabilized": 0.11188095238095239,
+    "implied_cap_rate": 0.06182894736842105,
+    "payoff": 4200000.0,
+    "takeout_caps": {
+      "dscr": 6265333.333333334,
+      "ltv": 5320000.0,
+      "debt_yield": 5528235.294117646
+    },
+    "takeout_binding": "ltv",
+    "takeout_max": 5320000.0,
+    "refi_cushion": 1120000.0,
+    "exit_dscr": 1.8646825396825397,
+    "stress": {
+      "noi": 422910.0,
+      "rate": 0.06999999999999999,
+      "takeout_caps": {
+        "dscr": 4833257.142857143,
+        "ltv": 5320000.0,
+        "debt_yield": 4975411.764705882
+      },
+      "takeout_binding": "dscr",
+      "takeout_max": 4833257.142857143,
+      "refi_cushion": 633257.1428571427,
+      "exit_dscr": 1.4384693877551022
+    },
+    "rr_vs_t12_gap": 0.02015087320450553,
+    "sources_vs_uses_gap": 0.0,
+    "unit_count_match": true
+  },
+  "note": "Reference values computed by scripts/generate_sample_deals.py from config/rules.yaml.",
+  "files": [
+    "deal_summary.pdf",
+    "purchase_contract.pdf",
+    "renovation_budget.xlsx",
+    "rent_roll.xlsx",
+    "t12.xlsx"
+  ]
+}

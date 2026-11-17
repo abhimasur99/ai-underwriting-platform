@@ -1,0 +1,71 @@
+{
+  "deal_id": "D-0045",
+  "name": "Staten Island multifamily, 24 units",
+  "expected_call": "screen",
+  "expected_reason_codes": [],
+  "answer_key": {
+    "purchase_price": 3900000,
+    "renovation_budget": 550000,
+    "loan_commitment": 3000000,
+    "initial_advance": 2450000,
+    "equity": 1450000,
+    "as_is_value": 3900000,
+    "arv": 5650000,
+    "note_rate": 0.1025,
+    "term_months": 18,
+    "unit_count": 24,
+    "occupied_units": 22,
+    "asset_type": "multifamily",
+    "stabilized_noi": 327800.0,
+    "in_place_noi": 245180,
+    "rent_roll_annual": 393960,
+    "t12_rental_income": 386180,
+    "t12_total_income": 395180,
+    "t12_total_expenses": 150000,
+    "sources_stated_total": 4450000,
+    "uses_stated_total": 4450000
+  },
+  "metrics": {
+    "total_cost": 4450000,
+    "ltc": 0.6741573033707865,
+    "ltv_as_is": 0.6282051282051282,
+    "loan_to_arv": 0.5309734513274337,
+    "dscr_in_place": 0.9763265306122451,
+    "debt_yield_stabilized": 0.10926666666666666,
+    "implied_cap_rate": 0.05801769911504425,
+    "payoff": 3000000.0,
+    "takeout_caps": {
+      "dscr": 4370666.666666667,
+      "ltv": 3954999.9999999995,
+      "debt_yield": 3856470.588235294
+    },
+    "takeout_binding": "debt_yield",
+    "takeout_max": 3856470.588235294,
+    "refi_cushion": 856470.588235294,
+    "exit_dscr": 1.8211111111111111,
+    "stress": {
+      "noi": 295020.0,
+      "rate": 0.06999999999999999,
+      "takeout_caps": {
+        "dscr": 3371657.142857143,
+        "ltv": 3954999.9999999995,
+        "debt_yield": 3470823.5294117643
+      },
+      "takeout_binding": "dscr",
+      "takeout_max": 3371657.142857143,
+      "refi_cushion": 371657.1428571432,
+      "exit_dscr": 1.404857142857143
+    },
+    "rr_vs_t12_gap": 0.020146045885338443,
+    "sources_vs_uses_gap": 0.0,
+    "unit_count_match": true
+  },
+  "note": "Reference values computed by scripts/generate_sample_deals.py from config/rules.yaml.",
+  "files": [
+    "deal_summary.pdf",
+    "purchase_contract.pdf",
+    "renovation_budget.xlsx",
+    "rent_roll.xlsx",
+    "t12.xlsx"
+  ]
+}

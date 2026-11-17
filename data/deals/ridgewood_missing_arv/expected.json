@@ -1,0 +1,73 @@
+{
+  "deal_id": "D-0052",
+  "name": "Ridgewood multifamily, 16 units",
+  "expected_call": "screen",
+  "expected_reason_codes": [],
+  "answer_key": {
+    "purchase_price": 3300000,
+    "renovation_budget": 500000,
+    "loan_commitment": 2600000,
+    "initial_advance": 2100000,
+    "equity": 1200000,
+    "as_is_value": 3300000,
+    "arv": 5000000,
+    "note_rate": 0.105,
+    "term_months": 18,
+    "unit_count": 16,
+    "occupied_units": 15,
+    "asset_type": "multifamily",
+    "stabilized_noi": 284000.0,
+    "in_place_noi": 201782,
+    "rent_roll_annual": 294600,
+    "t12_rental_income": 288782,
+    "t12_total_income": 291782,
+    "t12_total_expenses": 90000,
+    "sources_stated_total": 3800000,
+    "uses_stated_total": 3800000
+  },
+  "metrics": {
+    "total_cost": 3800000,
+    "ltc": 0.6842105263157895,
+    "ltv_as_is": 0.6363636363636364,
+    "loan_to_arv": 0.52,
+    "dscr_in_place": 0.9151111111111111,
+    "debt_yield_stabilized": 0.10923076923076923,
+    "implied_cap_rate": 0.0568,
+    "payoff": 2600000.0,
+    "takeout_caps": {
+      "dscr": 3786666.666666667,
+      "ltv": 3500000.0,
+      "debt_yield": 3341176.470588235
+    },
+    "takeout_binding": "debt_yield",
+    "takeout_max": 3341176.470588235,
+    "refi_cushion": 741176.4705882352,
+    "exit_dscr": 1.8205128205128205,
+    "stress": {
+      "noi": 255600.0,
+      "rate": 0.06999999999999999,
+      "takeout_caps": {
+        "dscr": 2921142.8571428573,
+        "ltv": 3500000.0,
+        "debt_yield": 3007058.8235294116
+      },
+      "takeout_binding": "dscr",
+      "takeout_max": 2921142.8571428573,
+      "refi_cushion": 321142.8571428573,
+      "exit_dscr": 1.4043956043956045
+    },
+    "rr_vs_t12_gap": 0.020146685042696566,
+    "sources_vs_uses_gap": 0.0,
+    "unit_count_match": true
+  },
+  "note": "Reference values computed by scripts/generate_sample_deals.py from config/rules.yaml. The deal summary omits the ARV, so the first run stops at NEEDS_INPUT.",
+  "files": [
+    "deal_summary.pdf",
+    "purchase_contract.pdf",
+    "renovation_budget.xlsx",
+    "rent_roll.xlsx",
+    "t12.xlsx"
+  ],
+  "initial_state": "needs_input",
+  "followup_file": "followup/deal_summary.pdf"
+}

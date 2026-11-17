@@ -1,0 +1,71 @@
+{
+  "deal_id": "D-0046",
+  "name": "Harlem mixed-use, 12 residential + 3 retail",
+  "expected_call": "screen",
+  "expected_reason_codes": [],
+  "answer_key": {
+    "purchase_price": 4600000,
+    "renovation_budget": 700000,
+    "loan_commitment": 3700000,
+    "initial_advance": 3100000,
+    "equity": 1600000,
+    "as_is_value": 4600000,
+    "arv": 7000000,
+    "note_rate": 0.105,
+    "term_months": 18,
+    "unit_count": 15,
+    "occupied_units": 14,
+    "asset_type": "mixed_use",
+    "stabilized_noi": 419220.0,
+    "in_place_noi": 347984,
+    "rent_roll_annual": 527400,
+    "t12_rental_income": 516984,
+    "t12_total_income": 522984,
+    "t12_total_expenses": 175000,
+    "sources_stated_total": 5300000,
+    "uses_stated_total": 5300000
+  },
+  "metrics": {
+    "total_cost": 5300000,
+    "ltc": 0.6981132075471698,
+    "ltv_as_is": 0.6739130434782609,
+    "loan_to_arv": 0.5285714285714286,
+    "dscr_in_place": 1.0690752688172043,
+    "debt_yield_stabilized": 0.1133027027027027,
+    "implied_cap_rate": 0.05988857142857143,
+    "payoff": 3700000.0,
+    "takeout_caps": {
+      "dscr": 5589600.0,
+      "ltv": 4900000.0,
+      "debt_yield": 4932000.0
+    },
+    "takeout_binding": "ltv",
+    "takeout_max": 4900000.0,
+    "refi_cushion": 1200000.0,
+    "exit_dscr": 1.8883783783783783,
+    "stress": {
+      "noi": 377298.0,
+      "rate": 0.06999999999999999,
+      "takeout_caps": {
+        "dscr": 4311977.142857143,
+        "ltv": 4900000.0,
+        "debt_yield": 4438800.0
+      },
+      "takeout_binding": "dscr",
+      "takeout_max": 4311977.142857143,
+      "refi_cushion": 611977.1428571427,
+      "exit_dscr": 1.4567490347490348
+    },
+    "rr_vs_t12_gap": 0.020147625458428114,
+    "sources_vs_uses_gap": 0.0,
+    "unit_count_match": true
+  },
+  "note": "Reference values computed by scripts/generate_sample_deals.py from config/rules.yaml.",
+  "files": [
+    "deal_summary.pdf",
+    "purchase_contract.docx",
+    "renovation_budget.xlsx",
+    "rent_roll.csv",
+    "t12.xlsx"
+  ]
+}

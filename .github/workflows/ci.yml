@@ -20,7 +20,7 @@ jobs:
         run: |
           python scripts/generate_sample_deals.py
           python scripts/generate_cached_fixtures.py
-          git diff --exit-code data/deals
+          git diff --exit-code data/deals docs/deals-catalog.md
       - name: OpenAPI spec is up to date
         run: |
           python scripts/export_openapi.py

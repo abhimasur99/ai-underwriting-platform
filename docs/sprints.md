@@ -7,7 +7,7 @@ Work one sprint at a time. Stop at done-when and show the result before starting
 | Sprint | State |
 | --- | --- |
 | 0 Setup, 1 Core, 2 Agents, 3 UI, 3b Restyle and queue housekeeping | Done, tagged (`sprint-0` to `sprint-3b`) |
-| 3c Files and deals | In progress |
+| 3c Files and deals | Built, awaiting review and tag |
 | 3d Deal page rebuild | Planned |
 | 3e Intake and chat | Planned |
 | 3f Draft broker reply | Planned |
@@ -16,11 +16,11 @@ Work one sprint at a time. Stop at done-when and show the result before starting
 Why 3c to 3f exist: a design review (see `docs/decisions.md` D29 to D33) found that the demo should use real PDF, Word and Excel files, that the deal page repeats itself and shows system internals instead of the reviewer's job, and that the chats are too canned. Each sprint below is its own branch and tag, test-first where it touches core code.
 
 ## Sprint 3c: Files and deals
-- [ ] Add `pypdf` and `python-docx`. Read PDF (text layer) and DOCX into the same structure the markdown parser uses; summary and contract may be `.md`, `.txt`, `.pdf` or `.docx`; tables may be `.csv` or `.xlsx`. The checker gets its own small reader (independence)
-- [ ] Intake accepts only formats that really parse; classification also uses a document's first lines (content hints)
-- [ ] Sample-document writers (markdown to PDF, DOCX, XLSX), deterministic so CI can diff them
-- [ ] Eight new sample deals (`docs/deals-catalog.md`): 4 Screen, 4 Watch, 2 Decline, 1 Needs input across the 11, in three file kits (markdown and CSV; PDF and XLSX; mixed)
-- [ ] Answer keys and cached fixtures for all 11; one parametrized end-to-end test over every deal
+- [x] Add `pypdf` and `python-docx`. Read PDF (text layer) and DOCX into the same structure the markdown parser uses; summary and contract may be `.md`, `.txt`, `.pdf` or `.docx`; tables may be `.csv` or `.xlsx`. The checker gets its own small reader (independence)
+- [x] Intake accepts only formats that really parse; classification also uses a document's first lines (content hints)
+- [x] Sample-document writers (markdown to PDF, DOCX, XLSX), deterministic so CI can diff them
+- [x] Eight new sample deals (`docs/deals-catalog.md`): 4 Screen, 4 Watch, 2 Decline, 1 Needs input across the 11, in three file kits (markdown and CSV; PDF and XLSX; mixed)
+- [x] Answer keys and cached fixtures for all 11; one parametrized end-to-end test over every deal
 **Done when:** all 11 deals reach their expected call (the Needs input deal stops and asks, then proceeds after a corrected file), the checker agrees on each, uploading the PDF and XLSX files through the API works, and CI regenerates the files with no diff.
 
 ## Sprint 3d: Deal page rebuild
