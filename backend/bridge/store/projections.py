@@ -1,6 +1,7 @@
 """Views over the event log: a deal's status and the queue. Nothing here is stored separately."""
 from dataclasses import dataclass
 
+from bridge.core.schema import ReplyDraft
 from bridge.store.db import Store
 
 STAGE = {
@@ -103,3 +104,19 @@ def queue(store: Store, include_archived: bool = False) -> list[DealStatus]:
     # what needs the reviewer first, then the most recent activity
     return sorted(sorted(rows, key=lambda s: s.updated_at, reverse=True),
                   key=lambda s: not s.needs_you)
+
+
+def reply_draft(store: Store, deal_id: str) -> ReplyDraft | None:
+    """The current draft reply to the broker: the latest drafting, then any edits and approval."""
+    draft: ReplyDraft | None = None
+    for e in store.events(deal_id):
+        if e.type == "reply.drafted":
+            draft = ReplyDraft(decision=e.payload["decision"], text=e.payload["text"],
+                               status="draft", wording=e.payload.get("wording", "template"),
+                               drafted_at=e.ts)
+        elif draft and e.type == "reply.edited":
+            draft = draft.model_copy(update={"text": e.payload["text"], "status": "draft",
+                                             "edited": True, "approved_at": None})
+        elif draft and e.type == "reply.approved":
+            draft = draft.model_copy(update={"status": "approved", "approved_at": e.ts})
+    return draft

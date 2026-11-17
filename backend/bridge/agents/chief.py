@@ -7,8 +7,10 @@ import time
 from pathlib import Path
 
 from bridge.agents import patches as patching
+from bridge.agents.broker_reply import ReplyError, checked, compose, placeholders
 from bridge.agents.checker import recheck_memo, run_checker
 from bridge.agents.extraction import run_extraction
+from bridge.agents.phrasing import Phraser
 from bridge.agents.recorder import Recorder
 from bridge.agents.runner import AgentRunner
 from bridge.agents.states import MAX_RETRIES, InvalidTransition, check_transition
@@ -26,6 +28,7 @@ from bridge.core.schema import (
     Handoff,
     HandoffResult,
     Patch,
+    ReplyDraft,
     UnderwritingResult,
 )
 from bridge.store import projections
@@ -366,7 +369,66 @@ class Chief:
             self._set_state(deal_id, "NEEDS_INPUT", deal.version, awaiting="sponsor")
         else:
             raise DecisionError(f"unknown decision {decision!r}")
+        if decision in ("approve", "reject"):
+            self._prepare_reply(deal_id, decision, deal, result)
         return self.state(deal_id)
+
+    # ------------------------------------------------------------------ reply to the broker
+    DECIDED = ("APPROVED", "RELEASED", "REJECTED")
+
+    def _prepare_reply(self, deal_id: str, decision: str, deal: Deal,
+                       result: UnderwritingResult) -> None:
+        """Draft the reply that goes with the decision. The decision stands even if this fails
+        (the reviewer can ask for the draft again)."""
+        rec = Recorder(self.store, deal_id, deal.version)
+        try:
+            draft = compose(deal, result, decision)
+            text = Phraser(self.runner).broker(draft)
+            rec.event("chief", "reply.drafted", "Drafted the reply to the broker (not sent)",
+                      {"decision": decision, "text": text,
+                       "wording": "template" if text == draft else "claude"})
+        except Exception as exc:  # noqa: BLE001  (never undo a recorded decision over a draft)
+            rec.event("chief", "error", f"Could not draft the reply to the broker: {exc}")
+
+    def reply_draft(self, deal_id: str) -> ReplyDraft | None:
+        return projections.reply_draft(self.store, deal_id)
+
+    def draft_reply(self, deal_id: str) -> ReplyDraft:
+        """Draft (or start over on) the reply for a deal that has been approved or rejected."""
+        if self.state(deal_id) not in self.DECIDED:
+            raise DecisionError("a reply is drafted once the deal is approved or rejected")
+        deal, result, _ = self.latest(deal_id)
+        decision = next(e.payload["decision"] for e in reversed(self.store.events(deal_id))
+                        if e.type == "decision.recorded")
+        self._prepare_reply(deal_id, decision, deal, result)
+        draft = self.reply_draft(deal_id)
+        if draft is None:
+            raise DecisionError("the reply could not be drafted; see the process log")
+        return draft
+
+    def _need_draft(self, deal_id: str) -> ReplyDraft:
+        draft = self.reply_draft(deal_id)
+        if draft is None:
+            raise DecisionError("there is no draft reply for this deal")
+        return draft
+
+    def edit_reply(self, deal_id: str, text: str) -> ReplyDraft:
+        self._need_draft(deal_id)
+        text = checked(text)
+        Recorder(self.store, deal_id, self.latest(deal_id)[0].version).event(
+            "reviewer", "reply.edited", "Edited the reply to the broker", {"text": text})
+        return self._need_draft(deal_id)
+
+    def approve_reply(self, deal_id: str) -> ReplyDraft:
+        """The reviewer's sign-off on the wording. It is recorded; the reply is still not sent."""
+        draft = self._need_draft(deal_id)
+        blanks = placeholders(draft.text)
+        if blanks:
+            raise ReplyError(f"fill in {', '.join(dict.fromkeys(blanks))} before approving")
+        Recorder(self.store, deal_id, self.latest(deal_id)[0].version).event(
+            "reviewer", "reply.approved", "Approved the reply to the broker (not sent)",
+            {"text": draft.text})
+        return self._need_draft(deal_id)
 
     def version_diff(self, deal_id: str) -> VersionDiff:
         """What the latest version changed from the one before it (nothing, for the first)."""

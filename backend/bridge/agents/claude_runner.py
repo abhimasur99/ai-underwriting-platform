@@ -264,7 +264,8 @@ class ClaudeRunner:
         """Say a code-composed reply more naturally. The result is checked by code before it is
         used (agents/phrasing.py), and the draft stands if the check fails."""
         who = {"sponsor": "a loan sponsor or broker submitting a package",
-               "reviewer": "an internal credit reviewer"}[kind]
+               "reviewer": "an internal credit reviewer",
+               "broker": "a broker or sponsor, in a short email from the lender's reviewer"}[kind]
         turns = "\n".join(f"{role}: {text}" for role, text in history) or "(no earlier messages)"
         out = self._structured(
             "phrasing", f"You are replying to {who}. Rewrite the draft reply in a warm, concise, "

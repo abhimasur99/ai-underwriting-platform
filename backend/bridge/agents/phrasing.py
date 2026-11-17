@@ -8,7 +8,8 @@ model is never told anything the reply does not already say, and it may not add 
 * the sponsor chat may not contain a number the draft lacks, nor a word that belongs to credit or
   underwriting (a call, a ratio, a rate, approval) unless the draft already used it;
 * the reviewer chat may not contain a number the draft lacks, so every figure it quotes is one
-  that came from a calculation.
+  that came from a calculation;
+* the draft reply to a broker follows the sponsor rule and must also keep its blanks and its list.
 
 Offline there is no model, so the code-composed reply is always used.
 """
@@ -21,6 +22,7 @@ SENSITIVE = re.compile(
     r"stress|cushion|refinanc\w*|underwrit\w*|interest rate|pricing|credit decisions?|odds|"
     r"likely|guarantee\w*|promise\w*)\b", re.I)
 LINKS = re.compile(r"https?://|\]\(|```|<[a-z]+>", re.I)
+BLANK = re.compile(r"\[[^\]\n]+\]")          # a [bracketed blank] the reviewer must fill in
 
 
 def numbers(text: str) -> set[str]:
@@ -47,6 +49,16 @@ def valid_internal(text: str, draft: str) -> bool:
     return not (numbers(text) - numbers(draft))
 
 
+def valid_broker(text: str, draft: str) -> bool:
+    """A letter to someone outside the firm: no new figure, no new credit word, and the same
+    placeholders and bullet list (so the reviewer's blanks and the reasons given survive)."""
+    if not valid_external(text, draft):
+        return False
+    if sorted(BLANK.findall(text)) != sorted(BLANK.findall(draft)):
+        return False
+    return text.count("\n- ") == draft.count("\n- ")
+
+
 class _Model(Protocol):
     mode: str
 
@@ -71,3 +83,7 @@ class Phraser:
 
     def reviewer(self, draft: str, history: list[tuple[str, str]]) -> str:
         return self._ask("reviewer", draft, history, valid_internal)
+
+    def broker(self, draft: str) -> str:
+        """The draft reply to a broker: held to the strictest check, because it leaves the firm."""
+        return self._ask("broker", draft, [], valid_broker)

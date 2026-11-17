@@ -241,6 +241,17 @@ class UnderwritingResult(BaseModel):
 
 # ---- workflow contracts (docs/data-contracts.md) -------------------------------------------
 
+class ReplyDraft(BaseModel):
+    """The reviewer's draft reply to the broker after an approval or rejection. Never sent."""
+    decision: Literal["approve", "reject"]
+    text: str
+    status: Literal["draft", "approved"]
+    wording: Literal["template", "claude"]
+    drafted_at: str
+    edited: bool = False
+    approved_at: str | None = None
+
+
 class Event(BaseModel):
     """One row of the append-only event log; also the SSE payload."""
     event_id: int
