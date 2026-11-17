@@ -28,8 +28,8 @@ Why 3c to 3f exist: a design review (see `docs/decisions.md` D29 to D33) found t
 ## Sprint 3d: Deal page rebuild
 - [x] Layout: chat on the left (collapsible), workspace on the right; back on the left, forward on the right
 - [x] Header actions on every tab: Reject, Request info, Approve; Next deal needing review
-- [x] One summary strip (call, checker, flags, open questions) replacing the repeated status chips
-- [x] Tabs: Memo, Numbers (metrics and sources; "click to edit inputs" is deferred, edits still go through the chat), Files (document text with the source line highlighted), Process (flow graph and a readable log)
+- [x] One summary strip (call, checker, exceptions, questions for the sponsor) replacing the repeated status chips
+- [x] Tabs: Memo, Calculations (metrics and sources; "click to edit inputs" is deferred, edits still go through the chat), Files (document text with the source line highlighted), Process (flow graph and a readable log)
 - [x] Queue: a Next action column (Your review, Waiting on sponsor, Running); sorted by what needs you
 - [x] Request info replaces Send back: the note appears in the sponsor's chat and the deal waits for new files
 - [x] Shared UI kit and feature folders; `vitest` unit tests for flow derivation and next-action rules; accessibility pass (contrast AA, tab roles, keyboard, live regions); checked at 1280x800 and 1440x900
@@ -39,7 +39,7 @@ Why 3c to 3f exist: a design review (see `docs/decisions.md` D29 to D33) found t
 - [ ] Facts are read from the uploaded documents; the sponsor only confirms or fills gaps
 - [ ] Interactive checklist beside the chat (drop a file onto its slot); chat on the left, as everywhere
 - [ ] Richer replies from code-composed templates (greeting, help, what is missing, what next, status, thanks); live mode may phrase them from an allowed-facts packet, guarded by a test that rejects numbers and decision language
-- [ ] Chief chat: capabilities help, deal summary, flags, what changed in the latest version, follow-up chips
+- [ ] Chief chat: capabilities help, deal summary, exceptions, what changed in the latest version, follow-up chips
 **Done when:** a sponsor who drops five files and types nothing else is told what was read and what is missing.
 
 ## Sprint 3f: Draft broker reply

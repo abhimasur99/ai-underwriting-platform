@@ -25,7 +25,7 @@ Behavior:
 - Handles: file type or size rejected, duplicate upload, a file that looks like the wrong type (asks to confirm).
 
 ## 2. Queue (internal)
-Table of deals: Deal, Next action, Call, Flags, Age, Owner, sorted so the deals that need the reviewer come first. Next action says what happens next and who must act ("Your review", "Waiting on sponsor: ...", "Running", "Done: approved"); it is a projection of the event log. Filter tabs with counts: All, Needs your review, Flagged, Archived. Search box. Row click opens the workspace. Updates live from the global event stream.
+Table of deals: Deal, Next action, Call, Exceptions, Age, Owner, sorted so the deals that need the reviewer come first. Next action says what happens next and who must act ("Your review", "Waiting on sponsor: ...", "Running", "Done: approved"); it is a projection of the event log. Filter tabs with counts: All, Needs your review, Exceptions, Archived. Search box. Row click opens the workspace. Updates live from the global event stream.
 
 **Housekeeping.** A deal is never deleted (the event log is append-only and ids are never reused), so "delete" is archive: a logged `deal.archived` event hides the deal from the queue; the Archived tab lists it and Restore undoes it. Each row has an Archive link; checkboxes allow bulk archive; every archive shows an Undo notice. A deal that is mid-run cannot be archived (409). A deal can be renamed by clicking its title in the workspace. Opening the intake page does not create a deal: it is created on the first message or upload, so browsing to New deal and leaving leaves nothing behind (decision D27).
 
@@ -39,11 +39,11 @@ Chat on the left, the deal on the right. Back and previous are on the left, next
 | <- Deal queue   <- Previous                              Next needing review (n) ->  |
 | Deal name (click to rename)  D-0045 v1  [Your review]   [More] [?] [Reject] [Request |
 |                                                          info] [Approve]             |
-| Call [Screen]  [Checker agrees]  0 flags  0 open questions      rules 0.1 · version 1 |
+| Call [Screen]  [Checker agrees]  0 exceptions  0 questions for the sponsor  rules 0.1 · v1 |
 +--------------+-----------------------------------------------------------------------+
-| Chief chat   | Memo | Numbers | Files | Process                                       |
-| (collapsible)|  tab content                                       | Needs your       |
-|              |                                                    | attention        |
+| Chief chat   | Memo | Calculations | Files | Process                                  |
+| (collapsible)|  tab content                                       | Review           |
+|              |                                                    |                  |
 +--------------+----------------------------------------------------+------------------+
 ```
 
@@ -52,11 +52,11 @@ Chat on the left, the deal on the right. Back and previous are on the left, next
 - **Request info** asks the sponsor for something. The note appears in their intake chat and the deal waits (`NEEDS_INPUT`). A reply in words returns it to the reviewer at the same version (nothing is re-extracted, so confirmed edits are safe); a new file is read again as the next version. An upload that is refused or a duplicate keeps the deal waiting (decision D36).
 - **Reject** closes the deal as rejected. Approved and rejected deals are final.
 
-**Summary strip.** Call, checker status, flags, open questions, and "Model-read fields: please confirm" when a model read any field. It replaces the status that used to be repeated in the header, a timeline and the graph.
+**Summary strip.** Call, checker status, exceptions, questions for the sponsor, and "Model-read fields: please confirm" when a model read any field. It replaces the status that used to be repeated in the header, a timeline and the graph.
 
-**Memo.** The one-page PDF, with the attention panel on the right: open questions (each can be put to the sponsor with one click), flags, and the numbers that drive the call against their thresholds.
+**Memo.** The one-page PDF, with the **Review** panel on the right: questions for the sponsor (each can be sent with one click), exceptions, and the key metrics that drive the call against their thresholds.
 
-**Numbers.** Metrics with their formulas and inputs. Each input offers **View in the document**, which opens the Files tab on the exact line it was read from. A toggle shows the workbook behind the numbers.
+**Calculations.** Metrics with their formulas and inputs. Each input offers **View in the document**, which opens the Files tab on the exact line it was read from. A toggle shows the workbook behind the numbers.
 
 **Files.** The uploaded documents as the platform read them (text, or a table with the header as row 1), numbered the way every source citation numbers them. The line a number came from is highlighted.
 
@@ -95,7 +95,7 @@ Chat on the left, the deal on the right. Back and previous are on the left, next
 SSE frames are named by event type; the payload is `{event_id, deal_id, ts, type, actor, summary, deal_version}`. The browser's `EventSource` only delivers named frames to a listener per type, so the hook lists the types from `docs/data-contracts.md`. The frontend types are generated from the OpenAPI spec (`make openapi`); CI fails if the spec or the generated types are stale.
 
 ## 5. Frontend structure
-Hash routes (no router library): `#/` Queue, `#/chat[/D-0001]` intake, `#/deals/D-0001[/memo|numbers|files|process]` the deal page (old `/review` and `/flow` links still work).
+Hash routes (no router library): `#/` Queue, `#/chat[/D-0001]` intake, `#/deals/D-0001[/memo|calculations|files|process]` the deal page (old `/review`, `/flow` and `/numbers` links still work).
 
 ```
 src/ui/          shared kit: Button, Chip, Tabs (ARIA), Dialog, Shell (top bar and page frame)

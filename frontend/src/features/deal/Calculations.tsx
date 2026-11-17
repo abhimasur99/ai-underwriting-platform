@@ -173,7 +173,7 @@ function CheckBlock({ check }: { check: CheckReport }) {
   )
 }
 
-export default function Numbers({
+export default function Calculations({
   deal, result, check, events, onViewSource,
 }: {
   deal: Deal; result: UnderwritingResult; check: CheckReport | null; events: ApiEvent[]
@@ -244,7 +244,7 @@ export default function Numbers({
       )}
 
       {(result.flags.length > 0 || result.open_questions.length > 0) && (
-        <Section title="Flags and open questions">
+        <Section title="Exceptions and questions for the sponsor">
           <ul className="space-y-1.5 text-sm">
             {result.flags.map((f) => (
               <li key={f.code}>

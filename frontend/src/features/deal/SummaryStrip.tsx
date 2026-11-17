@@ -29,10 +29,10 @@ export default function SummaryStrip({ detail }: { detail: DealDetail }) {
       {c && <Chip tone={c.tone}>{c.text}</Chip>}
       {status.escalation && <Chip tone="coral">Escalated after retries</Chip>}
       <span className="text-sm text-slate-600">
-        {result.flags.length} {result.flags.length === 1 ? 'flag' : 'flags'}
+        {result.flags.length} {result.flags.length === 1 ? 'exception' : 'exceptions'}
       </span>
       <span className="text-sm text-slate-600">
-        {questions} open {questions === 1 ? 'question' : 'questions'}
+        {questions} {questions === 1 ? 'question' : 'questions'} for the sponsor
       </span>
       {modelRead && (
         <Chip tone="sky" title="Fields a model read from the documents, each checked against a quote">

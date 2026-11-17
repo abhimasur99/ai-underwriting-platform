@@ -1,6 +1,6 @@
 """XLSX workbook with live formulas (openpyxl). Metric cells are formulas, never pasted numbers.
 
-Sheets: Summary, Inputs, Rent Roll, T-12, Sources & Uses, Metrics, Exit & Stress, Flags.
+Sheets: Summary, Inputs, Rent Roll, T-12, Sources & Uses, Metrics, Exit & Stress, Exceptions.
 `METRIC_CELLS` maps each metric to its cell so the checker can audit that they are formulas.
 """
 from pathlib import Path
@@ -64,7 +64,7 @@ def build_workbook(deal: Deal, result: UnderwritingResult, rules: RulesConfig,
     su = wb.create_sheet("Sources & Uses")
     metrics = wb.create_sheet("Metrics")
     exit_ws = wb.create_sheet(_EXIT)
-    flags_ws = wb.create_sheet("Flags")
+    flags_ws = wb.create_sheet("Exceptions")
 
     # ---- Rent Roll
     _header(rr, ["unit", "unit_type", "sqft", "status", "tenant", "lease_start", "lease_end",
@@ -252,12 +252,12 @@ def build_workbook(deal: Deal, result: UnderwritingResult, rules: RulesConfig,
         exit_ws[f"{col}{e['exit_dscr']}"].number_format = '0.00"x"'
     _widths(exit_ws, [46, 16, 16])
 
-    # ---- Flags
+    # ---- Exceptions and questions for the sponsor
     _header(flags_ws, ["code", "field", "message"])
     for flag in result.flags:
         flags_ws.append([flag.code, flag.field, flag.message])
     flags_ws.append([])
-    _header(flags_ws, ["open questions"])
+    _header(flags_ws, ["questions for the sponsor"])
     for question in result.open_questions:
         flags_ws.append([question])
     _widths(flags_ws, [34, 26, 90])

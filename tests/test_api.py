@@ -187,7 +187,7 @@ def test_workbook_route_returns_cells_with_formulas_and_values(client):
     deal_id = submitted_deal(client)
     wb = client.get(f"/api/deals/{deal_id}/workbook").json()
     names = [s["name"] for s in wb["sheets"]]
-    assert {"Summary", "Inputs", "Metrics", "Exit & Stress", "Flags"} <= set(names)
+    assert {"Summary", "Inputs", "Metrics", "Exit & Stress", "Exceptions"} <= set(names)
     metrics = next(s for s in wb["sheets"] if s["name"] == "Metrics")
     formulas = [c for c in metrics["cells"] if c["formula"]]
     assert formulas and all(c["value"] is not None and c["error"] is None for c in formulas)

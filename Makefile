@@ -1,4 +1,4 @@
-# Bridge Loan Platform. Sample data only.
+# AI Lending Platform (bridge loan screening). Sample data only.
 # Python 3.12 is required. Override with: make setup PY=/path/to/python3.12
 PY ?= python3.12
 VENV := .venv

@@ -9,10 +9,11 @@ describe('resolveTab', () => {
   it('keeps old links working', () => {
     expect(resolveTab('review', true)).toBe('memo')
     expect(resolveTab('flow', true)).toBe('process')
+    expect(resolveTab('numbers', true)).toBe('calculations')
   })
   it('falls back to the process view when a tab needs a result that does not exist yet', () => {
     expect(resolveTab('memo', false)).toBe('process')
-    expect(resolveTab('numbers', false)).toBe('process')
+    expect(resolveTab('calculations', false)).toBe('process')
     expect(resolveTab('files', false)).toBe('files')
   })
   it('ignores a tab name it does not know', () => {

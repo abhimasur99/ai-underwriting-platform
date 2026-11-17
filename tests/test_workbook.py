@@ -8,7 +8,7 @@ from bridge.core.underwrite import underwrite
 from openpyxl import load_workbook
 
 SHEETS = ["Summary", "Inputs", "Rent Roll", "T-12", "Sources & Uses", "Metrics",
-          "Exit & Stress", "Flags"]
+          "Exit & Stress", "Exceptions"]
 
 
 @pytest.fixture

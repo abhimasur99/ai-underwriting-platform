@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Project: Bridge Loan Platform, an MVP demo of a multi-agent bridge loan screening system. Built for a CRE finance internship interview. Start every session by reading `docs/sprints.md`, then `docs/architecture.md`.
+Project: AI Lending Platform (bridge loan screening), an MVP demo of a multi-agent bridge loan screening system. Built for a CRE finance internship interview. Start every session by reading `docs/sprints.md`, then `docs/architecture.md`.
 
 ## Hard rules (never break these)
 1. Sample, made-up data only. Nothing from UnitedHealth Group or any other employer, and no real borrower, property, or lender data. No code, prompts, data, names, or metrics from work.

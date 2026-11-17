@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { nextTab } from './tabs'
 
-const ids = ['memo', 'numbers', 'files', 'process']
+const ids = ['memo', 'calculations', 'files', 'process']
 
 describe('nextTab', () => {
   it('moves right and left, wrapping at the ends', () => {
-    expect(nextTab(ids, 'memo', 'ArrowRight')).toBe('numbers')
+    expect(nextTab(ids, 'memo', 'ArrowRight')).toBe('calculations')
     expect(nextTab(ids, 'process', 'ArrowRight')).toBe('memo')
     expect(nextTab(ids, 'memo', 'ArrowLeft')).toBe('process')
   })

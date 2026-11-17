@@ -1,7 +1,7 @@
 """One-page memo PDF (reportlab). Every number is filled from the result by code.
 
 Sections: header, recommendation and reasons, deal snapshot, metrics table, exit analysis,
-reconciliation and flags, open questions, risks, footer.
+reconciliation and exceptions, questions for the sponsor, risks, footer.
 """
 from datetime import date
 from pathlib import Path
@@ -77,7 +77,7 @@ def render_memo(deal: Deal, result: UnderwritingResult, path: str | Path,
     doc = SimpleDocTemplate(str(path), pagesize=letter, leftMargin=0.55 * inch,
                             rightMargin=0.55 * inch, topMargin=0.45 * inch,
                             bottomMargin=0.6 * inch, pageCompression=0,
-                            title=f"{deal.deal_id} screening memo", author="Bridge Loan Platform")
+                            title=f"{deal.deal_id} screening memo", author="AI Lending Platform")
     width = letter[0] - 1.1 * inch
     story = []
 
@@ -191,7 +191,7 @@ def render_memo(deal: Deal, result: UnderwritingResult, path: str | Path,
     story.append(t)
 
     # reconciliation and flags
-    story.append(_section("Reconciliation and flags"))
+    story.append(_section("Reconciliation and exceptions"))
     rec = [["Check", "Result", "Status"]]
     style = list(GRID.getCommands())
     for i, item in enumerate(result.reconciliation, start=1):
@@ -205,7 +205,7 @@ def render_memo(deal: Deal, result: UnderwritingResult, path: str | Path,
     t.setStyle(TableStyle(style))
     story.append(t)
     for flag in result.flags:
-        story.append(Paragraph(f"Flag {flag.code}: {flag.message}", SMALL))
+        story.append(Paragraph(f"Exception {flag.code}: {flag.message}", SMALL))
 
     if result.overrides:
         story.append(_section("Reviewer overrides (judgment only; numbers unchanged)"))
@@ -213,7 +213,7 @@ def render_memo(deal: Deal, result: UnderwritingResult, path: str | Path,
             story.append(Paragraph(f"- {text}", SMALL))
 
     # open questions and risks
-    story.append(_section("Open questions"))
+    story.append(_section("Questions for the sponsor"))
     if result.open_questions:
         for q in result.open_questions:
             story.append(Paragraph(f"- {q}", SMALL))

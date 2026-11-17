@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import type { ApiEvent, CheckReport, Deal, UnderwritingResult } from '../../api/client'
-import Numbers from './Numbers'
+import Calculations from './Calculations'
 import WorkbookViewer from './WorkbookViewer'
 
 /** The metrics with their formulas and sources, or the workbook behind them. */
-export default function NumbersTab({
+export default function CalculationsTab({
   dealId, deal, result, check, events, bust, onViewSource,
 }: {
   dealId: string; deal: Deal; result: UnderwritingResult; check: CheckReport | null
@@ -27,7 +27,7 @@ export default function NumbersTab({
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto bg-paper">
         {view === 'metrics' ? (
-          <Numbers deal={deal} result={result} check={check} events={events} onViewSource={onViewSource} />
+          <Calculations deal={deal} result={result} check={check} events={events} onViewSource={onViewSource} />
         ) : (
           <WorkbookViewer dealId={dealId} bust={bust} />
         )}

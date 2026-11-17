@@ -8,14 +8,14 @@ import { usePersisted } from '../../lib/persisted'
 import { navigate } from '../../lib/router'
 import { Page } from '../../ui/Shell'
 import { TabPanel, Tabs } from '../../ui/Tabs'
-import AttentionPanel from './AttentionPanel'
 import ChatPane from './ChatPane'
 import DealHeader from './DealHeader'
+import CalculationsTab from './CalculationsTab'
 import FilesTab from './FilesTab'
 import MemoViewer from './MemoViewer'
-import NumbersTab from './NumbersTab'
 import ProcessTab from './ProcessTab'
 import RequestInfoDialog from './RequestInfoDialog'
+import ReviewPanel from './ReviewPanel'
 import SummaryStrip from './SummaryStrip'
 
 const ID = 'deal'
@@ -51,7 +51,7 @@ export default function DealPage({ dealId, tab }: { dealId: string; tab?: string
   const hasResult = !!(detail.deal && detail.result)
   const active = resolveTab(tab, hasResult)
   const bust = `${status.deal_version}-${events.filter((e) => e.type === 'memo.rendered' || e.type === 'underwriting.completed').length}`
-  const showAttention = hasResult && attentionOpen && (active === 'memo' || active === 'numbers')
+  const showAttention = hasResult && attentionOpen && (active === 'memo' || active === 'calculations')
 
   const viewSource = (doc: string, locator: string) => {
     setFocus({ doc, locator })
@@ -82,10 +82,10 @@ export default function DealPage({ dealId, tab }: { dealId: string; tab?: string
             <div className="flex items-end border-b border-slate-200 bg-paper px-6 pt-2">
               <Tabs tabs={DEAL_TABS} active={active} idPrefix={ID} label="Deal views"
                 onChange={(id) => navigate(`deals/${dealId}/${id}`)} />
-              {hasResult && !attentionOpen && (active === 'memo' || active === 'numbers') && (
+              {hasResult && !attentionOpen && (active === 'memo' || active === 'calculations') && (
                 <button onClick={() => setAttentionOpen(true)}
                   className="mb-2 ml-auto text-xs font-semibold text-slate-600 underline underline-offset-4 hover:text-ink">
-                  Show what needs attention
+                  Show the review panel
                 </button>
               )}
             </div>
@@ -94,9 +94,9 @@ export default function DealPage({ dealId, tab }: { dealId: string; tab?: string
                 <TabPanel id="memo" active={active} idPrefix={ID}>
                   <MemoViewer dealId={dealId} bust={bust} />
                 </TabPanel>
-                <TabPanel id="numbers" active={active} idPrefix={ID}>
+                <TabPanel id="calculations" active={active} idPrefix={ID}>
                   {detail.deal && detail.result && (
-                    <NumbersTab dealId={dealId} deal={detail.deal} result={detail.result} check={detail.check ?? null}
+                    <CalculationsTab dealId={dealId} deal={detail.deal} result={detail.result} check={detail.check ?? null}
                       events={events} bust={bust} onViewSource={viewSource} />
                   )}
                 </TabPanel>
@@ -108,8 +108,8 @@ export default function DealPage({ dealId, tab }: { dealId: string; tab?: string
                 </TabPanel>
               </div>
               {showAttention && (
-                <AttentionPanel detail={detail} onAsk={(q) => setInfoDraft(q)} onHide={() => setAttentionOpen(false)}
-                  showKeyNumbers={active === 'memo'} />
+                <ReviewPanel detail={detail} onAsk={(q) => setInfoDraft(q)} onHide={() => setAttentionOpen(false)}
+                  showKeyMetrics={active === 'memo'} />
               )}
             </div>
           </main>

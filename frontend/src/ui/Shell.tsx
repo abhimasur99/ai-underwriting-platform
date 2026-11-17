@@ -12,9 +12,9 @@ export function TopBar({ active, external = false }: { active?: 'queue' | 'new';
   return (
     <header className="flex shrink-0 items-center gap-8 bg-ink px-6 py-3.5 text-paper">
       <a href="#/" className="leading-tight">
-        <div className="font-display text-[17px] tracking-[0.02em]">Bridge Loan Platform</div>
+        <div className="font-display text-[17px] tracking-[0.02em]">AI Lending Platform</div>
         <div className="font-display text-[11px] font-light text-paper/60">
-          Screening layer · sample data
+          Bridge loan screening · sample data
         </div>
       </a>
       {!external && (

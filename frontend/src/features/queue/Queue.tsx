@@ -11,7 +11,7 @@ type Filter = 'all' | 'review' | 'flagged' | 'archived'
 const FILTERS: { id: Filter; label: string }[] = [
   { id: 'all', label: 'All' },
   { id: 'review', label: 'Needs your review' },
-  { id: 'flagged', label: 'Flagged' },
+  { id: 'flagged', label: 'Exceptions' },
   { id: 'archived', label: 'Archived' },
 ]
 
@@ -184,7 +184,7 @@ export default function Queue() {
                     className="h-3.5 w-3.5 accent-ink"
                   />
                 </th>
-                {['Deal', 'Next action', 'Call', 'Flags', 'Age', 'Owner', ''].map((h, i) => (
+                {['Deal', 'Next action', 'Call', 'Exceptions', 'Age', 'Owner', ''].map((h, i) => (
                   <th key={i} className="eyebrow py-2.5 pr-4">
                     {h}
                   </th>
@@ -232,7 +232,7 @@ export default function Queue() {
                       </Chip>
                     ) : r.flags > 0 ? (
                       <Chip tone="amber">
-                        {r.flags} {r.flags === 1 ? 'flag' : 'flags'}
+                        {r.flags} {r.flags === 1 ? 'exception' : 'exceptions'}
                       </Chip>
                     ) : (
                       <span className="text-slate-400">–</span>

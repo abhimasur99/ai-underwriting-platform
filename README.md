@@ -1,6 +1,6 @@
-# Bridge Loan Platform (MVP demo)
+# AI Lending Platform (MVP demo): bridge loan screening
 
-A multi-agent screening layer for bridge loans. A chief agent routes work between an extraction agent, an underwriter agent, and an independent checker. Deterministic code does every calculation. A human reviews and approves.
+A multi-agent screening layer for bridge loans (sample data only). A chief agent routes work between an extraction agent, an underwriter agent, and an independent checker. Deterministic code does every calculation. A human reviews and approves.
 
 Status: handoff stub. Sprint 4 replaces this with the final README (what it does, how to run, limits).
 

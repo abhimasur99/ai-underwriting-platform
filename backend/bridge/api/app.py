@@ -41,7 +41,7 @@ def create_app(settings: Settings | None = None, runner: AgentRunner | None = No
     chief = Chief(store, runner, settings.outputs_dir, settings.uploads_dir, faults=faults,
                   pace=settings.step_delay)
     intake, chat = IntakeAgent(chief, runner), ChiefChat(chief, runner)
-    app = FastAPI(title="Bridge Loan Platform (sample data only)",
+    app = FastAPI(title="AI Lending Platform (sample data only)",
                   description="Screening-layer demo. Made-up data; illustrative thresholds.")
 
     app.state.store = store
