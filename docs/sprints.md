@@ -7,7 +7,7 @@ Work one sprint at a time. Stop at done-when and show the result before starting
 | Sprint | State |
 | --- | --- |
 | 0 Setup, 1 Core, 2 Agents, 3 UI, 3b Restyle and queue housekeeping | Done, tagged (`sprint-0` to `sprint-3b`) |
-| 3c Files and deals | Built, awaiting review and tag |
+| 3c Files and deals | Built, awaiting merge and tag |
 | 3d Deal page rebuild | Planned |
 | 3e Intake and chat | Planned |
 | 3f Draft broker reply | Planned |
@@ -21,6 +21,8 @@ Why 3c to 3f exist: a design review (see `docs/decisions.md` D29 to D33) found t
 - [x] Sample-document writers (markdown to PDF, DOCX, XLSX), deterministic so CI can diff them
 - [x] Eight new sample deals (`docs/deals-catalog.md`): 4 Screen, 4 Watch, 2 Decline, 1 Needs input across the 11, in three file kits (markdown and CSV; PDF and XLSX; mixed)
 - [x] Answer keys and cached fixtures for all 11; one parametrized end-to-end test over every deal
+- [x] PDF tables read from text positions (own reader in the checker); one deal is an all-PDF package
+- [x] Claude-assisted extraction as a verified fallback in live mode (D34), with the checker's honest fallback (D35)
 **Done when:** all 11 deals reach their expected call (the Needs input deal stops and asks, then proceeds after a corrected file), the checker agrees on each, uploading the PDF and XLSX files through the API works, and CI regenerates the files with no diff.
 
 ## Sprint 3d: Deal page rebuild

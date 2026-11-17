@@ -47,6 +47,30 @@ def _deal_inputs(deal: Deal) -> dict:
     }
 
 
+def _inputs_from_deal(deal: Deal) -> dict:
+    """The same keys the checker's own parser produces, read from the extracted deal instead. Used
+    only when a model had to read the documents and the checker's regexes cannot (so there is no
+    second parse); the source trace below then carries the weight."""
+    units = deal.rent_roll.units
+    return {
+        **_deal_inputs(deal),
+        "deal_id": deal.deal_id, "asset_type": deal.property.asset_type.value,
+        "unit_count": deal.property.unit_count.value,
+        "occupied_units": deal.property.occupied_units.value,
+        "sources": [{"name": r.name, "amount": r.amount} for r in deal.sources_uses.sources],
+        "uses": [{"name": r.name, "amount": r.amount} for r in deal.sources_uses.uses],
+        "sources_stated_total": deal.sources_uses.stated_total_sources.value,
+        "uses_stated_total": deal.sources_uses.stated_total_uses.value,
+        "rent_roll_rows": len(units),
+        "rent_roll_units": [{"unit": u.unit, "status": u.status, "rent": u.monthly_rent}
+                            for u in units],
+        "rent_roll_annual": deal.rent_roll.annual_occupied_rent.value,
+        "t12_rental_income": deal.t12.rental_income.value,
+        "t12_total_income": deal.t12.total_income.value,
+        "t12_total_expenses": deal.t12.total_expenses.value,
+    }
+
+
 def _status(*parts: str) -> str:
     return "fail" if "fail" in parts else ("warn" if "warn" in parts else "pass")
 
@@ -59,8 +83,16 @@ def run_checker(deal: Deal, result: UnderwritingResult, deal_dir: Path, rec: Rec
     memo, workbook = Path(result.artifacts["memo_pdf"]), Path(result.artifacts["workbook"])
     reg = ToolRegistry("checker", rec)
     state: dict = {}
+    def independent_parse() -> dict:
+        try:
+            return parse.independent_parse(deal_dir)
+        except (ValueError, KeyError, IndexError, StopIteration, FileNotFoundError) as exc:
+            if not any(f.code == "MODEL_ASSISTED_EXTRACTION" for f in deal.flags):
+                raise                     # a deterministic deal the checker cannot parse is a bug
+            return {**_inputs_from_deal(deal), "_not_reparsed": str(exc)[:200]}
+
     reg.add(Tool("independent_parse", "Parse the raw files with the checker's own parser",
-                 lambda: parse.independent_parse(deal_dir)))
+                 independent_parse))
     reg.add(Tool("independent_recompute", "Recompute every metric with the checker's formulas",
                  lambda: formulas.independent_recompute(state["inputs"], cfg)))
     reg.add(Tool("compare_metrics", "Compare underwriter and independent metrics",
@@ -78,6 +110,7 @@ def run_checker(deal: Deal, result: UnderwritingResult, deal_dir: Path, rec: Rec
                                                    result.call)))
 
     state["inputs"] = reg.call("independent_parse")
+    not_reparsed = state["inputs"].pop("_not_reparsed", None)
     if overrides:
         state["inputs"] = apply_overrides(state["inputs"], overrides)
     state["metrics"] = reg.call("independent_recompute")
@@ -95,7 +128,12 @@ def run_checker(deal: Deal, result: UnderwritingResult, deal_dir: Path, rec: Rec
 
     extraction_diffs = formulas.compare_metrics(_deal_inputs(deal), {
         k: state["inputs"][k] for k in KEY_INPUTS})
-    codes_u = [r.code for r in result.reasons if r.code != "LOW_CONFIDENCE_FIELD"]
+    # LOW_CONFIDENCE_FIELD is an extraction concept the checker has no view on, so the call it can
+    # reproduce is the underwriter's call without those reasons.
+    rule_reasons = [r for r in result.reasons if r.code != "LOW_CONFIDENCE_FIELD"]
+    codes_u = [r.code for r in rule_reasons]
+    call_u = ("decline" if any(r.severity == "decline" for r in rule_reasons)
+              else "watch" if rule_reasons else "screen")
     recon_u = {i.name: i.status for i in result.reconciliation}
     recon_disagree = [n for n, v in recon_i.items() if recon_u.get(n) != v["status"]]
     max_diff = max((m.diff for m in mismatches if m.diff is not None), default=0.0)
@@ -103,12 +141,18 @@ def run_checker(deal: Deal, result: UnderwritingResult, deal_dir: Path, rec: Rec
     checks = [
         CheckItem(name="recompute_metrics", status="fail" if mismatches else "pass",
                   detail={"max_abs_diff": max_diff, "fields": [m.field for m in mismatches]}),
-        CheckItem(name="extraction_match", status="fail" if extraction_diffs else "pass",
-                  detail={"fields": [d["field"] for d in extraction_diffs]}),
+        CheckItem(name="extraction_match",
+                  status="warn" if not_reparsed else ("fail" if extraction_diffs else "pass"),
+                  detail={"fields": [d["field"] for d in extraction_diffs],
+                          "independently_reparsed": not_reparsed is None,
+                          **({"reason": "a model read these documents and the checker's own "
+                                        "parser could not read them, so the figures were not "
+                                        "parsed a second time; the quotes were traced instead"}
+                             if not_reparsed else {})}),
         CheckItem(name="rules_recheck",
-                  status="warn" if (call_i != result.call or codes_i != codes_u) else "pass",
+                  status="warn" if (call_i != call_u or codes_i != codes_u) else "pass",
                   detail={"independent_call": call_i, "independent_reasons": codes_i,
-                          "underwriter_call": result.call, "underwriter_reasons": codes_u}),
+                          "underwriter_call": call_u, "underwriter_reasons": codes_u}),
         CheckItem(name="reconcile_recheck", status="warn" if recon_disagree else "pass",
                   detail={"disagree": recon_disagree}),
         CheckItem(name="source_trace", status="fail" if problems else "pass",

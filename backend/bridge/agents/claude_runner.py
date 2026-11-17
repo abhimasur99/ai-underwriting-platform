@@ -21,6 +21,7 @@ from bridge.agents import cached_nlu
 from bridge.agents.runner import CachedRunner
 from bridge.agents.runner_types import ChiefTurn, IntakeTurn, PatchRequest
 from bridge.core.parsers import parse_deal_dir
+from bridge.core.parsers.assist import COLUMNS, FieldSpec, RawField, RawReading, RawRow
 from bridge.core.placeholders import placeholder_values
 from bridge.core.schema import CheckReport, Deal, Mismatch, UnderwritingResult
 
@@ -69,6 +70,32 @@ CHIEF_SCHEMA = _schema({
     "patch_section": {"type": "string", "enum": ["none", "summary", "exit", "risks"]},
     "patch_text": {"type": "string"},
     "patch_reason": {"type": "string"}})
+
+
+def _read_schema(keys: list[str], want_tables: bool) -> dict:
+    row = _schema({"name": {"type": "string"}, "amount_text": {"type": "string"},
+                   "quote": {"type": "string"}})
+    props: dict = {"fields": {"type": "array", "items": _schema({
+        "key": {"type": "string", "enum": keys}, "value_text": {"type": "string"},
+        "quote": {"type": "string"}})}}
+    if want_tables:
+        use = {**row, "properties": {**row["properties"], "is_renovation_budget":
+                                     {"type": "boolean"}},
+               "required": [*row["required"], "is_renovation_budget"]}
+        props.update(sources={"type": "array", "items": row}, uses={"type": "array", "items": use},
+                     total_sources=row, total_uses=row)
+    return _schema(props)
+
+
+COLUMN_HELP = {
+    "rent_roll": {"unit": "the unit number or name", "unit_type": "studio, 1br, 2br, retail...",
+                  "sqft": "square feet", "status": "occupied or vacant", "tenant": "tenant name",
+                  "lease_start": "lease start date", "lease_end": "lease end date",
+                  "monthly_rent": "the monthly rent in dollars"},
+    "t12": {"line_item": "the income or expense line name", "category": "income or expense",
+            "total": "the twelve-month total for the line"},
+    "renovation_budget": {"line_item": "the budget line name", "amount": "the dollar amount"},
+}
 
 
 class ClaudeRunner:
@@ -121,9 +148,50 @@ class ClaudeRunner:
     def _wrap(text: str) -> str:
         return f"<untrusted_message>\n{text}\n</untrusted_message>"
 
-    # ---- extraction: deterministic parsers only for now (Claude-assisted gap filling is deferred)
+    # ---- extraction: the deterministic parsers run first; the model is asked only about what
+    # they could not find, and code verifies every answer (core/parsers/assist.py, D20, D34)
     def extract_deal(self, deal_dir: Path) -> Deal:
-        return parse_deal_dir(deal_dir)
+        return parse_deal_dir(deal_dir, assist=self)
+
+    def read_document(self, name: str, text: str, wanted: list[FieldSpec], want_tables: bool
+                      ) -> RawReading:
+        asked = "\n".join(f"- {s.key}: {s.ask}" for s in wanted)
+        if want_tables:
+            asked += ("\n- sources, uses, total_sources, total_uses: the capital stack tables "
+                      "(see the instructions)")
+        keys = [s.key for s in wanted] or ["none"]
+        out = self._structured(
+            "extraction", "Read the document for the fields wanted. Return only what is written "
+            "in it, each with an exact one-line quote.",
+            f"Document: {name}\n\nFields wanted:\n{asked}\n\n{self._wrap(text)}",
+            _read_schema(keys, want_tables), effort="low", max_tokens=6000)
+        row = out.get("total_sources")
+
+        def raw_row(r) -> RawRow:
+            return RawRow(r["name"], r["amount_text"], r["quote"],
+                          r.get("is_renovation_budget", False))
+
+        return RawReading(
+            fields=[RawField(f["key"], f["value_text"], f["quote"]) for f in out["fields"]],
+            sources=[raw_row(r) for r in out.get("sources", [])],
+            uses=[raw_row(r) for r in out.get("uses", [])],
+            total_sources=raw_row(row) if row and row["quote"] else None,
+            total_uses=raw_row(out["total_uses"]) if out.get("total_uses", {}).get("quote")
+            else None)
+
+    def map_columns(self, kind: str, headers: list[str], sample: list[list[str]]
+                    ) -> dict[str, str]:
+        canonical = COLUMNS[kind]
+        schema = _schema({"columns": {"type": "array", "items": _schema({
+            "heading": {"type": "string", "enum": [h for h in headers if h.strip()]},
+            "column": {"type": "string", "enum": [*canonical, "ignore"]}})}})
+        offered = "\n".join(f"- {c}: {COLUMN_HELP[kind][c]}" for c in canonical)
+        table = "\n".join(" | ".join(row) for row in [headers, *sample])
+        out = self._structured(
+            "extraction", f"Match the headings of this {kind.replace('_', ' ')} table to the "
+            f"canonical columns.", f"Canonical columns:\n{offered}\n\n{self._wrap(table)}",
+            schema, effort="low")
+        return {c["heading"]: c["column"] for c in out["columns"] if c["column"] != "ignore"}
 
     # ---- underwriter narrative: placeholders only, never numbers
     def write_narrative(self, result: UnderwritingResult, feedback: str | None = None

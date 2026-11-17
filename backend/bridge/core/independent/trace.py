@@ -29,7 +29,10 @@ def _value_in_quote(value, quote: str) -> bool:
         candidates = _numbers(quote)
         wanted = abs(float(value))
         return any(abs(c - wanted) <= 0.5 or abs(c / 100 - wanted) <= 0.00006 for c in candidates)
-    return str(value).strip().lower() in quote.lower()
+    def letters(text: str) -> str:      # "multifamily" is in "Multi-family walk-up"
+        return re.sub(r"[^a-z0-9]", "", text.lower())
+
+    return letters(str(value)) in letters(quote)
 
 
 def source_trace(deal: Deal, deal_dir: str | Path) -> list[str]:

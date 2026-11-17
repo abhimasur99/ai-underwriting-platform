@@ -4,8 +4,18 @@ Required fields that cannot be found are collected and raised together as
 `MissingRequiredFieldError`; nothing is defaulted.
 """
 import re
+from dataclasses import dataclass, field
 from pathlib import Path
 
+from bridge.core.parsers.assist import (
+    ASSISTED_CONFIDENCE,
+    SPEC_BY_KEY,
+    TABLE_KEYS,
+    Assist,
+    Augmentation,
+    checked_mapping,
+    verify,
+)
 from bridge.core.parsers.documents import find_text_document, read_document_text
 from bridge.core.parsers.errors import MissingRequiredFieldError, ParseError
 from bridge.core.parsers.markdown import (
@@ -16,7 +26,12 @@ from bridge.core.parsers.markdown import (
     strip_parenthetical,
 )
 from bridge.core.parsers.sourcing import derived, sourced_from_quote
-from bridge.core.parsers.tables import find_document, parse_number, read_rows
+from bridge.core.parsers.tables import (
+    find_document,
+    parse_number,
+    read_raw,
+    read_rows,
+)
 from bridge.core.schema import (
     T12,
     AmountRow,
@@ -42,7 +57,14 @@ RENT_ROLL_SYNONYMS = {
 }
 T12_SYNONYMS = {"line": "line_item", "item": "line_item", "annual": "total", "type": "category"}
 BUDGET_SYNONYMS = {"item": "line_item", "cost": "amount", "budget": "amount"}
-MONTH = re.compile(r"^\d{4}_\d{2}$")
+MONTH = re.compile(
+    r"^(?:\d{4}_\d{1,2}|\d{1,2}_\d{4}|"
+    r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*_?(?:\d{2}|\d{4}))$")
+REQUIRED_COLUMNS = {"rent_roll": ["unit", "unit_type", "status", "monthly_rent"],
+                    "t12": ["line_item", "category", "total"],
+                    "renovation_budget": ["line_item", "amount"]}
+SYNONYMS = {"rent_roll": RENT_ROLL_SYNONYMS, "t12": T12_SYNONYMS,
+            "renovation_budget": BUDGET_SYNONYMS}
 TOLERANCE_USD = 1.0
 
 
@@ -63,6 +85,8 @@ class _Collector:
 
 
 def _src(doc: str, text: str, bullet: Bullet | TableRow, value, *, conf: float | None = None):
+    if conf is None and getattr(bullet, "assisted", False):
+        conf = ASSISTED_CONFIDENCE
     kwargs = {} if conf is None else {"confidence": conf}
     return sourced_from_quote(value, doc, text, f"line {bullet.line}", bullet.text, **kwargs)
 
@@ -81,6 +105,19 @@ def _bullet_value(b: Bullet | None, kind: str):
         return strip_parenthetical(b.value) if kind == "text" else b.value
     except (AttributeError, ValueError) as exc:
         raise ParseError(f"cannot read {b.label!r} from line {b.line}: {b.value!r}") from exc
+
+
+def _canonical_asset_type(text: str | None) -> str | None:
+    """'Multi-family' and 'mixed use' are the platform's `multifamily` and `mixed_use`; anything
+    else is left as written so the eligibility rule can refuse it."""
+    if text is None:
+        return None
+    key = re.sub(r"[^a-z]", "", text.lower())
+    if key.startswith("multifamily"):
+        return "multifamily"
+    if key.startswith("mixeduse"):
+        return "mixed_use"
+    return text
 
 
 def _first_amount(text: str) -> str:
@@ -103,13 +140,63 @@ def _table_row(table, label: str) -> TableRow | None:
     return None
 
 
-def _read_rent_roll(directory: Path, flags: list[Flag]) -> tuple[list[RentRollUnit], str, int, int]:
-    path = find_document(directory, "rent_roll")
-    rows = read_rows(path, RENT_ROLL_SYNONYMS)
-    missing = [c for c in ("unit", "unit_type", "status", "monthly_rent")
-               if rows and c not in rows[0].cells]
+@dataclass
+class _Context:
+    """What one parse needs beyond the files: an optional model assist (asked only when the
+    deterministic read fails), notes on what it did, and prose fields already verified."""
+    assist: Assist | None = None
+    notes: list[str] = field(default_factory=list)
+    extra: dict[str, Augmentation] = field(default_factory=dict)
+
+
+class _Memo:
+    """Ask the assist once per question, even though a parse may run twice."""
+
+    def __init__(self, assist: Assist):
+        self.assist, self.cache = assist, {}
+
+    def map_columns(self, kind, headers, sample):
+        key = (kind, tuple(headers))
+        if key not in self.cache:
+            self.cache[key] = self.assist.map_columns(kind, headers, sample)
+        return self.cache[key]
+
+    def read_document(self, name, text, wanted, want_tables):
+        key = (name, tuple(s.key for s in wanted), want_tables)
+        if key not in self.cache:
+            self.cache[key] = self.assist.read_document(name, text, wanted, want_tables)
+        return self.cache[key]
+
+
+def _missing_columns(stem: str, rows) -> list[str]:
+    return [c for c in REQUIRED_COLUMNS[stem] if rows and c not in rows[0].cells]
+
+
+def _table(directory: Path, stem: str, ctx: _Context):
+    """The table's rows. If required columns are not found by name, a model (when allowed) may
+    say which heading is which; the numbers are still read from the table by code."""
+    path = find_document(directory, stem)
+    rows = read_rows(path, SYNONYMS[stem])
+    if not rows:
+        raise ParseError(f"{path.name} has no data rows")
+    missing = _missing_columns(stem, rows)
+    if missing and ctx.assist is not None:
+        raw = read_raw(path)
+        mapping = checked_mapping(stem, raw[0], ctx.assist.map_columns(stem, raw[0], raw[1:4]))
+        if mapping:
+            rows = read_rows(path, {**SYNONYMS[stem], **mapping})
+            missing = _missing_columns(stem, rows)
+            if not missing:
+                ctx.notes.append(f"{path.name}: columns matched by the model ("
+                                 + ", ".join(f"{h} as {c}" for h, c in mapping.items()) + ")")
     if missing:
-        raise MissingRequiredFieldError([f"rent_roll.{c}" for c in missing])
+        raise MissingRequiredFieldError([f"{stem}.{c}" for c in missing])
+    return path, rows
+
+
+def _read_rent_roll(directory: Path, flags: list[Flag], ctx: _Context
+                    ) -> tuple[list[RentRollUnit], str, int, int]:
+    path, rows = _table(directory, "rent_roll", ctx)
     units = []
     for r in rows:
         status = r.cells["status"].lower()
@@ -126,9 +213,9 @@ def _read_rent_roll(directory: Path, flags: list[Flag]) -> tuple[list[RentRollUn
     return units, path.name, rows[0].number, rows[-1].number
 
 
-def _read_t12(directory: Path, flags: list[Flag]) -> tuple[list[T12Line], str, int, int]:
-    path = find_document(directory, "t12")
-    rows = read_rows(path, T12_SYNONYMS)
+def _read_t12(directory: Path, flags: list[Flag], ctx: _Context
+              ) -> tuple[list[T12Line], str, int, int]:
+    path, rows = _table(directory, "t12", ctx)
     lines = []
     for r in rows:
         category = r.cells.get("category", "").lower()
@@ -146,26 +233,71 @@ def _read_t12(directory: Path, flags: list[Flag]) -> tuple[list[T12Line], str, i
     return lines, path.name, rows[0].number, rows[-1].number
 
 
-def _read_budget(directory: Path) -> list[LineItem]:
-    rows = read_rows(find_document(directory, "renovation_budget"), BUDGET_SYNONYMS)
+def _read_budget(directory: Path, ctx: _Context) -> list[LineItem]:
+    _, rows = _table(directory, "renovation_budget", ctx)
     return [LineItem(item=r.cells["line_item"], amount=parse_number(r.cells["amount"]))
             for r in rows]
 
 
-def parse_deal_dir(directory: str | Path) -> Deal:
+def _assisted_prose(d: Path, assist: Assist, missing: list[str]) -> dict[str, Augmentation]:
+    """Ask the model for the prose fields the parser did not find; keep only what verifies."""
+    wanted_keys = [k for k in missing if k in SPEC_BY_KEY]
+    want_tables = any(k in TABLE_KEYS for k in missing)
+    out: dict[str, Augmentation] = {}
+    for doc, stem in (("summary", "deal_summary"), ("contract", "purchase_contract")):
+        wanted = [SPEC_BY_KEY[k] for k in wanted_keys if SPEC_BY_KEY[k].doc == doc]
+        tables = want_tables and doc == "summary"
+        if not wanted and not tables:
+            continue
+        path = find_text_document(d, stem)
+        text = read_document_text(path)
+        reading = assist.read_document(path.name, text, wanted, tables)
+        out[doc] = verify(reading, text, wanted, tables)
+    return out
+
+
+def parse_deal_dir(directory: str | Path, assist: Assist | None = None) -> Deal:
+    """Read a deal folder into a sourced Deal. The deterministic parser always runs first. With an
+    `assist` (live mode), a field or column it cannot find may be read by the model instead, and
+    only if the document itself supports the answer (core/parsers/assist.py). Without one, a
+    missing field raises MissingRequiredFieldError and the deal stops and asks."""
     d = Path(directory)
+    ctx = _Context(assist=_Memo(assist) if assist is not None else None)
+    try:
+        return _parse(d, ctx)
+    except MissingRequiredFieldError as exc:
+        if ctx.assist is None:
+            raise
+        try:
+            ctx.extra = _assisted_prose(d, ctx.assist, exc.missing)
+        except FileNotFoundError:
+            raise exc from None
+        refused = {k: why for aug in ctx.extra.values() for k, why in aug.rejected.items()}
+        if not any(aug.accepted for aug in ctx.extra.values()):
+            raise MissingRequiredFieldError(exc.missing, refused) from None
+        try:
+            return _parse(d, ctx)
+        except MissingRequiredFieldError as again:
+            raise MissingRequiredFieldError(again.missing, refused) from None
+
+
+def _parse(d: Path, ctx: _Context) -> Deal:
     summary_path = find_text_document(d, "deal_summary")
     contract_path = find_text_document(d, "purchase_contract")
     summary_text = read_document_text(summary_path)
     contract_text = read_document_text(contract_path)
     summary, contract = parse_markdown(summary_text), parse_markdown(contract_text)
+    for doc, parsed in (("summary", summary), ("contract", contract)):
+        if doc in ctx.extra:                                  # fields the model read, verified
+            parsed.bullets.extend(ctx.extra[doc].bullets)
+            parsed.tables.extend(ctx.extra[doc].tables)
     flags: list[Flag] = []
     c = _Collector()
 
     # --- tabular documents (these raise on their own if a file or column is missing)
-    units, rr_name, rr_first, rr_last = _read_rent_roll(d, flags)
-    t12_lines, t12_name, t12_first, t12_last = _read_t12(d, flags)
-    budget_items = _read_budget(d)
+    units, rr_name, rr_first, rr_last = _read_rent_roll(d, flags, ctx)
+    t12_lines, t12_name, t12_first, t12_last = _read_t12(d, flags, ctx)
+    budget_items = _read_budget(d, ctx)
 
     S, K = summary_path.name, contract_path.name
 
@@ -177,20 +309,24 @@ def parse_deal_dir(directory: str | Path) -> Deal:
 
     # --- identity
     deal_id_line = summary.plain.get("deal id")
+    if deal_id_line is None and ctx.extra:        # the platform assigns its own id (decision D22)
+        deal_id_line = (d.name, 0, "")
     deal_id = c.need("deal_id", deal_id_line[0].split()[0] if deal_id_line else None)
-    name = c.need("name", strip_parenthetical(summary.title.split(":", 1)[-1].strip())
-                  if summary.title else None)
 
     # --- property
     b_addr, b_type = sb("address"), sb("asset type")
     b_units, b_occ = sb("units"), sb("in-place occupancy")
     address = _bullet_value(b_addr, "text")
-    asset_type = _bullet_value(b_type, "text")
+    asset_type = _canonical_asset_type(_bullet_value(b_type, "text"))
     unit_count = _bullet_value(b_units, "int")
     occupied = None
     if b_occ is not None:
         m = re.search(r"(\d+)\s+of\s+(\d+)", b_occ.value)
         occupied = int(m.group(1)) if m else None
+    title = summary.title
+    if not title and ctx.extra and address:       # a name for the queue when the document has none
+        title = f"Deal summary: {address.split(',')[0]}"
+    name = c.need("name", strip_parenthetical(title.split(":", 1)[-1].strip()) if title else None)
     c.need("address", address), c.need("asset_type", asset_type)
     c.need("unit_count", unit_count), c.need("occupied_units", occupied)
     b_year = sb("year built")
@@ -255,6 +391,13 @@ def parse_deal_dir(directory: str | Path) -> Deal:
     c.need("t12_rental_income", rental)
 
     c.raise_if_missing()
+
+    read_by_model = sorted({k for aug in ctx.extra.values() for k in aug.accepted})
+    if read_by_model or ctx.notes:
+        detail = ([f"fields read by the model, each checked against a quote in the document: "
+                   f"{', '.join(read_by_model)}"] if read_by_model else []) + ctx.notes
+        flags.append(Flag(code="MODEL_ASSISTED_EXTRACTION", field=", ".join(read_by_model) or None,
+                          message="; ".join(detail) + ". Please check them against the documents."))
 
     # --- consistency flags (do not change the call; shown to the reviewer)
     reno_value = _amount(reno_row)

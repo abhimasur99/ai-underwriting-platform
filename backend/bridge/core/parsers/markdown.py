@@ -10,6 +10,7 @@ class Bullet:
     value: str
     line: int
     text: str                # the raw line, used as the quote
+    assisted: bool = False   # supplied by a model and verified by code (core/parsers/assist.py)
 
 
 @dataclass
@@ -17,6 +18,7 @@ class TableRow:
     line: int
     cells: list[str]
     text: str
+    assisted: bool = False
 
 
 @dataclass

@@ -100,8 +100,15 @@ def render_memo(deal: Deal, result: UnderwritingResult, path: str | Path,
               Paragraph(fill(result.narrative["summary"], result), BODY), Spacer(1, 2),
               Paragraph(fill(result.narrative["exit"], result), BODY)]
     if result.reasons:
+        low = [r for r in result.reasons if r.code == "LOW_CONFIDENCE_FIELD"]
         rows = [["Reason code", "Severity", "Detail"]] + [
-            [r.code, r.severity, f.describe_reason(r)] for r in result.reasons]
+            [r.code, r.severity, f.describe_reason(r)]
+            for r in result.reasons if r.code != "LOW_CONFIDENCE_FIELD"]
+        if low:             # one row however many fields, so the memo stays on one page
+            fields = ", ".join(r.source_fields[0] for r in low)
+            rows.append(["LOW_CONFIDENCE_FIELD", "watch", Paragraph(
+                f"{len(low)} key fields were read with low confidence ({fields}); confirm them "
+                "against the documents", SMALL)])
         t = Table(rows, colWidths=[width * 0.30, width * 0.10, width * 0.60])
         t.setStyle(GRID)
         story += [Spacer(1, 3), t]

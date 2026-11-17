@@ -23,8 +23,10 @@ def run_extraction(deal_dir: Path, runner: AgentRunner, rec: Recorder) -> Extrac
     try:
         deal = runner.extract_deal(Path(deal_dir))
     except MissingRequiredFieldError as exc:
-        rec.tool_call("extraction", "extract.documents", {"mode": runner.mode}, None,
-                      {"missing": exc.missing})
+        output = {"missing": exc.missing}
+        if exc.refused:
+            output["refused_model_answers"] = exc.refused
+        rec.tool_call("extraction", "extract.documents", {"mode": runner.mode}, None, output)
         return ExtractionOutcome("needs_input", missing=exc.missing)
     except FileNotFoundError as exc:
         rec.tool_call("extraction", "extract.documents", {"mode": runner.mode}, None,

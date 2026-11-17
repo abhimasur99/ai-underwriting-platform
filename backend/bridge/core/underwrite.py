@@ -31,17 +31,20 @@ def open_questions(reasons: list[Reason], flags) -> list[str]:
         if q not in out:
             out.append(q)
 
+    low = [r.source_fields[0] for r in reasons if r.code == "LOW_CONFIDENCE_FIELD"]
     for reason in reasons:
         if reason.code == "LOW_CONFIDENCE_FIELD":
-            add(f"Confirm {reason.source_fields[0]}: extraction confidence is below the "
-                "flag level.")
             continue
         for prefix, question in _QUESTIONS:
             if reason.code == prefix or (prefix.endswith("_") and reason.code.startswith(prefix)):
                 add(question)
                 break
+    if low:         # one question for all of them, so a model-read deal does not list nine
+        add(f"Confirm against the documents: {', '.join(low)} (extraction confidence is below "
+            "the flag level).")
     for flag in flags:
-        add(f"Resolve: {flag.message}")
+        if flag.code != "MODEL_ASSISTED_EXTRACTION":    # already covered by the question above
+            add(f"Resolve: {flag.message}")
     return out
 
 

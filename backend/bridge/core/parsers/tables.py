@@ -7,6 +7,7 @@ from pathlib import Path
 from openpyxl import load_workbook
 
 from bridge.core.parsers.errors import ParseError
+from bridge.core.parsers.pdftable import pdf_grid
 
 
 @dataclass(frozen=True)
@@ -39,16 +40,18 @@ def _cell_text(value) -> str:
 
 
 def find_document(directory: Path, stem: str) -> Path:
-    for ext in ("csv", "xlsx"):
+    for ext in ("csv", "xlsx", "pdf"):
         path = directory / f"{stem}.{ext}"
         if path.exists():
             return path
-    raise FileNotFoundError(f"{stem}.csv or {stem}.xlsx not found in {directory}")
+    raise FileNotFoundError(f"{stem}.csv, {stem}.xlsx or {stem}.pdf not found in {directory}")
 
 
-def read_rows(path: Path, synonyms: dict[str, str]) -> list[Row]:
-    """Rows keyed by normalized header; `synonyms` maps alternative headers to canonical ones."""
-    if path.suffix == ".xlsx":
+def read_raw(path: Path) -> list[list[str]]:
+    """The table as text cells, header first (CSV, XLSX or a PDF's text layer)."""
+    if path.suffix == ".pdf":
+        raw = pdf_grid(path)
+    elif path.suffix == ".xlsx":
         sheet = load_workbook(path, read_only=True, data_only=True).worksheets[0]
         raw = [[_cell_text(c) for c in r] for r in sheet.iter_rows(values_only=True)]
     else:
@@ -56,6 +59,12 @@ def read_rows(path: Path, synonyms: dict[str, str]) -> list[Row]:
             raw = [list(r) for r in csv.reader(fh)]
     if not raw:
         raise ParseError(f"{path.name} is empty")
+    return raw
+
+
+def read_rows(path: Path, synonyms: dict[str, str]) -> list[Row]:
+    """Rows keyed by normalized header; `synonyms` maps alternative headers to canonical ones."""
+    raw = read_raw(path)
     header = [synonyms.get(normalize_header(h), normalize_header(h)) for h in raw[0]]
     rows = []
     for index, values in enumerate(raw[1:], start=2):
