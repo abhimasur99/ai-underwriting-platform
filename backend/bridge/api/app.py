@@ -22,7 +22,9 @@ from bridge.core.builders.workbook_view import workbook_view
 from bridge.core.diff import VersionDiff
 from bridge.core.parsers.errors import ParseError
 from bridge.core.parsers.view import document_lines
+from bridge.core.scenario import Outcome, ScenarioError, run_scenario
 from bridge.core.schema import Event
+from bridge.core.sizing import Sizing, max_loan
 from bridge.settings import Settings, get_settings
 from bridge.store import projections
 from bridge.store.db import Store
@@ -60,6 +62,29 @@ def create_app(settings: Settings | None = None, runner: AgentRunner | None = No
         if store.get_deal(deal_id) is None or store.latest_result(deal_id) is None:
             raise HTTPException(409, "the deal has not been underwritten yet")
         return chief.version_diff(deal_id)
+
+    def _underwritten(deal_id: str):
+        need(deal_id)
+        if store.get_deal(deal_id) is None or store.latest_result(deal_id) is None:
+            raise HTTPException(409, "the deal has not been underwritten yet")
+        return chief.latest(deal_id)[0]
+
+    @app.post("/api/deals/{deal_id}/what-if", response_model=Outcome)
+    def what_if(deal_id: str, body: m.WhatIfRequest):
+        """The current case against one with some assumptions changed. Nothing is saved: no
+        version, no event, no change to the deal."""
+        deal = _underwritten(deal_id)
+        try:
+            return run_scenario(deal, chief.rules, body.params)
+        except ScenarioError as exc:
+            raise HTTPException(422, str(exc)) from exc
+
+    @app.get("/api/deals/{deal_id}/max-loan", response_model=Sizing)
+    def largest_loan(deal_id: str, target: str = "screen"):
+        """The largest loan that still gets the call (screen, or watch to avoid a decline)."""
+        if target not in ("screen", "watch"):
+            raise HTTPException(422, "target must be screen or watch")
+        return max_loan(_underwritten(deal_id), chief.rules, target)
 
     @app.get("/api/deals/{deal_id}/chief-transcript", response_model=list[m.TranscriptMessage])
     def chief_transcript(deal_id: str):

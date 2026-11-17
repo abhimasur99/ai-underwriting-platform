@@ -98,6 +98,104 @@ EDIT_FIELDS = [
 ]
 
 
+_NUM = r"(\d+(?:\.\d+)?)"
+_MONEY = r"\$?\s*(\d[\d,]*(?:\.\d+)?)\s*(million|mm|m|thousand|k)?\b"
+_DOWN = ("lower", "less", "down", "drop", "fall", "declin", "decreas", "worse", "haircut", "cut",
+         "reduc", "shrink", "short")
+_UP = ("higher", "more", "up", "rise", "rose", "increas", "grow", "better", "gain")
+_WHAT_IF_CUE = re.compile(r"\b(what if|what happens if|what would happen if|suppose|supposing|"
+                          r"assume|assuming|how would|how about|if the|if rates|if noi|if we)\b")
+
+
+def _scaled(number: str, scale: str | None) -> float:
+    value = float(number.replace(",", ""))
+    factors = {"million": 1e6, "mm": 1e6, "m": 1e6, "thousand": 1e3, "k": 1e3}
+    return value * factors.get(scale or "", 1)
+
+
+def _fraction(number: str) -> float:
+    value = float(number)
+    return value / 100 if value > 1 else value
+
+
+def _direction(text: str) -> int:
+    """+1 if the clause says higher, -1 if lower; a bare 'NOI haircut 10%' reads as lower."""
+    if any(w in text for w in _DOWN):
+        return -1
+    return 1 if any(w in text for w in _UP) else -1
+
+
+def parse_what_if(message: str) -> dict[str, float]:
+    """The assumptions a message asks to try, as scenario parameters. Empty if it is not a what-if
+    (a what-if needs a cue such as 'what if' or 'suppose' and at least one assumption)."""
+    low = message.lower()
+    if not _WHAT_IF_CUE.search(low):
+        return {}
+    out: dict[str, float] = {}
+    rate = r"(?<!cap )(?:take-?out |refi |exit |market |long-?term |interest )?rates?"
+    absolute = re.search(rf"\b{rate}\s*(?:is|are|was|were|at|to|=|of|goes to|rises? to|increases? "
+                         rf"to|hits?)\s*(?:at\s*)?{_NUM}\s*(?:%|percent)", low)
+    if absolute:
+        out["takeout_rate"] = float(absolute.group(1)) / 100
+    else:
+        unit = r"(bps|basis points|%|percent|percentage points?|points?)"
+        up = re.search(rf"\b{rate}\b[^.,;]*?\b(?:go(?:es)?|going|rise[s]?|rose|increase[sd]?|climb"
+                       rf"[s]?|jump[s]?|up)\b[^.,;]*?{_NUM}\s*{unit}", low)
+        down = re.search(rf"\b{rate}\b[^.,;]*?\b(?:fall[s]?|drop[s]?|decrease[sd]?|decline[sd]?|"
+                         rf"go(?:es)? down|lower|down)\b[^.,;]*?{_NUM}\s*{unit}", low)
+        signed = re.search(rf"([+-])\s*{_NUM}\s*(bps|basis points)", low)
+        hit, sign = (up, 1) if up else (down, -1) if down else (None, 0)
+        if hit:
+            bps = float(hit.group(1)) * (1 if hit.group(2) in ("bps", "basis points") else 100)
+            out["takeout_rate_change_bps"] = sign * bps
+        elif signed:
+            out["takeout_rate_change_bps"] = (1 if signed.group(1) == "+" else -1) * float(
+                signed.group(2))
+    if m := re.search(rf"\bnoi\b([^.,;]*?){_NUM}\s*(?:%|percent)([^.,;]*)", low):
+        out["noi_change_pct"] = _direction(m.group(1) + m.group(3)) * float(m.group(2)) / 100
+    elif m := re.search(rf"{_NUM}\s*(?:%|percent)\s*([a-z ]*?)\s*(?:in )?noi\b", low):
+        out["noi_change_pct"] = _direction(m.group(2)) * float(m.group(1)) / 100
+    if m := re.search(rf"\bcap(?:italization)?\s*rate\b[^.,;\d]*?{_NUM}\s*(?:%|percent)?", low):
+        out["cap_rate"] = _fraction(m.group(1))
+    if m := re.search(rf"\b(?:loan(?: amount| size)?|commitment)\b(?!\s*to\s*(?:cost|value|arv))"
+                      rf"\s*(?:is|was|were|are|at|to|of|=|came in at|cut to|reduced to|"
+                      rf"increased to)?\s*{_MONEY}", low):
+        amount = _scaled(m.group(1), m.group(2))
+        if amount >= 100_000:
+            out["loan_amount"] = amount
+    if m := re.search(rf"\barv\b[^.,;\d$]*?{_MONEY}", low):
+        amount = _scaled(m.group(1), m.group(2))
+        if amount >= 100_000:
+            out["arv"] = amount
+    if m := re.search(rf"\b(?:min(?:imum)?\.?|required)\s*(?:take-?out\s*)?dscr\b[^.,;\d]*?{_NUM}",
+                      low):
+        out["min_dscr"] = float(m.group(1))
+    if m := re.search(rf"\bmax(?:imum)?\.?\s*(?:take-?out\s*)?ltv\b[^.,;\d]*?{_NUM}", low):
+        out["max_ltv"] = _fraction(m.group(1))
+    if m := re.search(rf"\bmin(?:imum)?\.?\s*(?:take-?out\s*)?debt yield\b[^.,;\d]*?{_NUM}", low):
+        out["min_debt_yield"] = _fraction(m.group(1))
+    if m := re.search(rf"\bstress\b[^.,;]*?\bhaircut\b[^.,;\d]*?{_NUM}\s*(?:%|percent)", low):
+        out["stress_noi_haircut"] = float(m.group(1)) / 100
+    if m := re.search(rf"\bstress\b[^.,;]*?\b(?:bump|shock|increase|rate)\b[^.,;\d]*?{_NUM}"
+                      rf"\s*(?:bps|basis points)", low):
+        out["stress_rate_bump_bps"] = float(m.group(1))
+    return out
+
+
+def wants_max_loan(message: str) -> str | None:
+    """'screen' or 'watch' if the message asks for the largest loan that still gets that call."""
+    low = message.lower()
+    asks = (re.search(r"\b(largest|biggest|maximum|max|highest|most)\b[^.?]*\bloan\b", low)
+            or re.search(r"\bhow (?:much|big|large)\b[^.?]*\b(?:lend|loan|size|carry)\b", low)
+            or re.search(r"\bwhat (?:loan|size)\b[^.?]*\b(?:screen|work|pass|fit)", low)
+            or re.search(r"\bloan\b[^.?]*\b(?:still )?screens?\b", low))
+    if not asks or re.search(r"\b(change|set|update|make|revise)\b", low):
+        return None
+    loose = re.search(r"\b(avoid\w*|without|not|no|stop)\b[^.?]*\bdeclin|stays? (?:a )?watch|"
+                      r"at least (?:a )?watch", low)
+    return "watch" if loose else "screen"
+
+
 def _reason(text: str) -> str:
     m = re.search(r"(?:because|reason\s*:|since)\s*(.+)$", text, re.I)
     return m.group(1).strip().rstrip(".") if m else ""
@@ -124,6 +222,10 @@ def interpret_chief(message: str) -> ChiefTurn:
                       text, re.I | re.S):
         return ChiefTurn("narrative_edit", patch=PatchRequest(
             "narrative", section=m.group(1).lower(), text=m.group(2).strip().strip('"')))
+    if params := parse_what_if(text):
+        return ChiefTurn("question", topic="what_if", what_if=params)
+    if target := wants_max_loan(text):
+        return ChiefTurn("question", topic="max_loan", sizing_target=target)
     if re.search(r"\b(change|set|update|make|correct|revise)\b", low):
         for pattern, field_name in EDIT_FIELDS:
             if re.search(pattern, low):

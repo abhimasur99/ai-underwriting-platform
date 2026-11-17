@@ -10,7 +10,9 @@ from bridge.core import calc
 from bridge.core import format as f
 from bridge.core.diff import VersionDiff
 from bridge.core.placeholders import NarrativeError
+from bridge.core.scenario import Outcome, ScenarioError, run_scenario
 from bridge.core.schema import Deal, UnderwritingResult
+from bridge.core.sizing import Sizing, max_loan, reason_label
 
 FIELD_PATHS = {
     "arv": "valuation.arv", "as_is_value": "valuation.as_is_value",
@@ -39,8 +41,9 @@ INPUT_FMT = {"note_rate": f.pct}
 SOURCED_INPUTS = {"loan_commitment", "initial_advance", "as_is_value", "arv", "note_rate",
                   "stabilized_noi"}
 CAPABILITIES = ("I can answer questions about this deal's calculations, exceptions and sources, "
-                "explain why the call is what it is, show what changed between versions, and "
-                "propose edits for you to confirm.")
+                "explain why the call is what it is, show what changed between versions, try "
+                "what-ifs (a different take-out rate, NOI, cap rate or loan size), find the "
+                "largest loan that still screens, and propose edits for you to confirm.")
 HELP = f"{CAPABILITIES} Nothing changes until you confirm. What would you like to know?"
 GREETING = "Hello. How can I help with this deal?"
 THANKS = "You're welcome. Let me know if there is anything else you would like to check."
@@ -51,7 +54,8 @@ ACTION_BUTTON = {"approve": "the Approve button", "reject": "the Reject button",
 
 # The follow-up questions offered after each kind of answer.
 STARTERS = ["Summarize this deal", "What are the exceptions?", "Why is the call what it is?",
-            "What changed in this version?"]
+            "What changed in this version?", "What if the take-out rate is 7%?",
+            "What is the largest loan that still screens?"]
 FOLLOW_UPS = {
     "summary": ["What are the exceptions?", "Why is the call what it is?",
                 "What does the stress case show?"],
@@ -62,6 +66,10 @@ FOLLOW_UPS = {
     "metric": ["Why is the call what it is?", "What does the stress case show?",
                "What are the exceptions?"],
     "stress": ["Why is the call what it is?", "What are the exceptions?"],
+    "what_if": ["What is the largest loan that still screens?", "What are the exceptions?",
+                "Why is the call what it is?"],
+    "max_loan": ["What does the stress case show?", "What are the exceptions?",
+                 "Why is the call what it is?"],
 }
 
 
@@ -81,6 +89,66 @@ def explain_exceptions(result) -> str:
         parts.append("Questions for the sponsor:\n" + "\n".join(f"- {q}" for q in
                                                                   result.open_questions))
     return "\n\n".join(parts)
+
+
+def _show(kind: str, value: float) -> str:
+    return f"{value:g} bps" if kind == "bps" else {"pct": f.pct, "usd": f.usd, "mult": f.mult}[
+        kind](value)
+
+
+def explain_scenario(outcome: Outcome) -> str:
+    """A what-if, in plain words: what was tried, what would move, and what the call would be."""
+    tried = "; ".join(f"{a.label} {_show(a.kind, a.before)} to {_show(a.kind, a.after)}"
+                      for a in outcome.assumptions)
+    parts = [f"What if: {tried}."]
+    shown = {"pct": f.pct, "usd": f.usd, "mult": f.mult}
+    if outcome.diff.metrics:
+        lines = "\n".join(
+            f"- {m.label}: {shown[m.kind](m.before)} to {shown[m.kind](m.after)}"
+            for m in outcome.diff.metrics)
+        parts.append(f"The effect:\n{lines}")
+    else:
+        parts.append("No calculation would move.")
+    if outcome.call_before != outcome.call_after:
+        text = (f"The call would move from {outcome.call_before.capitalize()} to "
+                f"{outcome.call_after.capitalize()}.")
+        if outcome.diff.reasons_added:
+            text += f" New reasons: {', '.join(outcome.diff.reasons_added)}."
+        if outcome.diff.reasons_removed:
+            text += f" No longer applies: {', '.join(outcome.diff.reasons_removed)}."
+        parts.append(text)
+    else:
+        parts.append(f"The call would stay {outcome.call_after.capitalize()}.")
+    parts.append("This is a what-if only: nothing has been saved or changed.")
+    return "\n\n".join(parts)
+
+
+CLAUSE = {"screen": ("still screens", "screens"), "watch": ("avoids a decline", "avoids a decline")}
+RESIZE = ("The loan is resized with the initial advance and the holdback scale together, and "
+          "value, NOI and cost are held as they are.")
+
+
+def explain_sizing(s: Sizing) -> str:
+    """The largest loan that gets the call, and what limits it."""
+    still, now = CLAUSE[s.target]
+    if s.max_loan is None:
+        why = "; ".join(reason_label(code) for code in s.persistent) or "the rules"
+        return (f"No loan size would {s.target} this deal. At any size these would remain: {why}. "
+                "Resizing the loan cannot fix them, because they come from the documents or the "
+                "property rather than the amount.")
+    if s.capped:
+        return (f"Up to the program maximum of {f.usd(s.max_loan)}, the loan would {still}: the "
+                f"rules do not limit it before then. {RESIZE}")
+    cur = f.usd(s.current_loan)
+    if s.current_call == "screen" or (s.target == "watch" and s.current_call != "decline"):
+        lead = (f"The current {cur} request already {now}, and so would a loan of up to "
+                f"{f.usd(s.max_loan)}.")
+    else:
+        lead = (f"At the current {cur} request the call is {s.current_call.capitalize()}. The "
+                f"largest loan that {still} is {f.usd(s.max_loan)}.")
+    limit = (f" Just above that, the call changes because of: {', '.join(s.binding)}."
+             if s.binding else "")
+    return f"{lead}{limit} {RESIZE}"
 
 
 def _value(path: str, text: str) -> str:
@@ -212,8 +280,36 @@ class ChiefChat:
         return [(roles[e.type], e.payload.get("text", ""))
                 for e in self.chief.store.events(deal_id) if e.type in roles]
 
-    def _answer(self, deal_id: str, turn) -> tuple[str, list[str]]:
-        """The code-composed reply to a question, and the follow-ups to offer."""
+    def _what_if(self, deal_id: str, turn) -> tuple[str, list[str], dict]:
+        deal = self.chief.latest(deal_id)[0]
+        try:
+            outcome = run_scenario(deal, self.chief.rules, turn.what_if)
+        except ScenarioError as exc:
+            return (f"I can't try that: {exc}.", STARTERS, {})
+        return (explain_scenario(outcome), FOLLOW_UPS["what_if"],
+                {"scenario": outcome.model_dump()})
+
+    def _max_loan(self, deal_id: str, turn) -> tuple[str, list[str], dict]:
+        deal = self.chief.latest(deal_id)[0]
+        sizing = max_loan(deal, self.chief.rules, turn.sizing_target or "screen")
+        outcome = None
+        if sizing.max_loan is not None and abs(sizing.max_loan - sizing.current_loan) >= 1:
+            outcome = run_scenario(deal, self.chief.rules, {"loan_amount": sizing.max_loan})
+        return (explain_sizing(sizing), FOLLOW_UPS["max_loan"],
+                {"sizing": sizing.model_dump(),
+                 "scenario": outcome.model_dump() if outcome else None})
+
+    def _answer(self, deal_id: str, turn) -> tuple[str, list[str], dict]:
+        """The code-composed reply to a question, the follow-ups to offer, and any figures the page
+        can show as a card (a what-if, a sizing)."""
+        if turn.topic == "what_if":
+            return self._what_if(deal_id, turn)
+        if turn.topic == "max_loan":
+            return self._max_loan(deal_id, turn)
+        text, follow = self._plain_answer(deal_id, turn)
+        return text, follow, {}
+
+    def _plain_answer(self, deal_id: str, turn) -> tuple[str, list[str]]:
         if turn.metric:
             text = self.get_metric(deal_id, turn.metric)
             return text, FOLLOW_UPS["stress" if "stress" in turn.metric else "metric"]
@@ -239,9 +335,11 @@ class ChiefChat:
         self._log(deal_id, "reviewer", "chat.reviewer", message)
         past = self.history(deal_id)[:-1]
         turn = self.runner.interpret_chief(message)
-        out = {"intent": turn.intent, "patch": None, "suggestions": []}
+        out = {"intent": turn.intent, "patch": None, "suggestions": [], "scenario": None,
+               "sizing": None}
         if turn.intent == "question":
-            reply, out["suggestions"] = self._answer(deal_id, turn)
+            reply, out["suggestions"], extra = self._answer(deal_id, turn)
+            out.update(extra)
             out["reply"] = self.phraser.reviewer(reply, past)
         elif turn.intent == "action":
             button = ACTION_BUTTON[turn.action]

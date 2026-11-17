@@ -23,6 +23,7 @@ from bridge.agents.runner_types import ChiefTurn, IntakeTurn, PatchRequest
 from bridge.core.parsers import parse_deal_dir
 from bridge.core.parsers.assist import COLUMNS, FieldSpec, RawField, RawReading, RawRow
 from bridge.core.placeholders import placeholder_values
+from bridge.core.scenario import PARAMS
 from bridge.core.schema import CheckReport, Deal, Mismatch, UnderwritingResult
 
 log = logging.getLogger("bridge.model")
@@ -66,7 +67,10 @@ CHIEF_SCHEMA = _schema({
     "metric": {"type": "string", "enum": ["none", *METRICS]},
     "topic": {"type": "string",
               "enum": ["none", "reasons", "summary", "exceptions", "changes", "greeting",
-                       "thanks", "help", "outside"]},
+                       "thanks", "help", "what_if", "max_loan", "outside"]},
+    "what_if": {"type": "array", "items": _schema({
+        "param": {"type": "string", "enum": list(PARAMS)}, "value": {"type": "number"}})},
+    "sizing_target": {"type": "string", "enum": ["none", "screen", "watch"]},
     "action": {"type": "string",
                "enum": ["none", "approve", "send_back", "reject", "request_info"]},
     "patch_kind": {"type": "string", "enum": ["none", "data", "narrative", "override"]},
@@ -285,7 +289,13 @@ class ClaudeRunner:
             "where a field does not apply. Percentages as fractions (11% = 0.11). You do not "
             "answer; code answers from tool output. For an override, patch_text is the judgment "
             "being recorded (for example 'comfortable with the sponsor') and patch_reason is why "
-            "(the words after 'because'); fill both.", self._wrap(message), CHIEF_SCHEMA)
+            "(the words after 'because'); fill both. "
+            "For a what-if question (topic what_if) list each assumption as a name from the "
+            "schema and its value: percentages as fractions "
+            "(7% = 0.07), a rate change in basis points, NOI change as a signed fraction "
+            "(10% lower = -0.10), money in dollars. For the largest loan question (topic "
+            "max_loan) set sizing_target to screen, or watch if they want to avoid a decline.",
+            self._wrap(message), CHIEF_SCHEMA)
 
         def keep(value):
             return None if value in ("none", "", None) else value
@@ -299,4 +309,6 @@ class ClaudeRunner:
                 text=keep(out["patch_text"]) or self._judgment_from(message, out),
                 reason=out["patch_reason"] or "")
         return ChiefTurn(intent=out["intent"], metric=keep(out["metric"]),
-                         topic=keep(out["topic"]), patch=patch, action=keep(out["action"]))
+                         topic=keep(out["topic"]), patch=patch, action=keep(out["action"]),
+                         what_if={w["param"]: w["value"] for w in out.get("what_if", [])},
+                         sizing_target=keep(out.get("sizing_target")))

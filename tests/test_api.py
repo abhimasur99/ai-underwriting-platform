@@ -378,3 +378,40 @@ def test_the_reviewers_conversation_is_kept_apart_from_the_sponsors(client):
     assert [m["from"] for m in mine] == ["you", "agent"] and mine[0]["text"] == "hello"
     sponsors = " ".join(m["text"] for m in client.get(f"/api/deals/{deal_id}/transcript").json())
     assert "How can I help with this deal" not in sponsors
+
+
+def test_what_if_route_answers_and_changes_nothing(client):
+    deal_id = submitted_deal(client)
+    events_before = client.get(f"/api/deals/{deal_id}/events").json()
+    out = client.post(f"/api/deals/{deal_id}/what-if",
+                      json={"params": {"takeout_rate": 0.065}})
+    assert out.status_code == 200
+    body = out.json()
+    assert body["call_before"] == body["call_after"] == "screen"
+    assert body["assumptions"][0]["key"] == "takeout_rate"
+    assert body["diff"]["metrics"] and body["diff"]["from_version"] == body["diff"]["to_version"]
+    assert client.get(f"/api/deals/{deal_id}/events").json() == events_before   # nothing logged
+    assert client.get(f"/api/deals/{deal_id}").json()["versions"] == [1]
+
+
+def test_what_if_route_refuses_unreasonable_or_empty_assumptions(client):
+    deal_id = submitted_deal(client)
+    assert client.post(f"/api/deals/{deal_id}/what-if", json={"params": {}}).status_code == 422
+    bad = client.post(f"/api/deals/{deal_id}/what-if", json={"params": {"takeout_rate": 0.9}})
+    assert bad.status_code == 422 and "take-out rate" in bad.json()["detail"]
+    missing = client.post("/api/deals/D-9999/what-if", json={"params": {"arv": 1e7}})
+    assert missing.status_code == 404
+    fresh = client.post("/api/deals").json()["deal_id"]
+    assert client.post(f"/api/deals/{fresh}/what-if",
+                       json={"params": {"arv": 1e7}}).status_code == 409
+
+
+def test_max_loan_route_gives_the_exact_limit(client):
+    deal_id = submitted_deal(client)
+    body = client.get(f"/api/deals/{deal_id}/max-loan").json()
+    assert body["target"] == "screen" and body["current_call"] == "screen"
+    assert body["max_loan"] > body["current_loan"]
+    looser = client.get(f"/api/deals/{deal_id}/max-loan", params={"target": "watch"})
+    assert looser.status_code == 200
+    assert client.get(f"/api/deals/{deal_id}/max-loan", params={"target": "x"}).status_code == 422
+    assert client.get("/api/deals/D-9999/max-loan").status_code == 404

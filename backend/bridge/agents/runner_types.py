@@ -28,6 +28,8 @@ class PatchRequest:
 class ChiefTurn:
     intent: str                     # question | data_edit | narrative_edit | override | action
     metric: str | None = None       # for questions
-    topic: str | None = None        # "reasons" | "summary" | "outside" | None
+    topic: str | None = None        # reasons, summary, exceptions, changes, what_if, max_loan, ...
     patch: PatchRequest | None = None
     action: str | None = None       # approve | send_back | reject
+    what_if: dict[str, float] = field(default_factory=dict)   # assumptions to try (core/scenario)
+    sizing_target: str | None = None                          # screen or watch, for max_loan
