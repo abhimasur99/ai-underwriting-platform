@@ -1,14 +1,26 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../../api/client'
-import type { Patch } from '../../api/client'
+import type { Patch, VersionDiff } from '../../api/client'
 import { pct, usd } from '../../lib/format'
 import { REVIEWER_PROMPTS } from '../../lib/samples'
+import type { Prompt } from '../../lib/samples'
 import { Button } from '../../ui/Button'
+import ChangeCard from './ChangeCard'
 
 interface Msg {
   from: 'you' | 'chief'
   text: string
   patch?: Patch
+  diff?: VersionDiff
+  suggestions?: string[]
+}
+
+const INTRO: Msg = {
+  from: 'chief',
+  text:
+    'Hello. I can answer questions about this deal’s calculations, exceptions and sources, ' +
+    'explain why the call is what it is, show what changed between versions, and propose edits ' +
+    'for you to confirm. Nothing changes until you confirm.',
 }
 
 function showValue(path: string, v: unknown): string {
@@ -65,17 +77,10 @@ function PatchCard({
   )
 }
 
-export default function ChiefChat({
+export default function ChatPane({
   dealId, enabled, pending, onCollapse,
 }: { dealId: string; enabled: boolean; pending: Patch[]; onCollapse: () => void }) {
-  const [msgs, setMsgs] = useState<Msg[]>([
-    {
-      from: 'chief',
-      text:
-        'Ask me about this deal, or tell me what to change. Questions are answered from the tool ' +
-        'record. Nothing is edited until you press Confirm.',
-    },
-  ])
+  const [msgs, setMsgs] = useState<Msg[]>([INTRO])
   const [resolved, setResolved] = useState<Record<string, 'confirmed' | 'cancelled'>>({})
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
@@ -86,7 +91,20 @@ export default function ChiefChat({
     bottom.current?.scrollIntoView({ behavior: 'smooth' })
   }, [msgs])
 
+  // Reopening the deal restores the conversation.
+  useEffect(() => {
+    api.chiefTranscript(dealId).then((log) => {
+      if (log.length)
+        setMsgs([INTRO, ...log.map((m) => ({ from: (m.from === 'you' ? 'you' : 'chief') as Msg['from'], text: m.text }))])
+    }, () => undefined)
+  }, [dealId])
+
   const say = (m: Msg) => setMsgs((prev) => [...prev, m])
+  // After an answer, offer what it suggests; before anything has been asked, the starters.
+  const last = msgs.at(-1)
+  const suggestions: Prompt[] = last?.suggestions?.length
+    ? last.suggestions.map((t) => ({ text: t, send: true }))
+    : REVIEWER_PROMPTS
   const statusOf = (p: Patch) => resolved[p.patch_id] ?? 'proposed'
   // A patch proposed earlier (or in another tab) that is still waiting for a click.
   const shown = new Set(msgs.flatMap((x) => (x.patch ? [x.patch.patch_id] : [])))
@@ -100,7 +118,7 @@ export default function ChiefChat({
     setBusy(true)
     try {
       const r = await api.chiefChat(dealId, m)
-      say({ from: 'chief', text: r.reply, patch: r.patch ?? undefined })
+      say({ from: 'chief', text: r.reply, patch: r.patch ?? undefined, suggestions: r.suggestions })
     } catch (e) {
       say({ from: 'chief', text: (e as Error).message })
     } finally {
@@ -113,13 +131,16 @@ export default function ChiefChat({
     try {
       await api.confirmPatch(dealId, p.patch_id)
       setResolved((r) => ({ ...r, [p.patch_id]: 'confirmed' }))
-      say({
-        from: 'chief',
-        text:
-          p.kind === 'data'
-            ? 'Applied. A new deal version was created and underwriting and the independent check re-ran.'
-            : 'Applied. The memo was re-rendered and its numbers re-checked.',
-      })
+      if (p.kind === 'data') {
+        const diff = await api.changes(dealId).catch(() => undefined)
+        say({
+          from: 'chief',
+          text: 'Done. I created a new version, re-ran the calculations and the independent check, and the changes are below.',
+          diff,
+        })
+      } else {
+        say({ from: 'chief', text: 'Done. The memo has been updated; the calculations are unchanged.' })
+      }
     } catch (e) {
       say({ from: 'chief', text: `I couldn't apply that: ${(e as Error).message}` })
     } finally {
@@ -141,7 +162,7 @@ export default function ChiefChat({
       <div className="flex items-start border-b border-slate-200 px-4 py-3">
         <div>
           <h2 className="eyebrow !text-ink">Chief chat</h2>
-          <p className="text-xs text-slate-600">Reviewer only. The chief reads your message; code answers.</p>
+          <p className="text-xs text-slate-600">Reviewer only. Every figure comes from the calculations.</p>
         </div>
         <button onClick={onCollapse} aria-label="Collapse the chat"
           className="ml-auto text-xs font-semibold text-slate-500 hover:text-ink">
@@ -149,7 +170,7 @@ export default function ChiefChat({
         </button>
       </div>
       <div role="log" aria-live="polite" aria-label="Conversation"
-        className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+        className="relative min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
         {msgs.map((m, i) => (
           <div key={i} className={m.from === 'you' ? 'flex justify-end' : ''}>
             <div className={`max-w-[92%] ${m.from === 'you' ? '' : 'w-full'}`}>
@@ -160,6 +181,7 @@ export default function ChiefChat({
               >
                 {m.text}
               </div>
+              {m.diff && <ChangeCard diff={m.diff} />}
               {m.patch && (
                 <PatchCard
                   patch={m.patch}
@@ -181,20 +203,21 @@ export default function ChiefChat({
               onConfirm={() => void confirm(p)} onCancel={() => void cancel(p)} />
           </div>
         ))}
-        {busy && <div className="text-xs text-slate-400">…</div>}
+        {busy && <div className="text-xs text-slate-500">…</div>}
         <div ref={bottom} />
       </div>
       <div className="border-t border-slate-200 p-3">
         {enabled ? (
           <>
-            <div className="mb-2 flex max-h-24 flex-wrap gap-1.5 overflow-y-auto">
-              {REVIEWER_PROMPTS.map((p) => (
+            <div className="mb-2 flex max-h-24 flex-wrap gap-1.5 overflow-y-auto" aria-label="Suggestions">
+              {suggestions.map((p) => (
                 <button
-                  key={p}
-                  onClick={() => setText(p)}
-                  className="rounded-[2px] border border-slate-300 bg-white px-2.5 py-1 text-left text-[11px] text-slate-500 hover:border-ink hover:text-ink"
+                  key={p.text}
+                  onClick={() => (p.send ? void send(p.text) : setText(p.text))}
+                  disabled={busy}
+                  className="rounded-[2px] border border-slate-300 bg-white px-2.5 py-1 text-left text-[11px] text-slate-600 hover:border-ink hover:text-ink disabled:opacity-50"
                 >
-                  {p.length > 44 ? `${p.slice(0, 42)}…` : p}
+                  {p.text.length > 44 ? `${p.text.slice(0, 42)}…` : p.text}
                 </button>
               ))}
             </div>

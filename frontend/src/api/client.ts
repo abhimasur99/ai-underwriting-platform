@@ -16,6 +16,9 @@ export type WorkbookView = S['WorkbookView']
 export type ChiefChatResponse = S['ChiefChatResponse']
 export type FileRow = S['FileRow']
 export type FileText = S['FileText']
+export type FactView = S['FactView']
+export type VersionDiff = S['VersionDiff']
+export type TranscriptMessage = S['TranscriptMessage']
 
 export class ApiError extends Error {
   status: number
@@ -66,11 +69,16 @@ export const api = {
   createDeal: () => request<S['CreateDealResponse']>('/api/deals', { method: 'POST' }),
   chat: (id: string, message: string) =>
     request<S['ChatResponse']>(`/api/deals/${id}/chat`, json({ message })),
-  upload: (id: string, file: File) => {
+  upload: (id: string, file: File, label?: string) => {
     const form = new FormData()
     form.append('file', file)
+    if (label) form.append('label', label)
     return request<S['FileResponse_']>(`/api/deals/${id}/files`, { method: 'POST', body: form })
   },
+  changes: (id: string) => request<VersionDiff>(`/api/deals/${id}/changes`),
+  chiefTranscript: (id: string) =>
+    request<TranscriptMessage[]>(`/api/deals/${id}/chief-transcript`),
+  transcript: (id: string) => request<TranscriptMessage[]>(`/api/deals/${id}/transcript`),
   intakeStatus: (id: string) => request<IntakeStatus>(`/api/deals/${id}/intake-status`),
   chiefChat: (id: string, message: string) =>
     request<ChiefChatResponse>(`/api/deals/${id}/chief-chat`, json({ message })),

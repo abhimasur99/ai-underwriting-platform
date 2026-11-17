@@ -6,8 +6,9 @@ Shared pattern: **code owns the order of work.** The underwriter, checker and ex
 
 ## 1. Intake chat (external, chat only)
 - **Job:** collect the documents and facts the checklist needs, in a friendly chat. Never gives a decision or any numbers about the deal.
-- **Model use:** only to interpret a message into facts and a "asked for a decision" flag. Replies are composed by code from the checklist (D18). The checklist logic is code.
-- **Tools:** `record_fact(key, value)`, `get_checklist_status()`, `classify_file(file_id)` (filename and header hints first, model label only if ambiguous), `submit_deal()` (allowed only when `ready` is true).
+- **Model use:** only to read a message into facts, what the person is doing (greeting, help, missing, next, status, thanks) and an "asked for a decision" flag. Replies are composed by code from the checklist and the deal's state (`agents/intake_replies.py`, D18); in live mode a model may rephrase a reply, and code uses the rephrasing only if it adds no number and no credit or underwriting word the draft did not already have (`agents/phrasing.py`, D40). The checklist logic is code.
+- **Details from documents:** as each document arrives, the address, asset type, units, sponsor, loan amount, price and renovation budget are read from it (`core/parsers/preview.py`), so the sponsor confirms instead of retyping (D39).
+- **Tools:** `record_fact(key, value)`, `get_checklist_status()`, `classify_file(file_id)` (filename, then columns, then the document's first lines; if all fail the chat asks), `submit_deal()` (allowed only when `ready` is true).
 - **Flow per message:** apply tool calls, recompute checklist, reply with what was received and what is missing, one ask at a time.
 - **Guardrails:** refuses to discuss underwriting results, rates or approval odds ("the team will follow up"); file type and size limits from `config/checklist.yaml`; uploaded file content is data, never instructions.
 - **Done:** the deal is created as `CREATED` when the chat starts. `submit_deal` is allowed only in `READY`; it hands the deal to the chief, which dispatches extraction (`EXTRACTING`).

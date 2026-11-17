@@ -9,11 +9,13 @@ Work one sprint at a time. Stop at done-when and show the result before starting
 | 0 Setup, 1 Core, 2 Agents, 3 UI, 3b Restyle and queue housekeeping | Done, tagged (`sprint-0` to `sprint-3b`) |
 | 3c Files and deals | Done, tagged `sprint-3c` |
 | 3d Deal page rebuild | Done, tagged `sprint-3d` |
-| 3e Intake and chat | Planned |
-| 3f Draft broker reply | Planned |
+| 3e Intake and chat | Built, awaiting review |
+| 3f What-ifs and sizing | Planned |
+| 3g Draft broker reply | Planned |
+| 3h Underwriter case (assumptions) | Optional: decide after 3g |
 | 4 Demo and docs | Planned (last) |
 
-Why 3c to 3f exist: a design review (see `docs/decisions.md` D29 to D33) found that the demo should use real PDF, Word and Excel files, that the deal page repeats itself and shows system internals instead of the reviewer's job, and that the chats are too canned. Each sprint below is its own branch and tag, test-first where it touches core code.
+Why 3c to 3h exist: a design review (see `docs/decisions.md` D29 to D33) found that the demo should use real PDF, Word and Excel files, that the deal page repeats itself and shows system internals instead of the reviewer's job, and that the chats are too canned. Each sprint below is its own branch and tag, test-first where it touches core code.
 
 ## Sprint 3c: Files and deals
 - [x] Add `pypdf` and `python-docx`. Read PDF (text layer) and DOCX into the same structure the markdown parser uses; summary and contract may be `.md`, `.txt`, `.pdf` or `.docx`; tables may be `.csv` or `.xlsx`. The checker gets its own small reader (independence)
@@ -36,15 +38,25 @@ Why 3c to 3f exist: a design review (see `docs/decisions.md` D29 to D33) found t
 **Done when:** a reviewer can go from the queue to a decision without opening the Process tab, and every number opens to its source line.
 
 ## Sprint 3e: Intake and chat
-- [ ] Facts are read from the uploaded documents; the sponsor only confirms or fills gaps
-- [ ] Interactive checklist beside the chat (drop a file onto its slot); chat on the left, as everywhere
-- [ ] Richer replies from code-composed templates (greeting, help, what is missing, what next, status, thanks); live mode may phrase them from an allowed-facts packet, guarded by a test that rejects numbers and decision language
-- [ ] Chief chat: capabilities help, deal summary, exceptions, what changed in the latest version, follow-up chips
+- [x] Facts are read from the uploaded documents; the sponsor only confirms or fills gaps
+- [x] Interactive checklist beside the chat (drop a file onto its slot); chat on the left, as everywhere
+- [x] Richer replies from code-composed templates (greeting, help, what is missing, what next, status, thanks); live mode may phrase them from an allowed-facts packet, guarded by a test that rejects numbers and decision language
+- [x] Chief chat: capabilities help, deal summary, exceptions, what changed in the latest version (with a before and after card), follow-up chips
 **Done when:** a sponsor who drops five files and types nothing else is told what was read and what is missing.
 
-## Sprint 3f: Draft broker reply
-- [ ] Approving a deal produces a draft reply to the broker (template offline, wording from Claude in live mode); it is shown for the reviewer to edit and approve, and is never sent
+## Sprint 3f: What-ifs and sizing
+- [ ] A pure scenario engine (the same calculator, with parameters changed) behind both the chat and an API route: what if the take-out rate, an NOI haircut, a cap rate, take-out terms or the loan amount changed; nothing is saved and the deal is not touched, so the independent check is not involved
+- [ ] The chief chat understands what-ifs ("what if rates are 7%?") and answers with the current case against the changed one, the call change highlighted, every figure from the engine
+- [ ] "What is the largest loan that still screens?": code solves it exactly by re-applying the rules (the advance and the holdback scale together; ARV and NOI are held)
+- [ ] The before and after view for every committed change (the chat card from 3e) also on the deal page
+**Done when:** a reviewer can ask a what-if or the maximum loan in the chat and get an exact answer in seconds, and no what-if changes the deal.
+
+## Sprint 3g: Draft broker reply
+- [ ] Approving or rejecting a deal produces a draft reply to the broker (template offline, wording from Claude in live mode behind the same validator as the chats); it is shown for the reviewer to edit and approve, and is never sent
 **Done when:** every approved or rejected deal has a logged, reviewer-approved draft.
+
+## Sprint 3h: Underwriter case (optional)
+An assumptions panel for the reviewer's own haircuts, cap rate and take-out terms beside the borrower's figures, with explore, then commit with a reason (the chat proposes the same card). It needs the independent checker's own implementation of each assumption, the workbook, the memo and the rules on the committed case, so it is decided after 3g, and kept to a few assumptions if it is built.
 
 `make e2e` (a Playwright script in the repo) runs the demo path locally; it is not a CI step.
 

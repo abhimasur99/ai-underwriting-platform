@@ -2,6 +2,7 @@
 //
 // Needs the app running (`make dev`) and the demo deals seeded (`make demo`), which resets the
 // data this test changes. Run it with `make e2e`.
+import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright-core'
 
 const UI = process.env.E2E_UI ?? 'http://localhost:5173'
@@ -96,6 +97,52 @@ ok((await next.count()) === 1, 'Next needing review is offered')
 await next.click()
 await page.waitForTimeout(800)
 ok(!/D-0050/.test(page.url()), 'and it opens a different deal')
+
+// the sponsor's intake: five files and no typing complete the package; a reload keeps the talk
+const SAMPLE = fileURLToPath(new URL('../../data/deals/statenisland_mf/', import.meta.url))
+await go('chat')
+await page.fill('input[aria-label=Message]', 'hello')
+await page.click('button:has-text("Send")')
+await page.waitForTimeout(1000)
+await page.fill('input[aria-label=Message]', 'what can you help me with')
+await page.click('button:has-text("Send")')
+await page.waitForTimeout(1000)
+ok(/can.t discuss pricing/.test(await page.locator('[role=log]').innerText()), 'the assistant explains its role and its limits')
+const slots = [['Deal summary', 'deal_summary.pdf'], ['Purchase contract', 'purchase_contract.pdf'],
+  ['Rent roll', 'rent_roll.xlsx'], ['T-12 operating statement', 't12.xlsx'], ['Renovation budget', 'renovation_budget.xlsx']]
+for (const [slot, file] of slots) {
+  await page.setInputFiles(`input[aria-label="Choose a file for ${slot}"]`, SAMPLE + file)
+  await page.waitForTimeout(500)
+}
+await page.waitForTimeout(3000)
+ok((await page.locator('text=5 of 5 received').count()) === 1, 'five of five documents received')
+ok((await page.locator('dt:has-text("Requested loan amount")').count()) === 1, 'the details are read from the documents')
+ok(/with our team for review/.test(await page.locator('[role=log]').innerText()), 'with no typing the package is with the team')
+await page.reload()
+await page.waitForTimeout(1500)
+ok(/what can you help me with/.test(await page.locator('[role=log]').innerText()), 'a reload restores the conversation')
+
+// the reviewer's chat: it answers, suggests, and shows before and after for an edit
+await go('deals/D-0049/memo')
+await page.fill('input[placeholder="Ask or request a change"]', 'hello')
+await page.click('button:has-text("Send")')
+await page.waitForTimeout(800)
+ok(/How can I help with this deal/.test(await page.locator('[role=log]').innerText()), 'the chief greets politely')
+await page.click('button:has-text("What changed in this version?")')
+await page.waitForTimeout(800)
+ok(/first version/.test(await page.locator('[role=log]').innerText()), 'a suggestion can be clicked to ask it')
+await page.fill('input[placeholder="Ask or request a change"]', 'Change the ARV to 8,000,000 because the appraisal came in lower')
+await page.click('button:has-text("Send")')
+await page.waitForTimeout(800)
+await page.click('button:has-text("Confirm")')
+await page.waitForTimeout(3500)
+ok((await page.locator('text=Version 2: what changed').count()) === 1, 'a confirmed edit shows what changed')
+ok((await page.locator('th:has-text("Loan to ARV")').count()) >= 1, 'with the metric that moved')
+ok(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1),
+  'and the page layout does not grow past the window')
+await page.reload()
+await page.waitForTimeout(1500)
+ok(/Change the ARV to 8,000,000/.test(await page.locator('[role=log]').innerText()), 'the reviewer’s conversation also survives a reload')
 
 ok(problems.length === 0, `no console errors${problems.length ? `: ${problems.join(' | ')}` : ''}`)
 await browser.close()

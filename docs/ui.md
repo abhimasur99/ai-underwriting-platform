@@ -3,26 +3,26 @@
 Three screens for the MVP. The deals tracker (portfolio view for seniors) is deferred.
 
 ## 1. Chat intake (external)
-A single chat page. The chat itself reports status; there is no separate status page.
+The sponsor's page: the conversation on the left, and what has arrived and what was read from it on the right. The chat itself reports status; there is no separate status page.
 
 ```
-+--------------------------------------------------+
-| Bridge loan intake                               |
-| [✓ Deal summary][✓ Contract][✓ Rent roll]        |
-| [○ T-12][○ Renovation budget]                    |
-|--------------------------------------------------|
-|  Agent: Thanks. I have your rent roll and ...    |
-|                    You: Uploading the T-12 now   |
-|                    [ t12.csv uploaded ]          |
-|  Agent: Got it. One item left: the budget.       |
-| [ Type a message or drop files              ]    |
-+--------------------------------------------------+
++--------------------------------------+-----------------------------+
+| Submit a bridge loan package         | Documents        3 of 5     |
+|                                      |  [x] Deal summary   Replace |
+|  Assistant: Thank you, I have your   |  [x] Purchase contract      |
+|  deal summary. From it I read: ...   |  [ ] Rent roll      Choose  |
+|                    You: thanks       |  ...                        |
+|  Assistant: You are welcome. To      | Details we read             |
+|  complete the package, please send.. |  Property address  88 Sample |
+| [Attach] [ Type a message...  ][Send]|  Number of units   24  ...   |
++--------------------------------------+-----------------------------+
 ```
 Behavior:
-- Checklist chips come from the completeness check (code): done, pending.
-- After each upload the chat reports what is received and what is missing, and when everything is in, says the team will review.
-- Status updates ("Under review", "We need one more item") are posted into the chat from deal state. The external chat never shows ratios, reasons, or a decision.
-- Handles: file type or size rejected, duplicate upload, a file that looks like the wrong type (asks to confirm).
+- **Documents:** one slot per required document; drop a file on a slot to file it as that document, or drop it in the chat and the assistant works out which it is. Accepted: PDF, Word, Excel, CSV.
+- **Details we read:** the address, asset type, units, sponsor, requested loan amount, purchase price and renovation budget are read from the summary and contract as they arrive, each with the document and line it came from. The sponsor confirms by saying nothing, or corrects it in the chat (what the sponsor states wins over a document; a corrected document refreshes what was read). Five documents and no typing complete the package. If a document is in wording the parser does not know, nothing is guessed and the assistant asks.
+- **The assistant** understands greetings, "what can you help with", "what is missing", "what happens next", status, thanks, and decision questions, and answers each in plain business English that says where things stand and what comes next. It never gives a decision, a rate, a ratio or a timeline (decision D40).
+- Status updates ("with our team for review", "The team has a question: ...") are posted into the chat from deal state. The external chat never shows ratios, reasons, or a decision.
+- The conversation is kept, so a reload restores it. Handles: file type or size rejected, duplicate upload (by content), a file that looks like the wrong type (asks to confirm), a PDF with no table or no text (says what to send instead).
 
 ## 2. Queue (internal)
 Table of deals: Deal, Next action, Call, Exceptions, Age, Owner, sorted so the deals that need the reviewer come first. Next action says what happens next and who must act ("Your review", "Waiting on sponsor: ...", "Running", "Done: approved"); it is a projection of the event log. Filter tabs with counts: All, Needs your review, Exceptions, Archived. Search box. Row click opens the workspace. Updates live from the global event stream.
@@ -62,7 +62,7 @@ Chat on the left, the deal on the right. Back and previous are on the left, next
 
 **Process.** For audit and for the demo: the agent graph (Chief in the center, never agent to agent), a drawer per node with handoffs and tool calls, and a history in plain words ("Asked Checker to check the numbers independently", "Asked the sponsor: ...") with the raw events one click away.
 
-**Chief chat (internal).** Free text, docked on the left and collapsible (the choice is remembered). The chief classifies the message into: question (answered from the deal record), data edit, narrative edit, judgment override, or action (approve, request info).
+**Chief chat (internal).** Free text, docked on the left and collapsible (the choice is remembered), and the conversation is kept across reloads. The chief classifies the message into: question (answered from the deal record), data edit, narrative edit, judgment override, or action (approve, request info, which it points you to the button for). A question can be about a metric, why the call is what it is, a summary, the exceptions and questions for the sponsor, **what changed in this version**, or what the chief can do. Each answer offers follow-up questions as buttons; after a confirmed edit the chat shows a before and after card (the input that moved, the metrics that moved with it, and whether the call changed). Every figure in an answer comes from a calculation.
 - Data edit: the chief proposes a patch card (field, old, new, reason). The reviewer clicks Confirm or Cancel. Confirm applies the patch, bumps `deal_version`, and re-runs from underwriting.
 - Narrative edit: the chief proposes revised text; Confirm re-renders the memo only.
 - Judgment override: requires a reason; creates an override record; numbers do not change.
@@ -88,7 +88,10 @@ Chat on the left, the deal on the right. Back and previous are on the left, next
 | `POST /api/deals/{id}/patches/{patch_id}/confirm` | Apply a proposed patch |
 | `POST /api/deals/{id}/patches/{patch_id}/cancel` | Cancel a proposed patch |
 | `POST /api/deals/{id}/decision` | `approve`, `reject`, `request_info` (note required) or `send_back` (re-run) |
-| `GET /api/deals/{id}/intake-status` | Stage, one plain sentence and the checklist, for the external chat. Never ratios, reasons or a call |
+| `GET /api/deals/{id}/intake-status` | Stage, one plain sentence, the checklist, the details read (with their sources) and the files received, for the external chat. Never ratios, reasons or a call |
+| `GET /api/deals/{id}/transcript` | The sponsor's conversation only (what they said, what the assistant said, files received), so the intake page can restore it |
+| `GET /api/deals/{id}/chief-transcript` | The reviewer's conversation with the chief |
+| `GET /api/deals/{id}/changes` | What the latest version changed: the inputs that moved, the metrics that moved, the call before and after |
 | `GET /api/deals/{id}/files/{file_id}/text` | A document as numbered lines (text, or a table with the header as row 1) for the Files tab |
 | `GET /api/deals/{id}/workbook` | The workbook's cells as JSON (formula, recalculated value, number format) for the grid viewer |
 
