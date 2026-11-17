@@ -1,18 +1,6 @@
 """Reviewer edits: data patches (new deal version), narrative patches, judgment overrides."""
-import re
-
-from bridge.core.derive import recompute_derived
-from bridge.core.schema import Deal, Source, Sourced
-
-SIMPLE_PATHS = {
-    "valuation.arv": lambda d: d.valuation,
-    "valuation.as_is_value": lambda d: d.valuation,
-    "loan_request.loan_commitment": lambda d: d.loan_request,
-    "loan_request.initial_advance": lambda d: d.loan_request,
-    "loan_request.note_rate": lambda d: d.loan_request,
-    "pro_forma.stabilized_noi": lambda d: d.pro_forma,
-}
-UNIT_RENT = re.compile(r"rent_roll\.units\[(\d+)\]\.monthly_rent$")
+from bridge.core import edit
+from bridge.core.schema import Deal
 
 
 class PatchError(ValueError):
@@ -20,19 +8,15 @@ class PatchError(ValueError):
 
 
 def validate_data_path(deal: Deal, path: str) -> None:
-    if path in SIMPLE_PATHS:
-        return
-    m = UNIT_RENT.match(path)
-    if m and int(m.group(1)) < len(deal.rent_roll.units):
-        return
-    raise PatchError(f"{path} cannot be edited in this prototype")
+    try:
+        edit.validate_path(deal, path)
+    except edit.EditError as exc:
+        raise PatchError(str(exc)) from exc
 
 
 def get_value(deal: Deal, path: str):
     validate_data_path(deal, path)
-    if path in SIMPLE_PATHS:
-        return getattr(SIMPLE_PATHS[path](deal), path.rsplit(".", 1)[1]).value
-    return deal.rent_roll.units[int(UNIT_RENT.match(path).group(1))].monthly_rent
+    return edit.get_value(deal, path)
 
 
 def apply_data_patch(deal: Deal, path: str, new: float, reason: str) -> Deal:
@@ -40,12 +24,6 @@ def apply_data_patch(deal: Deal, path: str, new: float, reason: str) -> Deal:
     validate_data_path(deal, path)
     if not reason.strip():
         raise PatchError("a data edit needs a reason")
-    out = deal.model_copy(deep=True)
+    out = edit.set_input(deal, path, new, reason)
     out.version = deal.version + 1
-    if path in SIMPLE_PATHS:
-        holder, name = SIMPLE_PATHS[path](out), path.rsplit(".", 1)[1]
-        setattr(holder, name, Sourced[float](
-            value=float(new), source=Source(kind="override", reason=reason), confidence=1.0))
-    else:
-        out.rent_roll.units[int(UNIT_RENT.match(path).group(1))].monthly_rent = float(new)
-    return recompute_derived(out)
+    return out

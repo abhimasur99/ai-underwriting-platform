@@ -19,6 +19,8 @@ export type FileText = S['FileText']
 export type FactView = S['FactView']
 export type VersionDiff = S['VersionDiff']
 export type TranscriptMessage = S['TranscriptMessage']
+export type Outcome = S['Outcome']
+export type Sizing = S['Sizing']
 
 export class ApiError extends Error {
   status: number

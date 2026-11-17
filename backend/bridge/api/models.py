@@ -2,7 +2,9 @@
 from pydantic import BaseModel, Field
 
 from bridge.core.completeness import ChecklistStatus
+from bridge.core.scenario import Outcome
 from bridge.core.schema import CheckReport, Deal, Patch, UnderwritingResult
+from bridge.core.sizing import Sizing
 
 
 class CreateDealResponse(BaseModel):
@@ -78,6 +80,12 @@ class ChiefChatResponse(BaseModel):
     intent: str
     patch: Patch | None = None
     suggestions: list[str] = []         # follow-up questions to offer next
+    scenario: Outcome | None = None     # a what-if, as a card: the current case against the changed
+    sizing: Sizing | None = None        # the largest loan that gets the call
+
+
+class WhatIfRequest(BaseModel):
+    params: dict[str, float]      # assumption name -> value (see core/scenario.PARAMS)
 
 
 class DecisionRequest(BaseModel):

@@ -10,7 +10,7 @@ Work one sprint at a time. Stop at done-when and show the result before starting
 | 3c Files and deals | Done, tagged `sprint-3c` |
 | 3d Deal page rebuild | Done, tagged `sprint-3d` |
 | 3e Intake and chat | Done, tagged `sprint-3e` |
-| 3f What-ifs and sizing | Planned |
+| 3f What-ifs and sizing | Done: awaiting go-ahead to tag `sprint-3f` |
 | 3g Draft broker reply | Planned |
 | 3h Underwriter case (assumptions) | Optional: decide after 3g |
 | 4 Demo and docs | Planned (last) |
@@ -45,10 +45,10 @@ Why 3c to 3h exist: a design review (see `docs/decisions.md` D29 to D33) found t
 **Done when:** a sponsor who drops five files and types nothing else is told what was read and what is missing.
 
 ## Sprint 3f: What-ifs and sizing
-- [ ] A pure scenario engine (the same calculator, with parameters changed) behind both the chat and an API route: what if the take-out rate, an NOI haircut, a cap rate, take-out terms or the loan amount changed; nothing is saved and the deal is not touched, so the independent check is not involved
-- [ ] The chief chat understands what-ifs ("what if rates are 7%?") and answers with the current case against the changed one, the call change highlighted, every figure from the engine
-- [ ] "What is the largest loan that still screens?": code solves it exactly by re-applying the rules (the advance and the holdback scale together; ARV and NOI are held)
-- [ ] The before and after view for every committed change (the chat card from 3e) also on the deal page
+- [x] A pure scenario engine (the same calculator, with parameters changed) behind both the chat and an API route: what if the take-out rate, an NOI haircut, a cap rate, take-out terms or the loan amount changed; nothing is saved and the deal is not touched, so the independent check is not involved
+- [x] The chief chat understands what-ifs ("what if rates are 7%?") and answers with the current case against the changed one, the call change highlighted, every figure from the engine
+- [x] "What is the largest loan that still screens?": code solves it exactly by re-applying the rules (the advance and the holdback scale together; ARV and NOI are held)
+- [x] What-if and largest-loan answers carry a card (before and after, call change, marked not saved); the committed-change card stays in the chat. A second copy on the deal page was dropped as repetition (see D41)
 **Done when:** a reviewer can ask a what-if or the maximum loan in the chat and get an exact answer in seconds, and no what-if changes the deal.
 
 ## Sprint 3g: Draft broker reply

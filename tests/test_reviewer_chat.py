@@ -27,7 +27,7 @@ def test_a_greeting_is_answered_politely_with_suggestions(tmp_path):
     _, chat, deal_id = setup(tmp_path)
     out = ask(chat, deal_id, "hello")
     assert out["reply"].startswith("Hello") and "How can I help" in out["reply"]
-    assert 1 <= len(out["suggestions"]) <= 4
+    assert 1 <= len(out["suggestions"]) <= 6
 
 
 def test_asking_what_it_can_do_lists_the_capabilities_and_the_confirm_rule(tmp_path):

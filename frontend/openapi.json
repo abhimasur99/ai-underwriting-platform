@@ -37,6 +37,39 @@
     "title": "ArchiveResponse",
     "type": "object"
    },
+   "Assumption": {
+    "properties": {
+     "after": {
+      "title": "After",
+      "type": "number"
+     },
+     "before": {
+      "title": "Before",
+      "type": "number"
+     },
+     "key": {
+      "title": "Key",
+      "type": "string"
+     },
+     "kind": {
+      "title": "Kind",
+      "type": "string"
+     },
+     "label": {
+      "title": "Label",
+      "type": "string"
+     }
+    },
+    "required": [
+     "key",
+     "label",
+     "kind",
+     "before",
+     "after"
+    ],
+    "title": "Assumption",
+    "type": "object"
+   },
    "Body_upload_file_api_deals__deal_id__files_post": {
     "properties": {
      "file": {
@@ -261,6 +294,26 @@
      "reply": {
       "title": "Reply",
       "type": "string"
+     },
+     "scenario": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Outcome"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "sizing": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Sizing"
+       },
+       {
+        "type": "null"
+       }
+      ]
      },
      "suggestions": {
       "default": [],
@@ -998,6 +1051,37 @@
     "title": "Mismatch",
     "type": "object"
    },
+   "Outcome": {
+    "description": "The current case against the changed one.",
+    "properties": {
+     "assumptions": {
+      "items": {
+       "$ref": "#/components/schemas/Assumption"
+      },
+      "title": "Assumptions",
+      "type": "array"
+     },
+     "call_after": {
+      "title": "Call After",
+      "type": "string"
+     },
+     "call_before": {
+      "title": "Call Before",
+      "type": "string"
+     },
+     "diff": {
+      "$ref": "#/components/schemas/VersionDiff"
+     }
+    },
+    "required": [
+     "call_before",
+     "call_after",
+     "assumptions",
+     "diff"
+    ],
+    "title": "Outcome",
+    "type": "object"
+   },
    "Patch": {
     "properties": {
      "deal_id": {
@@ -1591,6 +1675,74 @@
     "title": "RuleCheck",
     "type": "object"
    },
+   "Sizing": {
+    "properties": {
+     "binding": {
+      "default": [],
+      "items": {
+       "type": "string"
+      },
+      "title": "Binding",
+      "type": "array"
+     },
+     "call_at_max": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Call At Max"
+     },
+     "capped": {
+      "default": false,
+      "title": "Capped",
+      "type": "boolean"
+     },
+     "current_call": {
+      "title": "Current Call",
+      "type": "string"
+     },
+     "current_loan": {
+      "title": "Current Loan",
+      "type": "number"
+     },
+     "max_loan": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Max Loan"
+     },
+     "persistent": {
+      "default": [],
+      "items": {
+       "type": "string"
+      },
+      "title": "Persistent",
+      "type": "array"
+     },
+     "target": {
+      "title": "Target",
+      "type": "string"
+     }
+    },
+    "required": [
+     "target",
+     "current_loan",
+     "current_call",
+     "max_loan",
+     "call_at_max"
+    ],
+    "title": "Sizing",
+    "type": "object"
+   },
    "Source": {
     "properties": {
      "doc": {
@@ -2130,6 +2282,22 @@
      "call_after"
     ],
     "title": "VersionDiff",
+    "type": "object"
+   },
+   "WhatIfRequest": {
+    "properties": {
+     "params": {
+      "additionalProperties": {
+       "type": "number"
+      },
+      "title": "Params",
+      "type": "object"
+     }
+    },
+    "required": [
+     "params"
+    ],
+    "title": "WhatIfRequest",
     "type": "object"
    },
    "WorkbookCell": {
@@ -2905,6 +3073,56 @@
     "summary": "Intake Status"
    }
   },
+  "/api/deals/{deal_id}/max-loan": {
+   "get": {
+    "description": "The largest loan that still gets the call (screen, or watch to avoid a decline).",
+    "operationId": "largest_loan_api_deals__deal_id__max_loan_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "deal_id",
+      "required": true,
+      "schema": {
+       "title": "Deal Id",
+       "type": "string"
+      }
+     },
+     {
+      "in": "query",
+      "name": "target",
+      "required": false,
+      "schema": {
+       "default": "screen",
+       "title": "Target",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Sizing"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Largest Loan"
+   }
+  },
   "/api/deals/{deal_id}/patches/{patch_id}/cancel": {
    "post": {
     "operationId": "cancel_patch_api_deals__deal_id__patches__patch_id__cancel_post",
@@ -3139,6 +3357,56 @@
      }
     },
     "summary": "Transcript"
+   }
+  },
+  "/api/deals/{deal_id}/what-if": {
+   "post": {
+    "description": "The current case against one with some assumptions changed. Nothing is saved: no\nversion, no event, no change to the deal.",
+    "operationId": "what_if_api_deals__deal_id__what_if_post",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "deal_id",
+      "required": true,
+      "schema": {
+       "title": "Deal Id",
+       "type": "string"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/WhatIfRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Outcome"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "What If"
    }
   },
   "/api/deals/{deal_id}/workbook": {

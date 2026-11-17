@@ -10,6 +10,8 @@ export const REVIEWER_PROMPTS: Prompt[] = [
   { text: 'What are the exceptions?', send: true },
   { text: 'Why is the call what it is?', send: true },
   { text: 'What changed in this version?', send: true },
+  { text: 'What if the take-out rate is 7%?', send: true },
+  { text: 'What is the largest loan that still screens?', send: true },
   { text: 'Change the ARV to 11,000,000 because the appraisal came in lower', send: false },
   { text: 'Change unit 101 rent to 2,100 because the signed lease shows 2,100', send: false },
 ]
