@@ -7,8 +7,8 @@ Work one sprint at a time. Stop at done-when and show the result before starting
 | Sprint | State |
 | --- | --- |
 | 0 Setup, 1 Core, 2 Agents, 3 UI, 3b Restyle and queue housekeeping | Done, tagged (`sprint-0` to `sprint-3b`) |
-| 3c Files and deals | Built, awaiting merge and tag |
-| 3d Deal page rebuild | Built, awaiting review |
+| 3c Files and deals | Done, tagged `sprint-3c` |
+| 3d Deal page rebuild | Done, tagged `sprint-3d` |
 | 3e Intake and chat | Planned |
 | 3f Draft broker reply | Planned |
 | 4 Demo and docs | Planned (last) |
