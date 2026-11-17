@@ -61,6 +61,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/deals/{deal_id}/changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Changes
+         * @description What the latest version changed from the one before it.
+         */
+        get: operations["changes_api_deals__deal_id__changes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/deals/{deal_id}/chat": {
         parameters: {
             query?: never;
@@ -89,6 +109,26 @@ export interface paths {
         put?: never;
         /** Chief Chat */
         post: operations["chief_chat_api_deals__deal_id__chief_chat_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/deals/{deal_id}/chief-transcript": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Chief Transcript
+         * @description The reviewer's conversation with the chief, so the chat can be restored on reload.
+         */
+        get: operations["chief_transcript_api_deals__deal_id__chief_transcript_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -435,6 +475,11 @@ export interface components {
             patch?: components["schemas"]["Patch"] | null;
             /** Reply */
             reply: string;
+            /**
+             * Suggestions
+             * @default []
+             */
+            suggestions: string[];
         };
         /** CreateDealResponse */
         CreateDealResponse: {
@@ -608,6 +653,17 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** InputChange */
+        InputChange: {
+            /** New */
+            new: string;
+            /** Old */
+            old: string;
+            /** Path */
+            path: string;
+            /** Reason */
+            reason: string;
+        };
         /**
          * IntakeStatus
          * @description What the external chat may show: a stage and a plain sentence, never ratios or a call.
@@ -645,6 +701,19 @@ export interface components {
             note_rate: components["schemas"]["Sourced_float_"];
             points?: components["schemas"]["Sourced_float_"] | null;
             term_months?: components["schemas"]["Sourced_int_"] | null;
+        };
+        /** MetricChange */
+        MetricChange: {
+            /** After */
+            after: number;
+            /** Before */
+            before: number;
+            /** Key */
+            key: string;
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
         };
         /** Metrics */
         Metrics: {
@@ -1055,6 +1124,37 @@ export interface components {
             arv: components["schemas"]["Sourced_float_"];
             as_is_value: components["schemas"]["Sourced_float_"];
         };
+        /** VersionDiff */
+        VersionDiff: {
+            /** Call After */
+            call_after: string;
+            /** Call Before */
+            call_before: string;
+            /** From Version */
+            from_version: number;
+            /**
+             * Inputs
+             * @default []
+             */
+            inputs: components["schemas"]["InputChange"][];
+            /**
+             * Metrics
+             * @default []
+             */
+            metrics: components["schemas"]["MetricChange"][];
+            /**
+             * Reasons Added
+             * @default []
+             */
+            reasons_added: string[];
+            /**
+             * Reasons Removed
+             * @default []
+             */
+            reasons_removed: string[];
+            /** To Version */
+            to_version: number;
+        };
         /** WorkbookCell */
         WorkbookCell: {
             /** Col */
@@ -1280,6 +1380,37 @@ export interface operations {
             };
         };
     };
+    changes_api_deals__deal_id__changes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VersionDiff"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     post_chat_api_deals__deal_id__chat_post: {
         parameters: {
             query?: never;
@@ -1337,6 +1468,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChiefChatResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    chief_transcript_api_deals__deal_id__chief_transcript_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TranscriptMessage"][];
                 };
             };
             /** @description Validation Error */

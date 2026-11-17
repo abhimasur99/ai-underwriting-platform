@@ -177,3 +177,10 @@ def test_a_document_in_unfamiliar_words_is_received_but_nothing_is_guessed(chat)
         "deal_summary.md", b"# Offering\n- Maple Court Apartments\n- 24 apartments\n")])["reply"]
     assert "Thank you, I have your deal summary." in reply and "I read" not in reply
     assert chief.store.facts(deal_id) == {}
+
+
+def test_a_receipt_does_not_repeat_what_it_just_said(chat):
+    agent, deal_id, _ = chat
+    reply = send(agent, deal_id, "deal_summary.md")["reply"]
+    assert reply.count("I have your deal summary") == 1
+    assert "please send your purchase contract, rent roll, T-12 and renovation budget" in reply

@@ -354,3 +354,27 @@ def test_the_transcript_is_the_conversation_only_and_survives_a_reload(client):
     for internal in ("70.65", "NEEDS_REVIEW", "tool"):
         assert internal not in everything
     assert client.get("/api/deals/D-9999/transcript").status_code == 404
+
+
+def test_changes_route_reports_what_an_edit_moved(client):
+    deal_id = submitted_deal(client)
+    first = client.get(f"/api/deals/{deal_id}/changes").json()
+    assert first["from_version"] == first["to_version"] == 1 and first["metrics"] == []
+    reply = client.post(f"/api/deals/{deal_id}/chief-chat",
+                        json={"message": "change the ARV to 11,000,000 because it came in lower"})
+    patch = reply.json()["patch"]
+    client.post(f"/api/deals/{deal_id}/patches/{patch['patch_id']}/confirm")
+    diff = client.get(f"/api/deals/{deal_id}/changes").json()
+    assert (diff["from_version"], diff["to_version"]) == (1, 2)
+    assert diff["inputs"][0]["path"] == "valuation.arv"
+    assert "loan_to_arv" in [m["key"] for m in diff["metrics"]]
+    assert client.get("/api/deals/D-9999/changes").status_code == 404
+
+
+def test_the_reviewers_conversation_is_kept_apart_from_the_sponsors(client):
+    deal_id = submitted_deal(client)
+    client.post(f"/api/deals/{deal_id}/chief-chat", json={"message": "hello"})
+    mine = client.get(f"/api/deals/{deal_id}/chief-transcript").json()
+    assert [m["from"] for m in mine] == ["you", "agent"] and mine[0]["text"] == "hello"
+    sponsors = " ".join(m["text"] for m in client.get(f"/api/deals/{deal_id}/transcript").json())
+    assert "How can I help with this deal" not in sponsors

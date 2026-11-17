@@ -141,7 +141,7 @@ class IntakeAgent:
         elif message and not receipts and not noted:
             parts.append(say.TOPICS.get(turn.intent, say.unclear)(ctx))
         else:
-            parts.append(say.ask_next(ctx))
+            parts.append(say.ask_next(ctx, after_receipt=bool(receipts or noted)))
         return finish(" ".join(p for p in parts if p), checklist, submitted)
 
     def _take_file(self, deal_id: str, f: IncomingFile) -> str:

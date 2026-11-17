@@ -261,6 +261,14 @@
      "reply": {
       "title": "Reply",
       "type": "string"
+     },
+     "suggestions": {
+      "default": [],
+      "items": {
+       "type": "string"
+      },
+      "title": "Suggestions",
+      "type": "array"
      }
     },
     "required": [
@@ -730,6 +738,34 @@
     "title": "HTTPValidationError",
     "type": "object"
    },
+   "InputChange": {
+    "properties": {
+     "new": {
+      "title": "New",
+      "type": "string"
+     },
+     "old": {
+      "title": "Old",
+      "type": "string"
+     },
+     "path": {
+      "title": "Path",
+      "type": "string"
+     },
+     "reason": {
+      "title": "Reason",
+      "type": "string"
+     }
+    },
+    "required": [
+     "path",
+     "old",
+     "new",
+     "reason"
+    ],
+    "title": "InputChange",
+    "type": "object"
+   },
    "IntakeStatus": {
     "description": "What the external chat may show: a stage and a plain sentence, never ratios or a call.",
     "properties": {
@@ -825,6 +861,39 @@
      "note_rate"
     ],
     "title": "LoanRequest",
+    "type": "object"
+   },
+   "MetricChange": {
+    "properties": {
+     "after": {
+      "title": "After",
+      "type": "number"
+     },
+     "before": {
+      "title": "Before",
+      "type": "number"
+     },
+     "key": {
+      "title": "Key",
+      "type": "string"
+     },
+     "kind": {
+      "title": "Kind",
+      "type": "string"
+     },
+     "label": {
+      "title": "Label",
+      "type": "string"
+     }
+    },
+    "required": [
+     "key",
+     "label",
+     "kind",
+     "before",
+     "after"
+    ],
+    "title": "MetricChange",
     "type": "object"
    },
    "Metrics": {
@@ -2003,6 +2072,66 @@
     "title": "Valuation",
     "type": "object"
    },
+   "VersionDiff": {
+    "properties": {
+     "call_after": {
+      "title": "Call After",
+      "type": "string"
+     },
+     "call_before": {
+      "title": "Call Before",
+      "type": "string"
+     },
+     "from_version": {
+      "title": "From Version",
+      "type": "integer"
+     },
+     "inputs": {
+      "default": [],
+      "items": {
+       "$ref": "#/components/schemas/InputChange"
+      },
+      "title": "Inputs",
+      "type": "array"
+     },
+     "metrics": {
+      "default": [],
+      "items": {
+       "$ref": "#/components/schemas/MetricChange"
+      },
+      "title": "Metrics",
+      "type": "array"
+     },
+     "reasons_added": {
+      "default": [],
+      "items": {
+       "type": "string"
+      },
+      "title": "Reasons Added",
+      "type": "array"
+     },
+     "reasons_removed": {
+      "default": [],
+      "items": {
+       "type": "string"
+      },
+      "title": "Reasons Removed",
+      "type": "array"
+     },
+     "to_version": {
+      "title": "To Version",
+      "type": "integer"
+     }
+    },
+    "required": [
+     "from_version",
+     "to_version",
+     "call_before",
+     "call_after"
+    ],
+    "title": "VersionDiff",
+    "type": "object"
+   },
    "WorkbookCell": {
     "properties": {
      "col": {
@@ -2356,6 +2485,46 @@
     "summary": "Artifact"
    }
   },
+  "/api/deals/{deal_id}/changes": {
+   "get": {
+    "description": "What the latest version changed from the one before it.",
+    "operationId": "changes_api_deals__deal_id__changes_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "deal_id",
+      "required": true,
+      "schema": {
+       "title": "Deal Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/VersionDiff"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Changes"
+   }
+  },
   "/api/deals/{deal_id}/chat": {
    "post": {
     "operationId": "post_chat_api_deals__deal_id__chat_post",
@@ -2452,6 +2621,50 @@
      }
     },
     "summary": "Chief Chat"
+   }
+  },
+  "/api/deals/{deal_id}/chief-transcript": {
+   "get": {
+    "description": "The reviewer's conversation with the chief, so the chat can be restored on reload.",
+    "operationId": "chief_transcript_api_deals__deal_id__chief_transcript_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "deal_id",
+      "required": true,
+      "schema": {
+       "title": "Deal Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/TranscriptMessage"
+         },
+         "title": "Response Chief Transcript Api Deals  Deal Id  Chief Transcript Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Chief Transcript"
    }
   },
   "/api/deals/{deal_id}/decision": {

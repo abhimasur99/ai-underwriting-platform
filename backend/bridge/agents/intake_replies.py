@@ -55,8 +55,9 @@ def pick(options: list[str], turn: int) -> str:
     return options[turn % len(options)]
 
 
-def ask_next(c: Ctx) -> str:
-    """Where we are and what to do next."""
+def ask_next(c: Ctx, after_receipt: bool = False) -> str:
+    """Where we are and what to do next. After a receipt the list of what we hold is left out,
+    because the receipt has just said it."""
     if c.state in DONE:
         return "The team has finished its review and will follow up with you."
     if c.state == "FAILED":
@@ -72,7 +73,7 @@ def ask_next(c: Ctx) -> str:
     if c.ready:
         return "Your package is complete. Our team will review it and follow up with you."
     parts = []
-    if c.received:
+    if c.received and not after_receipt:
         parts.append(f"I have your {docs(c.received)}.")
     if c.missing:
         parts.append(f"To complete the package, please send your {docs(c.missing)}.")
@@ -85,8 +86,8 @@ def ask_next(c: Ctx) -> str:
 
 def greeting(c: Ctx) -> str:
     if c.turn == 0 and not c.received:
-        return ("Hello, and welcome. Whenever you are ready, drop your documents here or onto the "
-                f"checklist and I will take it from there. {ask_next(c)}")
+        return ("Hello. Whenever you are ready, drop your documents here or onto the checklist "
+                f"and I will take it from there. {ask_next(c)}")
     return f"Hello again. {ask_next(c)}"
 
 

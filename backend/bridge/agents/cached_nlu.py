@@ -108,9 +108,11 @@ def interpret_chief(message: str) -> ChiefTurn:
     low = text.lower()
     if re.search(r"\b(other deals?|lender polic\w+|real lender|legal advice)\b", low):
         return ChiefTurn("question", topic="outside")
-    if re.match(r"\s*(?:please\s+)?(approve|reject|send (?:it )?back)\b", low):
-        verb = re.match(r"\s*(?:please\s+)?(approve|reject|send (?:it )?back)", low).group(1)
-        return ChiefTurn("action", action="send_back" if "back" in verb else verb)
+    if re.match(r"\s*(?:please\s+)?(approve|reject|send (?:it )?back|request info)\b", low):
+        verb = re.match(r"\s*(?:please\s+)?(approve|reject|send (?:it )?back|request info)",
+                        low).group(1)
+        return ChiefTurn("action", action="send_back" if "back" in verb
+                         else "request_info" if "info" in verb else verb)
     if m := re.match(r"\s*override\b[:,]?\s*(.+)", text, re.I | re.S):
         body = m.group(1)
         reason = _reason(body)
@@ -143,8 +145,20 @@ def interpret_chief(message: str) -> ChiefTurn:
                     return ChiefTurn("data_edit", patch=PatchRequest(
                         "data", field=field_name, value=value, unit=unit,
                         reason=_reason(text) or text))
+    if re.match(r"\s*(hi|hello|hey|good (?:morning|afternoon|evening))\b[\s!.,]*$", low):
+        return ChiefTurn("question", topic="greeting")
+    if re.search(r"\b(thanks|thank you|thx|much appreciated)\b", low):
+        return ChiefTurn("question", topic="thanks")
+    if re.search(r"\b(what (?:can|do) you (?:do|help)|how can you help|what can i ask|"
+                 r"how does this work|capabilities|help me)\b", low):
+        return ChiefTurn("question", topic="help")
     if re.search(r"\bwhy\b.*\b(decline|watch|screen|call|flag\w*|reason\w*)\b|\breasons?\b", low):
         return ChiefTurn("question", topic="reasons")
+    if re.search(r"\b(what(?:'s| has| is)? changed|changes? (?:in|since|between|from)|"
+                 r"compare (?:the )?versions?|differences? (?:between|from|since))\b", low):
+        return ChiefTurn("question", topic="changes")
+    if re.search(r"\b(exceptions?|flags?|open (?:items|questions)|red flags?|concerns?)\b", low):
+        return ChiefTurn("question", topic="exceptions")
     for pattern, metric in METRIC_WORDS:
         if re.search(pattern, low):
             return ChiefTurn("question", metric=metric)

@@ -19,6 +19,7 @@ from bridge.api import models as m
 from bridge.api.sse import event_stream
 from bridge.core import completeness
 from bridge.core.builders.workbook_view import workbook_view
+from bridge.core.diff import VersionDiff
 from bridge.core.parsers.errors import ParseError
 from bridge.core.parsers.view import document_lines
 from bridge.core.schema import Event
@@ -51,6 +52,22 @@ def create_app(settings: Settings | None = None, runner: AgentRunner | None = No
         if not store.deal_exists(deal_id):
             raise HTTPException(404, f"no deal {deal_id}")
         return deal_id
+
+    @app.get("/api/deals/{deal_id}/changes", response_model=VersionDiff)
+    def changes(deal_id: str):
+        """What the latest version changed from the one before it."""
+        need(deal_id)
+        if store.get_deal(deal_id) is None or store.latest_result(deal_id) is None:
+            raise HTTPException(409, "the deal has not been underwritten yet")
+        return chief.version_diff(deal_id)
+
+    @app.get("/api/deals/{deal_id}/chief-transcript", response_model=list[m.TranscriptMessage])
+    def chief_transcript(deal_id: str):
+        """The reviewer's conversation with the chief, so the chat can be restored on reload."""
+        need(deal_id)
+        roles = {"chat.reviewer": "you", "chat.chief": "agent"}
+        return [{"from": roles[e.type], "ts": e.ts, "text": e.payload.get("text", "")}
+                for e in store.events(deal_id) if e.type in roles]
 
     def _guard(fn, *args):
         try:

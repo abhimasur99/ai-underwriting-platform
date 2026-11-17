@@ -77,6 +77,7 @@ class ChiefChatResponse(BaseModel):
     reply: str
     intent: str
     patch: Patch | None = None
+    suggestions: list[str] = []         # follow-up questions to offer next
 
 
 class DecisionRequest(BaseModel):

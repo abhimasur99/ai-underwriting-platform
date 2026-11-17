@@ -15,6 +15,7 @@ from bridge.agents.states import MAX_RETRIES, InvalidTransition, check_transitio
 from bridge.agents.underwriter import FaultPlan, run_underwriter
 from bridge.core import completeness
 from bridge.core.builders.memo import render_memo
+from bridge.core.diff import InputChange, VersionDiff, compare
 from bridge.core.parsers import parse_deal_dir
 from bridge.core.parsers.preview import FactRead, read_facts
 from bridge.core.placeholders import fill, validate_narrative
@@ -366,6 +367,27 @@ class Chief:
         else:
             raise DecisionError(f"unknown decision {decision!r}")
         return self.state(deal_id)
+
+    def version_diff(self, deal_id: str) -> VersionDiff:
+        """What the latest version changed from the one before it (nothing, for the first)."""
+        deal, after, _ = self.latest(deal_id)
+        previous = self.store.latest_result(deal_id, deal.version - 1) if deal.version > 1 else None
+        if previous is None:
+            return VersionDiff(from_version=deal.version, to_version=deal.version,
+                               call_before=after.call, call_after=after.call)
+        inputs = []
+        for e in self.store.events(deal_id):
+            if e.type != "version.created" or e.payload.get("to") != deal.version:
+                continue
+            patch_id = e.payload.get("patch_id")
+            patch = self.store.get_patch(patch_id) if patch_id else None
+            if patch:
+                inputs.append(InputChange(path=patch.path, old=str(patch.old),
+                                          new=str(patch.new), reason=patch.reason))
+            else:
+                inputs.append(InputChange(path="documents", old="", reason=e.payload.get(
+                    "reason", ""), new="read again from the new files"))
+        return compare(UnderwritingResult.model_validate(previous["result"]), after, inputs)
 
     # ------------------------------------------------------------------ sponsor replies
     def awaiting_sponsor(self, deal_id: str) -> bool:

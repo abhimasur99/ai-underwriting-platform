@@ -3,9 +3,12 @@ narrative_edit, override, action); this module answers from tool output only and
 No patch is applied here: the reviewer's Confirm click (API) calls Chief.confirm_patch."""
 from bridge.agents import patches as patching
 from bridge.agents.chief import Chief
+from bridge.agents.phrasing import Phraser
+from bridge.agents.recorder import Recorder
 from bridge.agents.runner import AgentRunner
 from bridge.core import calc
 from bridge.core import format as f
+from bridge.core.diff import VersionDiff
 from bridge.core.placeholders import NarrativeError
 from bridge.core.schema import Deal, UnderwritingResult
 
@@ -35,8 +38,90 @@ METRICS = {
 INPUT_FMT = {"note_rate": f.pct}
 SOURCED_INPUTS = {"loan_commitment", "initial_advance", "as_is_value", "arv", "note_rate",
                   "stabilized_noi"}
-OUTSIDE = ("That is outside this prototype. I can answer questions about this deal's metrics, "
-           "reasons and sources, and propose edits you confirm.")
+CAPABILITIES = ("I can answer questions about this deal's calculations, exceptions and sources, "
+                "explain why the call is what it is, show what changed between versions, and "
+                "propose edits for you to confirm.")
+HELP = f"{CAPABILITIES} Nothing changes until you confirm. What would you like to know?"
+GREETING = "Hello. How can I help with this deal?"
+THANKS = "You're welcome. Let me know if there is anything else you would like to check."
+OUTSIDE = f"That is outside what I can help with here. {CAPABILITIES}"
+ACTION_BUTTON = {"approve": "the Approve button", "reject": "the Reject button",
+                 "request_info": "the Request info button",
+                 "send_back": "the Re-run option under More"}
+
+# The follow-up questions offered after each kind of answer.
+STARTERS = ["Summarize this deal", "What are the exceptions?", "Why is the call what it is?",
+            "What changed in this version?"]
+FOLLOW_UPS = {
+    "summary": ["What are the exceptions?", "Why is the call what it is?",
+                "What does the stress case show?"],
+    "reasons": ["What are the exceptions?", "What does the stress case show?",
+                "What changed in this version?"],
+    "exceptions": ["Summarize this deal", "Why is the call what it is?"],
+    "changes": ["Summarize this deal", "What does the stress case show?"],
+    "metric": ["Why is the call what it is?", "What does the stress case show?",
+               "What are the exceptions?"],
+    "stress": ["Why is the call what it is?", "What are the exceptions?"],
+}
+
+
+def explain_exceptions(result) -> str:
+    """The exceptions (flags) and the questions for the sponsor, in the words the page uses."""
+    if not result.flags and not result.open_questions:
+        return "There are no exceptions and no open questions for the sponsor."
+    parts = []
+    if result.flags:
+        n = len(result.flags)
+        lines = "\n".join(f"- {x.code}: {x.message}" for x in result.flags)
+        parts.append(f"There {'is' if n == 1 else 'are'} {n} exception{'' if n == 1 else 's'}:\n"
+                     f"{lines}")
+    else:
+        parts.append("There are no exceptions.")
+    if result.open_questions:
+        parts.append("Questions for the sponsor:\n" + "\n".join(f"- {q}" for q in
+                                                                  result.open_questions))
+    return "\n\n".join(parts)
+
+
+def _value(path: str, text: str) -> str:
+    try:
+        number = float(text)
+    except ValueError:
+        return text
+    return f.pct(number) if path.endswith("note_rate") else f.usd(number)
+
+
+def explain_changes(diff: VersionDiff) -> str:
+    """What the latest version changed, in plain words, from the comparison."""
+    if diff.from_version == diff.to_version:
+        return "This is the first version of the deal, so there is nothing to compare yet."
+    parts = []
+    for item in diff.inputs:
+        if item.path == "documents":
+            parts.append(f"Version {diff.to_version} was made by reading the documents again from "
+                         "the new files.")
+        else:
+            why = f" (reason: {item.reason})" if item.reason else ""
+            parts.append(f"Version {diff.to_version} changed {item.path}: "
+                         f"{_value(item.path, item.old)} to {_value(item.path, item.new)}{why}.")
+    shown = {"pct": f.pct, "usd": f.usd, "mult": f.mult}
+    if diff.metrics:
+        lines = "\n".join(f"- {m.label}: {shown[m.kind](m.before)} to {shown[m.kind](m.after)}"
+                          for m in diff.metrics)
+        parts.append(f"As a result:\n{lines}")
+    else:
+        parts.append("No calculation moved.")
+    if diff.call_before != diff.call_after:
+        text = (f"The call moved from {diff.call_before.capitalize()} to "
+                f"{diff.call_after.capitalize()}.")
+        if diff.reasons_added:
+            text += f" New reasons: {', '.join(diff.reasons_added)}."
+        if diff.reasons_removed:
+            text += f" No longer applies: {', '.join(diff.reasons_removed)}."
+        parts.append(text)
+    else:
+        parts.append(f"The call is unchanged ({diff.call_after.capitalize()}).")
+    return "\n\n".join(parts)
 
 
 def _metric_value(r: UnderwritingResult, name: str):
@@ -57,6 +142,7 @@ def _metric_value(r: UnderwritingResult, name: str):
 class ChiefChat:
     def __init__(self, chief: Chief, runner: AgentRunner):
         self.chief, self.runner = chief, runner
+        self.phraser = Phraser(runner)
 
     # ---- tools (code; the only source of numbers in replies)
     def get_metric(self, deal_id: str, name: str) -> str:
@@ -116,25 +202,54 @@ class ChiefChat:
             f"exit DSCR {f.mult(ex.exit_dscr)}. Checker: {check.status if check else 'not run'}. "
             f"{len(result.reasons)} reason(s), {len(result.flags)} flag(s).")
 
+    # ---- the conversation, kept in the event log
+    def _log(self, deal_id: str, actor: str, type_: str, text: str) -> None:
+        version = self.chief.latest(deal_id)[0].version
+        Recorder(self.chief.store, deal_id, version).event(actor, type_, text[:120], {"text": text})
+
+    def history(self, deal_id: str) -> list[tuple[str, str]]:
+        roles = {"chat.reviewer": "reviewer", "chat.chief": "assistant"}
+        return [(roles[e.type], e.payload.get("text", ""))
+                for e in self.chief.store.events(deal_id) if e.type in roles]
+
+    def _answer(self, deal_id: str, turn) -> tuple[str, list[str]]:
+        """The code-composed reply to a question, and the follow-ups to offer."""
+        if turn.metric:
+            text = self.get_metric(deal_id, turn.metric)
+            return text, FOLLOW_UPS["stress" if "stress" in turn.metric else "metric"]
+        topic = turn.topic
+        if topic == "reasons":
+            return self.explain_reasons(deal_id), FOLLOW_UPS["reasons"]
+        if topic == "summary":
+            return self.get_deal_summary(deal_id), FOLLOW_UPS["summary"]
+        if topic == "exceptions":
+            return explain_exceptions(self.chief.latest(deal_id)[1]), FOLLOW_UPS["exceptions"]
+        if topic == "changes":
+            return explain_changes(self.chief.version_diff(deal_id)), FOLLOW_UPS["changes"]
+        if topic == "greeting":
+            return GREETING, STARTERS
+        if topic == "thanks":
+            return THANKS, []
+        if topic == "help":
+            return HELP, STARTERS
+        return OUTSIDE, STARTERS
+
     # ---- one reviewer message
     def handle(self, deal_id: str, message: str) -> dict:
+        self._log(deal_id, "reviewer", "chat.reviewer", message)
+        past = self.history(deal_id)[:-1]
         turn = self.runner.interpret_chief(message)
-        out = {"intent": turn.intent, "patch": None}
+        out = {"intent": turn.intent, "patch": None, "suggestions": []}
         if turn.intent == "question":
-            if turn.metric:
-                out["reply"] = self.get_metric(deal_id, turn.metric)
-            elif turn.topic == "reasons":
-                out["reply"] = self.explain_reasons(deal_id)
-            elif turn.topic == "summary":
-                out["reply"] = self.get_deal_summary(deal_id)
-            else:
-                out["reply"] = OUTSIDE
+            reply, out["suggestions"] = self._answer(deal_id, turn)
+            out["reply"] = self.phraser.reviewer(reply, past)
         elif turn.intent == "action":
-            verb = {"approve": "Approve", "reject": "Reject", "send_back": "Send back"}[turn.action]
-            out["reply"] = (f"I can't record the decision. Use the {verb} button; the AI call is "
-                            "a recommendation and you decide.")
+            button = ACTION_BUTTON[turn.action]
+            out["reply"] = (f"I can't record that decision for you. Please use {button}: the call "
+                            "is a recommendation, and the decision is yours.")
         else:
-            out.update(self._propose(deal_id, turn))
+            out.update(self._propose(deal_id, turn))      # a proposed edit is shown as it is
+        self._log(deal_id, "chief", "chat.chief", out["reply"])
         return out
 
     def _propose(self, deal_id: str, turn) -> dict:

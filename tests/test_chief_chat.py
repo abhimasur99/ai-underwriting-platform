@@ -53,7 +53,7 @@ def test_summary_and_outside_questions(tmp_path):
     _, chat, deal_id = setup(tmp_path)
     assert "Call: SCREEN" in chat.handle(deal_id, "give me a summary")["reply"]
     for message in ("what does your real lender policy say", "how about the weather"):
-        assert "outside this prototype" in chat.handle(deal_id, message)["reply"]
+        assert "outside what I can help with" in chat.handle(deal_id, message)["reply"]
 
 
 def test_data_edit_proposes_a_patch_and_applies_nothing(tmp_path):
@@ -105,7 +105,8 @@ def test_override_needs_a_reason_first(tmp_path):
 def test_actions_are_never_executed_by_the_chat(tmp_path, message):
     chief, chat, deal_id = setup(tmp_path)
     out = chat.handle(deal_id, message)
-    assert out["intent"] == "action" and "button" in out["reply"]
+    assert out["intent"] == "action" and "Please use" in out["reply"]
+    assert "the decision is yours" in out["reply"]
     assert chief.state(deal_id) == "NEEDS_REVIEW"
 
 
