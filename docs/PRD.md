@@ -1,6 +1,6 @@
 # PRD: AI Bridge Lending Platform (multi-agent)
 
-Date: 2026-11-16. Status: design plus MVP build plan. All data is made up; thresholds are illustrative, not any real lender's box.
+Date: 2026-11-16 (status updated 2026-11-17). Status: design plus MVP build plan; the MVP is built through sprint 3g (see `docs/sprints.md` and `docs/decisions.md` for what changed from this plan: PDF, Word and Excel intake, 11 sample deals, what-ifs and sizing, a draft reply to the broker). All data is made up; thresholds are illustrative, not any real lender's box.
 
 ## 1. Overview
 The platform takes a bridge loan request from first borrower contact to a human-approved decision package. A chief agent coordinates specialist agents, and deterministic code does all calculations. This repo builds the MVP: a thin but complete slice that runs on localhost.
@@ -39,7 +39,7 @@ The platform takes a bridge loan request from first borrower contact to a human-
 | User | Needs | Sees |
 | --- | --- | --- |
 | Borrower or broker (external) | Fast answer, clear list of what is missing | Chat only: checklist, pending items, status updates |
-| Underwriter (internal) | Clean file, numbers that tie, ability to edit | Queue, deal workspace (Flow and Review), chief chat |
+| Underwriter (internal) | Clean file, numbers that tie, ability to edit | Queue, deal page (Memo, Calculations, Files, Process), chief chat |
 | Senior credit (internal) | Consistency, exceptions surfaced | Queue, flags, reasons, override history |
 
 **Scenario 1, clean deal.** A broker chats and uploads the five required documents. The chat confirms completeness, the agents run, and the underwriter approves the memo in one pass.
@@ -88,6 +88,8 @@ A chief agent sits at the center. Specialist agents never talk to each other; ev
 | FR14 | Enrichment | Property records, rates, sponsor and KYC checks | Later |
 | FR15 | Tracker | Portfolio view for seniors | Later |
 | FR16 | Learning | Outcomes and overrides feed the eval set | Later |
+| FR17 | Review | What-ifs (rate, NOI, cap rate, loan size) and the largest loan that screens, computed by the real engine, saved nowhere | Yes |
+| FR18 | Release | A draft reply to the broker on approval or rejection, edited and approved by the reviewer, never sent | Yes |
 
 ## 6. Files and data formats
 | Data | Format | Direction |
@@ -108,7 +110,7 @@ Uploaded files are untrusted input: type-checked, size-limited, parsed in code f
 Three screens (details in `docs/ui.md`).
 1. **Chat intake (external).** A chat with a checklist strip. The chat itself reports what is received, what is missing, and status updates. No separate status page.
 2. **Queue (internal).** All deals with stage, call, flags, age, owner. Analysts and seniors use it.
-3. **Deal workspace (internal).** Tabs for Flow (live agent orchestration diagram, click a node for inputs, tool calls, outputs) and Review (progress timeline, memo and workbook viewer), with the chief chat docked on the right.
+3. **Deal page (internal).** The chief chat on the left; on the right the tabs Memo (with a review panel), Calculations (with a link from each input to its source line), Files, and Process (the agent graph and a plain-words history).
 
 Edit flow: the reviewer types a change, the chief proposes a diff, the reviewer confirms, affected calculations rerun, and the change is logged. Three edit types: data edit (recalculates), judgment override (requires a reason), narrative edit (memo text only).
 

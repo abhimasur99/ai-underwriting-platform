@@ -39,8 +39,9 @@ Shared pattern: **code owns the order of work.** The underwriter, checker and ex
 ## 5. Chief agent
 - **Job:** run the workflow and talk to reviewers.
 - **State machine (code):** the states and the transition table live only in `docs/architecture.md` section 3; do not duplicate them here. The chief writes the state change and the handoff to the event log, then calls the next agent. All queue views are projections of these events.
-- **Model use:** classifying reviewer chat intent (`question | data_edit | narrative_edit | override | action`) and wording replies. It never decides workflow state.
-- **Chat tools:** `get_deal_summary`, `get_metric(name)` (returns value plus formula and inputs), `explain_reason(code)`, `propose_patch(path, new_value, reason)`, `confirm_patch(patch_id)` (reviewer button, never the model), `rerun_underwriting()`, `record_decision(decision, rationale)` (reviewer only).
+- **Model use:** classifying reviewer chat intent (`question | data_edit | narrative_edit | override | action`) and wording replies. It never decides workflow state. A what-if arrives as named assumptions and a values, and "largest loan" as a target; code computes both (`core/scenario.py`, `core/sizing.py`, D41, D42).
+- **Reply to the broker:** on an approval or rejection the chief drafts a reply (`agents/broker_reply.py`): code-written, no figures; in live mode a model may rephrase it behind `phrasing.valid_broker`. The reviewer edits and approves it; it is logged (`reply.drafted`, `reply.edited`, `reply.approved`) and never sent (D43).
+- **Chat tools:** `get_deal_summary`, `get_metric(name)` (returns value plus formula and inputs), `explain_reason(code)`, `propose_patch(path, new_value, reason)`, `confirm_patch(patch_id)` (reviewer button, never the model), `rerun_underwriting()`, `record_decision(decision, rationale)` (reviewer only), `run_what_if(assumptions)` and `max_loan(target)` (read-only: they save nothing).
 - **Edit handling:**
   - Data edit: chief proposes a patch with old and new value and shows impact in words; on confirm, writes deal v+1, reruns underwriter then checker; the old version stays readable.
   - Narrative edit: re-renders the memo text, then reruns the memo-number-match check.

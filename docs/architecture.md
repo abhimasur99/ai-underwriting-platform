@@ -60,12 +60,15 @@ Edits: a confirmed data patch bumps `deal_version` and re-enters at UNDERWRITING
 3. Chief dispatches underwriting. The agent calls tools in order: metrics, exit sizing, stress, rules, workbook, memo. Output: `UnderwritingResult` plus files in `data/runtime/outputs/<deal_id>/v<N>/`.
 4. Chief dispatches the checker with the raw file paths and the result. Output: `CheckReport`.
 5. Chief writes `NEEDS_REVIEW`. The UI updates through server-sent events.
+6. The reviewer decides. An approval or rejection also drafts a reply to the broker (`reply.drafted`), which the reviewer edits and approves; it is never sent.
 
 ## 5. Backend modules
 | Module | Responsibility |
 | --- | --- |
 | `bridge/core/schema.py` | Pydantic models: `Sourced[T]`, `Deal`, `Metrics`, `UnderwritingResult`, `CheckReport`, `Event`, `Handoff`, `Patch` |
 | `bridge/core/calc.py` | Pure metric and exit-sizing functions |
+| `bridge/core/edit.py` | One way to change a deal input on a copy (shared by confirmed edits and what-ifs) |
+| `bridge/core/scenario.py`, `sizing.py` | What-ifs (the real underwriting on a copy; nothing saved) and the largest loan that screens |
 | `bridge/core/rules.py` | Loads `config/rules.yaml`; returns call and reason codes |
 | `bridge/core/completeness.py` | Checklist status from labels and facts |
 | `bridge/core/parsers/` | CSV, XLSX and PDF tables (`pdftable.py`); markdown, text, PDF and Word documents (`documents.py`); model-assist protocol and verification (`assist.py`); classify |
@@ -73,6 +76,7 @@ Edits: a confirmed data patch bumps `deal_version` and re-enters at UNDERWRITING
 | `bridge/core/independent/` | Checker's own parser and formulas (no imports from `calc.py` or `parsers/`) |
 | `bridge/agents/runner.py` | `AgentRunner` interface; Claude and cached implementations |
 | `bridge/agents/{chief,intake,extraction,underwriter,checker}.py` | Agent logic (see `docs/agents.md`) |
+| `bridge/agents/{chief_chat,intake_replies,phrasing,broker_reply}.py` | Chat replies composed by code, the check on model rewording, and the draft reply to the broker |
 | `bridge/agents/tools/` | Tool registries and JSON schemas for each agent |
 | `bridge/store/` | SQLite access, deal record, event log, patches |
 | `bridge/api/` | FastAPI routes and SSE streams |
