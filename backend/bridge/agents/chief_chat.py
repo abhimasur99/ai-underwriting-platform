@@ -91,6 +91,16 @@ def explain_exceptions(result) -> str:
     return "\n\n".join(parts)
 
 
+def _words(codes: list[str]) -> str:
+    """Rule reason codes in plain words, each once (three leverage codes read as one line)."""
+    seen: list[str] = []
+    for code in codes:
+        text = reason_label(code)
+        if text not in seen:
+            seen.append(text)
+    return "; ".join(seen)
+
+
 def _show(kind: str, value: float) -> str:
     return f"{value:g} bps" if kind == "bps" else {"pct": f.pct, "usd": f.usd, "mult": f.mult}[
         kind](value)
@@ -113,9 +123,9 @@ def explain_scenario(outcome: Outcome) -> str:
         text = (f"The call would move from {outcome.call_before.capitalize()} to "
                 f"{outcome.call_after.capitalize()}.")
         if outcome.diff.reasons_added:
-            text += f" New reasons: {', '.join(outcome.diff.reasons_added)}."
+            text += f" New concerns: {_words(outcome.diff.reasons_added)}."
         if outcome.diff.reasons_removed:
-            text += f" No longer applies: {', '.join(outcome.diff.reasons_removed)}."
+            text += f" No longer a concern: {_words(outcome.diff.reasons_removed)}."
         parts.append(text)
     else:
         parts.append(f"The call would stay {outcome.call_after.capitalize()}.")
@@ -183,9 +193,9 @@ def explain_changes(diff: VersionDiff) -> str:
         text = (f"The call moved from {diff.call_before.capitalize()} to "
                 f"{diff.call_after.capitalize()}.")
         if diff.reasons_added:
-            text += f" New reasons: {', '.join(diff.reasons_added)}."
+            text += f" New concerns: {_words(diff.reasons_added)}."
         if diff.reasons_removed:
-            text += f" No longer applies: {', '.join(diff.reasons_removed)}."
+            text += f" No longer a concern: {_words(diff.reasons_removed)}."
         parts.append(text)
     else:
         parts.append(f"The call is unchanged ({diff.call_after.capitalize()}).")

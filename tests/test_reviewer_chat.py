@@ -92,7 +92,7 @@ def test_a_change_that_flips_the_call_says_where_it_moved(tmp_path):
     patch = chief.propose_patch(deal_id, "data", "loan_request.loan_commitment", 7_400_000, "more")
     chief.confirm_patch(deal_id, patch.patch_id)
     reply = ask(chat, deal_id, "what changed since the last version")["reply"]
-    assert "The call moved from Screen to" in reply and "New reasons" in reply
+    assert "The call moved from Screen to" in reply and "New concerns" in reply
 
 
 # ---- follow-ups, the record, and the numbers rule
