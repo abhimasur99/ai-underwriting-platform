@@ -82,13 +82,19 @@ def markdown_to_pdf(md: str, path: Path, title: str = "Sample document") -> None
         c.setFont(font, size)
         c.drawString(x, y, string)
 
-    for kind, payload in _blocks(md):
+    def table_height(rows) -> float:
+        return 6 + len(rows) * (LINE + 2) + 12
+
+    blocks = list(_blocks(md))
+    for index, (kind, payload) in enumerate(blocks):
         if kind == "title":
             need(30)
             text(LEFT, payload, "Helvetica-Bold", TITLE)
             y -= 26
         elif kind == "section":
-            need(34)
+            ahead = blocks[index + 1] if index + 1 < len(blocks) else None
+            # keep a heading with the table that follows it (a table is never split)
+            need(34 + (table_height(ahead[1]) if ahead and ahead[0] == "table" else LINE))
             y -= 8
             text(LEFT, payload, "Helvetica-Bold", SECTION)
             y -= 20
@@ -102,12 +108,12 @@ def markdown_to_pdf(md: str, path: Path, title: str = "Sample document") -> None
                 text(indent, part)
                 y -= LINE
         else:                                              # table
+            need(table_height(payload))
             y -= 6
             columns = len(payload[0])
             xs = [LEFT, RIGHT_COL] if columns == 2 else [
                 LEFT + i * (WIDTH / columns) for i in range(columns)]
             for r, row in enumerate(payload):
-                need(LINE + 4)
                 for x, cell in zip(xs, row, strict=False):
                     text(x, cell, "Helvetica-Bold" if r == 0 else "Helvetica")
                 if r == 0:
