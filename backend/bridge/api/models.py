@@ -1,5 +1,5 @@
 """Request and response models (they become the OpenAPI schema the frontend types come from)."""
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from bridge.core.completeness import ChecklistStatus
 from bridge.core.schema import CheckReport, Deal, Patch, UnderwritingResult
@@ -26,11 +26,29 @@ class FileResponse_(BaseModel):
     submitted: bool = False
 
 
+class FactView(BaseModel):
+    key: str
+    label: str
+    value: str
+    source: str            # "deal_summary.pdf, line 8", or "stated in the chat"
+
+
+class TranscriptMessage(BaseModel):
+    # "you" (the sponsor), "agent" (the intake assistant) or "file" (a document received)
+    from_: str = Field(alias="from")
+    text: str
+    ts: str
+
+    model_config = {"populate_by_name": True}
+
+
 class IntakeStatus(BaseModel):
     """What the external chat may show: a stage and a plain sentence, never ratios or a call."""
     stage: str
     message: str
     checklist: ChecklistStatus
+    facts: list[FactView] = []
+    files: dict[str, str] = {}      # document type -> the file received
 
 
 class QueueRow(BaseModel):

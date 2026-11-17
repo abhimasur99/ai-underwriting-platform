@@ -8,6 +8,9 @@ from dataclasses import dataclass, field
 class IntakeTurn:
     facts: dict[str, str] = field(default_factory=dict)   # allowlisted keys only (code filters)
     asks_for_decision: bool = False                         # rates, approval odds, pricing...
+    # what the person is doing, so code can answer: greeting, help, missing, next, status,
+    # thanks, or other (facts and unclear messages)
+    intent: str = "other"
 
 
 @dataclass

@@ -16,6 +16,7 @@ from bridge.agents.underwriter import FaultPlan, run_underwriter
 from bridge.core import completeness
 from bridge.core.builders.memo import render_memo
 from bridge.core.parsers import parse_deal_dir
+from bridge.core.parsers.preview import FactRead, read_facts
 from bridge.core.placeholders import fill, validate_narrative
 from bridge.core.rules import RulesConfig, load_rules
 from bridge.core.schema import (
@@ -122,6 +123,26 @@ class Chief:
         rec.event("intake", "file.classified", f"{filename} -> {label}",
                   {"file_id": file_id, "label": label})
         return self.update_checklist(deal_id)
+
+    def read_details(self, deal_id: str) -> list[FactRead]:
+        """The deal's basic details as read from the uploaded documents. A detail the sponsor
+        stated in the chat is theirs and is kept; one read from a document follows that document
+        (a corrected file updates it). Returns the details that are new or changed."""
+        events = self.store.events(deal_id)
+        typed = {e.payload["key"] for e in events if e.type == "fact.recorded"
+                 and not e.payload.get("read_from_document")}
+        known = self.store.facts(deal_id)
+        changed = []
+        for fact in read_facts(self.deal_dir(deal_id)):
+            if fact.key in typed or known.get(fact.key) == fact.value:
+                continue
+            self.store.record_fact(deal_id, fact.key, fact.value)
+            Recorder(self.store, deal_id).event(
+                "intake", "fact.recorded", f"{fact.key} read from {fact.doc}",
+                {"key": fact.key, "value": fact.value, "read_from_document": True,
+                 "source": f"{fact.doc}, {fact.locator}"})
+            changed.append(fact)
+        return changed
 
     def record_fact(self, deal_id: str, key: str, value: str) -> dict:
         self.store.record_fact(deal_id, key, value)

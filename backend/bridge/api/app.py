@@ -7,6 +7,7 @@ from typing import Annotated
 from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
 
+from bridge.agents import intake_replies as say
 from bridge.agents import patches as patching
 from bridge.agents.chief import Chief, DecisionError
 from bridge.agents.chief_chat import ChiefChat
@@ -179,8 +180,29 @@ def create_app(settings: Settings | None = None, runner: AgentRunner | None = No
         need(deal_id)
         st = projections.status(store, deal_id)
         labels = [f["label"] for f in store.files(deal_id) if f["label"]]
+        sources = {}
+        for e in store.events(deal_id):
+            if e.type == "fact.recorded":
+                sources[e.payload.get("key")] = e.payload.get("source") or "stated in the chat"
+        facts = store.facts(deal_id)
         return {"stage": st.stage, "message": intake.status_message(deal_id),
-                "checklist": completeness.status(labels, store.facts(deal_id))}
+                "checklist": completeness.status(labels, facts),
+                "facts": [{"key": k, "label": say.FACT_NAME[k].capitalize(), "value": facts[k],
+                           "source": sources.get(k, "stated in the chat")}
+                          for k in say.FACT_NAME if k in facts],
+                "files": {f["label"]: f["filename"] for f in _current_files(deal_id)
+                          if f["label"]}}
+
+    @app.get("/api/deals/{deal_id}/transcript", response_model=list[m.TranscriptMessage])
+    def transcript(deal_id: str):
+        """The sponsor's conversation only (what they said, what the assistant said, which files
+        arrived), so the intake page can restore it. Never any internal event."""
+        need(deal_id)
+        roles = {"chat.sponsor": "you", "chat.assistant": "agent", "file.uploaded": "file"}
+        return [{"from": roles[e.type], "ts": e.ts,
+                 "text": e.summary.removesuffix(" uploaded") if e.type == "file.uploaded"
+                 else e.payload.get("text", "")}
+                for e in store.events(deal_id) if e.type in roles]
 
     @app.get("/api/deals/{deal_id}/workbook", response_model=m.WorkbookView)
     def workbook(deal_id: str):

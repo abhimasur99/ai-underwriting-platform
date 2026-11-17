@@ -50,7 +50,7 @@ def test_create_deal_and_walk_the_checklist_through_uploads(client):
     assert created["deal_id"] == "D-0001" and created["checklist"]["ready"] is False
     out = upload(client, created["deal_id"], "rent_roll.csv").json()
     assert out["checklist"]["received"] == ["rent_roll"]
-    assert "Next I need your deal summary" in out["reply"]
+    assert "please send your deal summary" in out["reply"]
     assert out["submitted"] is False
 
 
@@ -76,7 +76,9 @@ def test_external_chat_never_exposes_underwriting(client):
 def test_events_history_and_sse_once(client):
     deal_id = submitted_deal(client)
     events = client.get(f"/api/deals/{deal_id}/events").json()
-    assert events[0]["type"] == "deal.created" and events[-1]["type"] == "review.requested"
+    types = [e["type"] for e in events]
+    assert types[0] == "deal.created" and "review.requested" in types
+    assert "chat.sponsor" in types and types[-1] == "chat.assistant"   # the chat is in the log
     after = events[3]["event_id"]
     assert all(e["event_id"] > after for e in
                client.get(f"/api/deals/{deal_id}/events", params={"after": after}).json())
@@ -328,3 +330,27 @@ def test_an_unknown_file_is_404_and_a_replaced_file_is_listed_once(client):
     client.post(f"/api/deals/{deal_id}/files", files={"file": ("t12.csv", again)})
     labels = [f["label"] for f in client.get(f"/api/deals/{deal_id}").json()["files"]]
     assert labels.count("t12") == 1 and len(labels) == 5
+
+
+def test_the_sponsor_page_gets_the_details_read_and_the_files_received(client):
+    deal_id = client.post("/api/deals").json()["deal_id"]
+    upload(client, deal_id, "deal_summary.md")
+    status = client.get(f"/api/deals/{deal_id}/intake-status").json()
+    facts = {f["key"]: f for f in status["facts"]}
+    assert facts["unit_count"]["value"] == "40"
+    assert facts["property_address"]["label"] == "Property address"
+    assert facts["unit_count"]["source"].startswith("deal_summary.md, line ")
+    assert status["files"] == {"deal_summary": "deal_summary.md"}
+
+
+def test_the_transcript_is_the_conversation_only_and_survives_a_reload(client):
+    deal_id = submitted_deal(client)
+    client.post(f"/api/deals/{deal_id}/chat", json={"message": "thanks"})
+    transcript = client.get(f"/api/deals/{deal_id}/transcript").json()
+    roles = [m["from"] for m in transcript]
+    assert "you" in roles and "agent" in roles and "file" in roles
+    assert transcript[0]["from"] == "file" and transcript[0]["text"] == "deal_summary.md"
+    everything = " ".join(m["text"] for m in transcript)
+    for internal in ("70.65", "NEEDS_REVIEW", "tool"):
+        assert internal not in everything
+    assert client.get("/api/deals/D-9999/transcript").status_code == 404

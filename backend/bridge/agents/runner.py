@@ -28,6 +28,8 @@ class AgentRunner(Protocol):
 
     def interpret_chief(self, message: str) -> ChiefTurn: ...
 
+    def phrase(self, kind: str, draft: str, history: list[tuple[str, str]]) -> str | None: ...
+
 
 _INPUT_HINTS = {
     "ltc": "loan_commitment or total cost (sum of uses)",
@@ -82,6 +84,9 @@ class CachedRunner:
 
     def interpret_chief(self, message: str) -> ChiefTurn:
         return cached_nlu.interpret_chief(message)
+
+    def phrase(self, kind: str, draft: str, history: list[tuple[str, str]]) -> str | None:
+        return None                      # offline there is no model: the code-composed reply stands
 
 
 def load_cached_json(path: Path) -> dict:

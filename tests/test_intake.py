@@ -84,23 +84,27 @@ def test_chat_walks_the_checklist_one_ask_at_a_time(agent):
     a, deal_id = agent
     out = a.handle(deal_id, files=[f("rent_roll.csv"), f("deal_summary.md")])
     assert out["checklist"]["received"] == ["deal_summary", "rent_roll"]
-    assert "Next I need your purchase contract" in out["reply"]
+    assert "please send your purchase contract, T-12 and renovation budget" in out["reply"]
     for name in ("purchase_contract.md", "t12.csv", "renovation_budget.csv"):
         out = a.handle(deal_id, files=[f(name)])
-    assert out["checklist"]["missing"] == [] and not out["checklist"]["ready"]
-    assert "sponsor's name" in out["reply"] or "address" in out["reply"]
+    # the details are read from the documents, so nothing is left to type
+    assert out["checklist"]["missing"] == [] and out["checklist"]["ready"] and out["submitted"]
+    assert "with our team for review" in out["reply"]
 
 
 def test_facts_are_recorded_from_free_text_and_complete_the_deal(agent):
     a, deal_id = agent
-    for name in ("deal_summary.md", "purchase_contract.md", "rent_roll.csv", "t12.csv",
-                 "renovation_budget.csv"):
+    # a summary and contract in the broker's own words: nothing can be read from them, so the
+    # details must be typed
+    a.handle(deal_id, files=[IncomingFile("deal_summary.md", b"# Offering\n- 24 apartments\n"),
+                             IncomingFile("purchase_contract.md", b"# Agreement\n- Price: $8m\n")])
+    for name in ("rent_roll.csv", "t12.csv", "renovation_budget.csv"):
         a.handle(deal_id, files=[f(name)])
     out = a.handle(deal_id, "Sponsor is Harborline Residential LLC. Address: 1200 Sample Avenue. "
                             "40 units, multifamily. Purchase price $8,000,000, reno budget "
                             "$1.2 million, loan amount $6.5 million")
     assert out["checklist"]["ready"] is True and out["submitted"] is True
-    assert "team will review" in out["reply"]
+    assert "with our team for review" in out["reply"]
     assert a.chief.state(deal_id) == "READY"
     assert a.chief.store.facts(deal_id)["sponsor_name"] == "Harborline Residential LLC"
     assert a.chief.store.facts(deal_id)["renovation_budget"] == "1200000"
@@ -147,7 +151,7 @@ def test_external_replies_never_carry_underwriting_numbers(tmp_path):
         assert not re.search(r"\d+\.\d+%|\$\d|\bdecline\b|\bscreen\b|\bwatch\b", reply, re.I), reply
 
 
-@pytest.mark.parametrize("state_hint,expected", [("AWAITING_DOCS", "Next I need")])
+@pytest.mark.parametrize("state_hint,expected", [("AWAITING_DOCS", "please send your")])
 def test_status_message_for_an_incomplete_deal(agent, state_hint, expected):
     a, deal_id = agent
     a.handle(deal_id, files=[f("rent_roll.csv")])
@@ -159,7 +163,8 @@ def test_status_message_while_in_review_is_just_under_review(tmp_path):
     deal_id = chief.create_deal()
     chief.ingest_directory(deal_id, SRC)
     chief.process(deal_id)
-    assert IntakeAgent(chief, CachedRunner()).status_message(deal_id) == "Under review."
+    message = IntakeAgent(chief, CachedRunner()).status_message(deal_id)
+    assert message.startswith("Your package is with our team for review")
 
 
 # ---- PDF, Word and Excel uploads
@@ -194,7 +199,7 @@ def test_a_pdf_table_is_accepted_and_classified_by_its_title(agent, tmp_path):
     c = classify("export_2026.pdf", path.read_bytes())
     assert (c.label, c.status) == ("rent_roll", "ok")
     out = a.handle(deal_id, files=[IncomingFile("export_2026.pdf", path.read_bytes())])
-    assert "Got your rent roll" in out["reply"] and out["checklist"]["received"] == ["rent_roll"]
+    assert "I have your rent roll" in out["reply"] and out["checklist"]["received"] == ["rent_roll"]
 
 
 def test_a_pdf_with_no_table_is_refused_at_upload_with_a_helpful_reply(agent, tmp_path):
@@ -225,6 +230,6 @@ def test_uploading_a_replacement_in_another_format_leaves_one_file(agent, tmp_pa
     a.handle(deal_id, files=[f("deal_summary.md")])
     pdf = _doc(tmp_path, "deal_summary.md", "pdf", "x.pdf")
     out = a.handle(deal_id, files=[IncomingFile("deal_summary.pdf", pdf)])
-    assert "Updated your deal summary" in out["reply"]
+    assert "updated your deal summary" in out["reply"]
     names = sorted(p.name for p in a.chief.deal_dir(deal_id).glob("deal_summary.*"))
     assert names == ["deal_summary.pdf"]

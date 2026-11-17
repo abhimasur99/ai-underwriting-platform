@@ -163,5 +163,5 @@ def test_asking_about_the_decision_while_replying_is_still_refused(tmp_path):
     chief, intake, deal_id = reviewed(tmp_path)
     chief.decide(deal_id, "request_info", "Is the guarantee full recourse?")
     out = intake.handle(deal_id, "Yes, full recourse. So will you approve it?")
-    assert "can't discuss underwriting" in out["reply"].lower()
+    assert "can't discuss pricing" in out["reply"].lower()
     assert chief.state(deal_id) == "NEEDS_REVIEW"

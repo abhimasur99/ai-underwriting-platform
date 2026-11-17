@@ -9,7 +9,27 @@ FACT_KEYS = ["property_address", "asset_type", "unit_count", "loan_amount_reques
              "purchase_price", "renovation_budget", "sponsor_name"]
 DECISION_WORDS = re.compile(
     r"\b(approv\w*|odds|chances?|pricing|what rate|interest rate|quote|term sheet|ltv|ltc|"
-    r"dscr|cap rate|decision|will you (?:fund|lend)|how much (?:can|will) you)\b", re.I)
+    r"dscr|cap rate|decision|will you (?:fund|lend)|how much (?:can|will) you|screen(?:ed)?|watch|"
+    r"declin\w*|call|memo|underwrit\w*|exit (?:dscr|cushion)|cushion|stress|ratios?|metrics?|"
+    r"outcome|results?|score|loan amount can)\b", re.I)
+
+# What the person is doing when they are not stating deal facts.
+INTENTS = [
+    ("greeting", re.compile(r"^\s*(hi|hello|hey|good (?:morning|afternoon|evening)|greetings)\b"
+                            r"[\s!.,]*(there|team)?[\s!.,]*$", re.I)),
+    ("thanks", re.compile(r"\b(thanks|thank you|thx|much appreciated|appreciate it)\b", re.I)),
+    ("help", re.compile(r"\b(what (?:can|do) you (?:do|help)|how (?:can|do) you help|who are you|"
+                        r"what is this|what are you|how does this work|help me|can you help)\b",
+                        re.I)),
+    ("missing", re.compile(r"\b(what(?:'s| is)? (?:still )?(?:missing|left|outstanding)|"
+                           r"what (?:else )?do you (?:still )?need|anything (?:else|missing)|"
+                           r"is (?:anything|everything) (?:missing|complete)|what remains)\b",
+                           re.I)),
+    ("next", re.compile(r"\b(what happens next|what(?:'s| is) next|next steps?|how long|"
+                        r"when will|timeline|what now)\b", re.I)),
+    ("status", re.compile(r"\b(status|any (?:news|update)s?|where (?:are|do) we|progress|"
+                          r"update me|how(?:'s| is) it going)\b", re.I)),
+]
 
 
 def _money(number: str, scale: str | None) -> float:
@@ -44,8 +64,12 @@ def interpret_intake(message: str) -> IntakeTurn:
              r"loan(?: amount)?(?: request(?:ed)?)?(?:\s*(?:is|of|:))?\s*")):
         if m := re.search(pattern + _AMOUNT, text, re.I):
             facts[key] = str(int(_money(m.group(1), m.group(2))))
+    asks = bool(DECISION_WORDS.search(text))
+    intent = "other"
+    if not facts and not asks:
+        intent = next((name for name, pattern in INTENTS if pattern.search(text)), "other")
     return IntakeTurn(facts={k: v for k, v in facts.items() if k in FACT_KEYS},
-                      asks_for_decision=bool(DECISION_WORDS.search(text)))
+                      asks_for_decision=asks, intent=intent)
 
 
 METRIC_WORDS = [

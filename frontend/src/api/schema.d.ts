@@ -248,6 +248,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/deals/{deal_id}/transcript": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Transcript
+         * @description The sponsor's conversation only (what they said, what the assistant said, which files
+         *     arrived), so the intake page can restore it. Never any internal event.
+         */
+        get: operations["transcript_api_deals__deal_id__transcript_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/deals/{deal_id}/workbook": {
         parameters: {
             query?: never;
@@ -520,6 +541,17 @@ export interface components {
             /** Takeout Max */
             takeout_max: number;
         };
+        /** FactView */
+        FactView: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Source */
+            source: string;
+            /** Value */
+            value: string;
+        };
         /** FileResponse_ */
         FileResponse_: {
             checklist: components["schemas"]["ChecklistStatus"];
@@ -582,6 +614,18 @@ export interface components {
          */
         IntakeStatus: {
             checklist: components["schemas"]["ChecklistStatus"];
+            /**
+             * Facts
+             * @default []
+             */
+            facts: components["schemas"]["FactView"][];
+            /**
+             * Files
+             * @default {}
+             */
+            files: {
+                [key: string]: string;
+            };
             /** Message */
             message: string;
             /** Stage */
@@ -928,6 +972,15 @@ export interface components {
             dscr: number;
             /** Ltv */
             ltv: number;
+        };
+        /** TranscriptMessage */
+        TranscriptMessage: {
+            /** From */
+            from: string;
+            /** Text */
+            text: string;
+            /** Ts */
+            ts: string;
         };
         /** UnderwritingResult */
         UnderwritingResult: {
@@ -1579,6 +1632,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    transcript_api_deals__deal_id__transcript_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TranscriptMessage"][];
                 };
             };
             /** @description Validation Error */

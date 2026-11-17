@@ -551,6 +551,34 @@
     "title": "ExitAnalysis",
     "type": "object"
    },
+   "FactView": {
+    "properties": {
+     "key": {
+      "title": "Key",
+      "type": "string"
+     },
+     "label": {
+      "title": "Label",
+      "type": "string"
+     },
+     "source": {
+      "title": "Source",
+      "type": "string"
+     },
+     "value": {
+      "title": "Value",
+      "type": "string"
+     }
+    },
+    "required": [
+     "key",
+     "label",
+     "value",
+     "source"
+    ],
+    "title": "FactView",
+    "type": "object"
+   },
    "FileResponse_": {
     "properties": {
      "checklist": {
@@ -707,6 +735,22 @@
     "properties": {
      "checklist": {
       "$ref": "#/components/schemas/ChecklistStatus"
+     },
+     "facts": {
+      "default": [],
+      "items": {
+       "$ref": "#/components/schemas/FactView"
+      },
+      "title": "Facts",
+      "type": "array"
+     },
+     "files": {
+      "additionalProperties": {
+       "type": "string"
+      },
+      "default": {},
+      "title": "Files",
+      "type": "object"
      },
      "message": {
       "title": "Message",
@@ -1771,6 +1815,29 @@
     "title": "TakeoutCaps",
     "type": "object"
    },
+   "TranscriptMessage": {
+    "properties": {
+     "from": {
+      "title": "From",
+      "type": "string"
+     },
+     "text": {
+      "title": "Text",
+      "type": "string"
+     },
+     "ts": {
+      "title": "Ts",
+      "type": "string"
+     }
+    },
+    "required": [
+     "from",
+     "text",
+     "ts"
+    ],
+    "title": "TranscriptMessage",
+    "type": "object"
+   },
    "UnderwritingResult": {
     "properties": {
      "artifacts": {
@@ -2815,6 +2882,50 @@
      }
     },
     "summary": "Deal Stream"
+   }
+  },
+  "/api/deals/{deal_id}/transcript": {
+   "get": {
+    "description": "The sponsor's conversation only (what they said, what the assistant said, which files\narrived), so the intake page can restore it. Never any internal event.",
+    "operationId": "transcript_api_deals__deal_id__transcript_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "deal_id",
+      "required": true,
+      "schema": {
+       "title": "Deal Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/TranscriptMessage"
+         },
+         "title": "Response Transcript Api Deals  Deal Id  Transcript Get",
+         "type": "array"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Transcript"
    }
   },
   "/api/deals/{deal_id}/workbook": {
