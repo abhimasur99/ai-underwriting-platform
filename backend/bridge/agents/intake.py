@@ -70,17 +70,34 @@ class IntakeAgent:
     # ---- one chat turn
     def handle(self, deal_id: str, message: str = "", files: list[IncomingFile] | None = None
                ) -> dict:
+        awaiting = self.chief.awaiting_sponsor(deal_id)       # the reviewer asked for something
+        known = len(self.chief.store.files(deal_id))
         notes: list[str] = []
         for f in files or []:
             notes.append(self._take_file(deal_id, f))
+        sent = [x["filename"] for x in self.chief.store.files(deal_id)[known:]]
         asked_for_decision = False
         if message.strip():
             turn = self.runner.interpret_intake(message)
             asked_for_decision = turn.asks_for_decision
-            for key, value in turn.facts.items():
-                if key in FACT_PROMPT:                      # allowlist
-                    self.chief.record_fact(deal_id, key, value)
-                    notes.append(f"Noted the {FACT_HUMAN[key]}.")
+            if not awaiting:         # while a reviewer's question is open, a message is a reply,
+                for key, value in turn.facts.items():             # not new deal facts
+                    if key in FACT_PROMPT:                      # allowlist
+                        self.chief.record_fact(deal_id, key, value)
+                        notes.append(f"Noted the {FACT_HUMAN[key]}.")
+        if awaiting:
+            if files and not sent:       # every upload was refused or a duplicate: keep waiting
+                still = ["Thanks, but the team is still waiting for what they asked for."]
+                return {"reply": " ".join([*notes, *still]),
+                        "checklist": self.chief.checklist(deal_id), "submitted": False}
+            if message.strip() or sent:
+                self.chief.record_reply(deal_id, message, sent)
+                if not sent:             # words only: no document changed, back to the reviewer
+                    self.chief.resume_review(deal_id)
+                    parts = [REFUSAL] if asked_for_decision else []
+                    parts.append("Thanks, I've passed that to the team.")
+                    return {"reply": " ".join(parts),
+                            "checklist": self.chief.checklist(deal_id), "submitted": False}
         checklist = self.chief.update_checklist(deal_id)
         submitted = False
         if checklist["ready"] and self.chief.state(deal_id) == "READY":
@@ -160,6 +177,11 @@ class IntakeAgent:
         if state in ("CREATED", "AWAITING_DOCS"):
             return self._next_step(self.chief.update_checklist(deal_id))
         if state == "NEEDS_INPUT":
+            asked = next((e.payload.get("note", "") for e in reversed(
+                self.chief.store.events(deal_id)) if e.type == "info.requested"), "")
+            if asked and self.chief.awaiting_sponsor(deal_id):
+                return (f"The team has a question: {asked} You can reply here, or upload the "
+                        "file they need.")
             return "We need one more item from you; the team will be in touch."
         if state in ("REJECTED", "APPROVED", "RELEASED"):
             return "The team has finished its review and will follow up with you."

@@ -672,6 +672,16 @@ export interface components {
             flags: number;
             /** Name */
             name: string;
+            /**
+             * Needs You
+             * @default false
+             */
+            needs_you: boolean;
+            /**
+             * Next Action
+             * @default
+             */
+            next_action: string;
             /** Owner */
             owner: string;
             /** Retry Count */

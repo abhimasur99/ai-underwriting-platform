@@ -274,3 +274,28 @@ def test_rename_a_deal(client):
     assert client.get("/api/deals").json()[0]["name"] == "Harbor Street bridge"
     assert client.patch(f"/api/deals/{deal_id}", json={"name": "   "}).status_code == 422
     assert client.patch("/api/deals/D-9999", json={"name": "x"}).status_code == 404
+
+
+def test_request_info_round_trip_over_the_api(client):
+    deal_id = submitted_deal(client)
+    assert client.post(f"/api/deals/{deal_id}/decision",
+                       json={"decision": "request_info", "rationale": " "}).status_code == 409
+    out = client.post(f"/api/deals/{deal_id}/decision", json={
+        "decision": "request_info", "rationale": "Please send the 2025 tax bill."})
+    assert out.json() == {"state": "NEEDS_INPUT"}
+    row = client.get("/api/deals").json()[0]
+    assert row["next_action"].startswith("Waiting on sponsor: Please send") and not row["needs_you"]
+    status = client.get(f"/api/deals/{deal_id}/intake-status").json()
+    assert "Please send the 2025 tax bill." in status["message"]
+    reply = client.post(f"/api/deals/{deal_id}/chat", json={"message": "Attached next week."})
+    assert "passed that to the team" in reply.json()["reply"]
+    row = client.get("/api/deals").json()[0]
+    assert row["next_action"] == "Your review" and row["needs_you"] is True
+    events = [e["type"] for e in client.get(f"/api/deals/{deal_id}/events").json()]
+    assert "info.requested" in events and "info.replied" in events
+
+
+def test_the_queue_puts_what_needs_the_reviewer_first(client):
+    waiting = client.post("/api/deals").json()["deal_id"]
+    ready = submitted_deal(client)
+    assert [r["deal_id"] for r in client.get("/api/deals").json()] == [ready, waiting]

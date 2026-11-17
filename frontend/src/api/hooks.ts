@@ -10,7 +10,7 @@ const EVENT_TYPES = [
   'tool.called', 'extraction.completed', 'underwriting.completed', 'check.completed',
   'check.retry', 'review.requested', 'patch.proposed', 'patch.confirmed', 'patch.cancelled',
   'override.recorded', 'decision.recorded', 'memo.rendered', 'deal.archived',
-  'deal.restored', 'deal.renamed', 'error',
+  'deal.restored', 'deal.renamed', 'info.requested', 'info.replied', 'error',
 ]
 
 /** Subscribe to an SSE stream and call `onEvent` for every frame. Reconnects on its own. */

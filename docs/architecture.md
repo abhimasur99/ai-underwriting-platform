@@ -45,7 +45,10 @@ States: `CREATED`, `AWAITING_DOCS`, `READY`, `EXTRACTING`, `EXTRACTED`, `UNDERWR
 | CHECKING | status fail and retries < 2 | UNDERWRITING (retry_count + 1) |
 | CHECKING | status fail and retries = 2 | NEEDS_REVIEW with escalation flag |
 | NEEDS_REVIEW | reviewer approves | APPROVED then RELEASED (MVP: locked snapshot only) |
-| NEEDS_REVIEW | reviewer sends back | SENT_BACK then UNDERWRITING |
+| NEEDS_REVIEW | reviewer sends back (re-run) | SENT_BACK then UNDERWRITING |
+| NEEDS_REVIEW | reviewer requests info from the sponsor | NEEDS_INPUT |
+| NEEDS_INPUT | sponsor replies in words (deal already has a result) | NEEDS_REVIEW |
+| NEEDS_INPUT | sponsor uploads a file, checklist complete | READY (then a new deal version) |
 | NEEDS_REVIEW | reviewer rejects | REJECTED |
 | any | unrecoverable error | FAILED |
 

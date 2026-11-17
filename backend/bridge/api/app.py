@@ -208,8 +208,9 @@ def create_app(settings: Settings | None = None, runner: AgentRunner | None = No
     @app.post("/api/deals/{deal_id}/decision", response_model=m.StateResponse)
     def decision(deal_id: str, body: m.DecisionRequest):
         need(deal_id)
-        if body.decision not in ("approve", "send_back", "reject"):
-            raise HTTPException(422, "decision must be approve, send_back or reject")
+        if body.decision not in ("approve", "send_back", "reject", "request_info"):
+            raise HTTPException(
+                422, "decision must be approve, send_back, reject or request_info")
         return {"state": _guard(chief.decide, deal_id, body.decision, body.rationale)}
 
     return app

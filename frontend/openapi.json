@@ -1051,6 +1051,16 @@
       "title": "Name",
       "type": "string"
      },
+     "needs_you": {
+      "default": false,
+      "title": "Needs You",
+      "type": "boolean"
+     },
+     "next_action": {
+      "default": "",
+      "title": "Next Action",
+      "type": "string"
+     },
      "owner": {
       "title": "Owner",
       "type": "string"

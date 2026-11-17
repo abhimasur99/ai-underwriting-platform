@@ -112,6 +112,8 @@ class Chief:
         for stale in target.parent.glob(f"{label}.*"):      # a replacement in another format
             if stale != target:
                 stale.unlink()
+        # a cached extraction describes the files it was made from; a changed file voids it
+        (target.parent / "cached" / "extracted.json").unlink(missing_ok=True)
         n = len(self.store.files(deal_id)) + 1
         file_id = f"f-{deal_id}-{n:03d}"
         self.store.add_file(file_id, deal_id, filename, label, str(target), len(content))
@@ -126,6 +128,11 @@ class Chief:
         Recorder(self.store, deal_id).event("intake", "fact.recorded", f"{key} recorded",
                                             {"key": key})
         return self.update_checklist(deal_id)
+
+    def checklist(self, deal_id: str) -> dict:
+        """The checklist as it stands, without changing the deal's state or logging anything."""
+        labels = [f["label"] for f in self.store.files(deal_id) if f["label"]]
+        return completeness.status(labels, self.store.facts(deal_id)).model_dump()
 
     def update_checklist(self, deal_id: str) -> dict:
         labels = [f["label"] for f in self.store.files(deal_id) if f["label"]]
@@ -190,20 +197,32 @@ class Chief:
         self._underwrite_and_check(deal_id, deal)
 
     def _extract(self, deal_id: str) -> Deal | None:
-        rec = Recorder(self.store, deal_id, 1)
+        """Extract the documents into a deal. A re-extraction (new files after the reviewer asked
+        for something) becomes the next version; until it succeeds, everything is logged at the
+        version the deal is already on, so a failed attempt never advances the displayed version."""
+        versions = self.store.versions(deal_id)
+        current, new_version = (versions[-1] if versions else 1), (versions[-1] + 1 if versions
+                                                                    else 1)
+        rec = Recorder(self.store, deal_id, current)
         h, t0 = self._handoff(rec, "extraction", "extract_deal", 1, f"files@{deal_id}")
-        self._set_state(deal_id, "EXTRACTING")
+        self._set_state(deal_id, "EXTRACTING", current)
         outcome = run_extraction(self.deal_dir(deal_id), self.runner, rec)
         if outcome.status == "needs_input":
             self._returned(rec, h, t0, "needs_input", summary=", ".join(outcome.missing))
-            self._set_state(deal_id, "NEEDS_INPUT", missing=outcome.missing)
+            self._set_state(deal_id, "NEEDS_INPUT", current, missing=outcome.missing)
             return None
-        deal = outcome.deal.model_copy(update={"deal_id": deal_id, "version": 1})
+        deal = outcome.deal.model_copy(update={"deal_id": deal_id, "version": new_version})
         self.store.save_deal(deal)
         self.store.set_name(deal_id, deal.name)
-        self._returned(rec, h, t0, outputs_ref="deal_record@v1", summary=f"extracted {deal.name}")
-        self._set_state(deal_id, "EXTRACTED")
-        self._set_state(deal_id, "UNDERWRITING")
+        rec = Recorder(self.store, deal_id, new_version)
+        if new_version > 1:
+            rec.event("chief", "version.created", f"deal version {new_version} created",
+                      {"from": current, "to": new_version,
+                       "reason": "re-extracted from new documents"})
+        self._returned(rec, h, t0, outputs_ref=f"deal_record@v{new_version}",
+                       summary=f"extracted {deal.name}")
+        self._set_state(deal_id, "EXTRACTED", new_version)
+        self._set_state(deal_id, "UNDERWRITING", new_version)
         return deal
 
     def _underwrite_and_check(self, deal_id: str, deal: Deal) -> None:
@@ -296,6 +315,8 @@ class Chief:
         """Record the human decision. The AI call is a recommendation only."""
         if self.state(deal_id) != "NEEDS_REVIEW":
             raise DecisionError(f"deal is not awaiting review (state {self.state(deal_id)})")
+        if decision == "request_info" and not rationale.strip():
+            raise DecisionError("say what you need from the sponsor (a note is required)")
         deal, result, check = self.latest(deal_id)
         rec = Recorder(self.store, deal_id, deal.version)
         status = projections.status(self.store, deal_id)
@@ -317,9 +338,35 @@ class Chief:
         elif decision == "send_back":
             self._set_state(deal_id, "SENT_BACK", deal.version)
             self.process(deal_id)
+        elif decision == "request_info":
+            rec.event("reviewer", "info.requested", f"asked the sponsor: {rationale.strip()}",
+                      {"note": rationale.strip()})
+            self._set_state(deal_id, "NEEDS_INPUT", deal.version, awaiting="sponsor")
         else:
             raise DecisionError(f"unknown decision {decision!r}")
         return self.state(deal_id)
+
+    # ------------------------------------------------------------------ sponsor replies
+    def awaiting_sponsor(self, deal_id: str) -> bool:
+        """The reviewer asked for something: the deal has a result and waits on the sponsor."""
+        return (self.state(deal_id) == "NEEDS_INPUT"
+                and self.store.latest_result(deal_id) is not None)
+
+    def record_reply(self, deal_id: str, text: str = "", files: list[str] | None = None) -> None:
+        """What the sponsor said or sent in answer to a request; shown to the reviewer."""
+        version = projections.status(self.store, deal_id).deal_version
+        Recorder(self.store, deal_id, version).event(
+            "intake", "info.replied", "the sponsor replied",
+            {"text": text.strip()[:2000], "files": list(files or [])})
+
+    def resume_review(self, deal_id: str) -> None:
+        """A reply in words changes no document, so the deal goes straight back to the reviewer
+        at the same version (nothing is re-extracted, so confirmed edits are safe)."""
+        version = projections.status(self.store, deal_id).deal_version
+        self._set_state(deal_id, "NEEDS_REVIEW", version)
+        Recorder(self.store, deal_id, version).event(
+            "chief", "review.requested", "back in review: the sponsor replied",
+            {"escalation": False, "reason": "sponsor replied"})
 
     # ------------------------------------------------------------------ patches
     def propose_patch(self, deal_id: str, kind: str, path: str, new, reason: str) -> Patch:

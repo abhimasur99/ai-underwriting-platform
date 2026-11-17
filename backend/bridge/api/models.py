@@ -47,6 +47,8 @@ class QueueRow(BaseModel):
     updated_at: str
     owner: str
     archived: bool = False
+    next_action: str = ""
+    needs_you: bool = False
 
 
 class ChiefChatRequest(BaseModel):
@@ -60,7 +62,7 @@ class ChiefChatResponse(BaseModel):
 
 
 class DecisionRequest(BaseModel):
-    decision: str            # approve | send_back | reject
+    decision: str            # approve | send_back | reject | request_info
     rationale: str = ""
 
 

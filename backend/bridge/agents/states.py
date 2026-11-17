@@ -21,6 +21,8 @@ TRANSITIONS: set[tuple[str, str]] = {
     ("NEEDS_REVIEW", "SENT_BACK"), ("SENT_BACK", "UNDERWRITING"),
     ("NEEDS_REVIEW", "REJECTED"),
     ("NEEDS_REVIEW", "UNDERWRITING"),      # a confirmed data patch re-enters here
+    ("NEEDS_REVIEW", "NEEDS_INPUT"),       # the reviewer asks the sponsor for something
+    ("NEEDS_INPUT", "NEEDS_REVIEW"),       # the sponsor answered in words; nothing to re-extract
 }
 
 MAX_RETRIES = 2
