@@ -77,7 +77,7 @@ Mismatch: `{"field": "ltc", "underwriter": 0.7065, "independent": 0.7143, "diff"
 {"event_id": 112, "deal_id": "D-0042", "ts": "2026-11-16T15:04:07Z", "actor": "underwriter",
  "type": "tool.called", "summary": "calc.ltc = 70.65%", "deal_version": 1, "payload": {"call_id": "t-0031"}}
 ```
-Types: `deal.created`, `fact.recorded`, `file.uploaded`, `file.classified`, `checklist.updated`, `state.changed`, `handoff.sent`, `handoff.returned`, `tool.called`, `extraction.completed`, `underwriting.completed`, `check.completed`, `check.retry`, `review.requested`, `patch.proposed`, `patch.confirmed`, `patch.cancelled`, `override.recorded`, `decision.recorded`, `memo.rendered`, `error`.
+Types: `deal.created`, `deal.submitted`, `version.created`, `fact.recorded`, `file.uploaded`, `file.classified`, `checklist.updated`, `state.changed`, `handoff.sent`, `handoff.returned`, `tool.called`, `extraction.completed`, `underwriting.completed`, `check.completed`, `check.retry`, `review.requested`, `patch.proposed`, `patch.confirmed`, `patch.cancelled`, `override.recorded`, `decision.recorded`, `memo.rendered`, `error`.
 
 ## Checklist status (external chat)
 ```json

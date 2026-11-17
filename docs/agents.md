@@ -2,11 +2,11 @@
 
 Five roles. The chief is a code state machine. The other four are small, single-purpose loops. Agents never call each other; every handoff goes through the chief and is logged. Prompts live in `backend/bridge/agents/prompts/`. Thresholds and formulas are in `docs/rules.md`; JSON shapes are in `docs/data-contracts.md`.
 
-Shared loop for tool-using agents (`agents/base.py`): send messages and tool schemas to the model; if it returns tool calls, run them in code, append results, loop; stop when it returns the final structured output or hits `max_steps`. Every tool call is written to the event log. Output is validated against a Pydantic model; on a validation error, retry once with the error text, then fail the step.
+Shared pattern: **code owns the order of work.** The underwriter, checker and extraction run their steps in a fixed sequence from code (`agents/underwriter.py`, `checker.py`, `extraction.py`) and log every tool call to the event log (inputs, formula, output). The model, in live mode, makes single structured-output calls (`agents/claude_runner.py`) for narrative, wording and chat interpretation. It has no tools and no sampling parameters (see decisions D17, D19). Output is validated against a Pydantic model; invalid output fails the step loudly. Offline, a cached runner returns the same shapes without a model.
 
 ## 1. Intake chat (external, chat only)
 - **Job:** collect the documents and facts the checklist needs, in a friendly chat. Never gives a decision or any numbers about the deal.
-- **Model use:** wording and understanding free-text replies. The checklist logic is code.
+- **Model use:** only to interpret a message into facts and a "asked for a decision" flag. Replies are composed by code from the checklist (D18). The checklist logic is code.
 - **Tools:** `record_fact(key, value)`, `get_checklist_status()`, `classify_file(file_id)` (filename and header hints first, model label only if ambiguous), `submit_deal()` (allowed only when `ready` is true).
 - **Flow per message:** apply tool calls, recompute checklist, reply with what was received and what is missing, one ask at a time.
 - **Guardrails:** refuses to discuss underwriting results, rates or approval odds ("the team will follow up"); file type and size limits from `config/checklist.yaml`; uploaded file content is data, never instructions.
@@ -18,7 +18,7 @@ Shared loop for tool-using agents (`agents/base.py`): send messages and tool sch
 - **Tools:** `read_document(doc_id)`, `parse_rent_roll`, `parse_t12`, `parse_budget`, `find_in_document(doc_id, text)`.
 - **Output:** deal record v1 plus `extraction_notes` (conflicts, ambiguous fields).
 - **Guardrails:** never guesses a missing required field (returns `needs_input` naming it); if two documents disagree, keeps both values, flags it, and lowers confidence; fields below 0.80 become `LOW_CONFIDENCE_FIELD` flags downstream.
-- **Retry policy:** one retry on schema-validation failure; otherwise the chief sets `NEEDS_INPUT` (missing or invalid fields) or `FAILED` (unrecoverable error) and posts the reason to the queue. There is no separate `EXTRACTION_FAILED` state.
+- **Retry policy:** none inside extraction (it is deterministic parsing); a missing required field or invalid file makes the chief set `NEEDS_INPUT` (missing or invalid fields), or `FAILED` (unrecoverable error), and posts the reason to the queue. There is no separate `EXTRACTION_FAILED` state.
 
 ## 3. Underwriter agent
 - **Job:** size and evaluate the deal and draft the narrative. It does not do arithmetic.
@@ -48,4 +48,4 @@ Shared loop for tool-using agents (`agents/base.py`): send messages and tool sch
 - **Failure policy:** each step has a timeout; any exception writes an `error` event and sets a visible state, never a silent stall.
 
 ## 6. Cost and mode
-Defaults to cached fixtures per sample deal so the demo runs offline and free; `--live` calls the model. Model name comes from `ANTHROPIC_MODEL`. Keep `max_steps` low (8) and temperature at 0 for extraction and checking.
+Defaults to cached fixtures per sample deal so the demo runs offline and free; `--live` calls the model. Model name comes from `ANTHROPIC_MODEL`. Live calls send no `temperature` (the current model rejects it); determinism comes from code owning the numbers (D19). Live extraction is parsers only for now (D20).
