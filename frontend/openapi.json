@@ -1610,6 +1610,81 @@
     "title": "RentRollUnit",
     "type": "object"
    },
+   "ReplyDraft": {
+    "description": "The reviewer's draft reply to the broker after an approval or rejection. Never sent.",
+    "properties": {
+     "approved_at": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Approved At"
+     },
+     "decision": {
+      "enum": [
+       "approve",
+       "reject"
+      ],
+      "title": "Decision",
+      "type": "string"
+     },
+     "drafted_at": {
+      "title": "Drafted At",
+      "type": "string"
+     },
+     "edited": {
+      "default": false,
+      "title": "Edited",
+      "type": "boolean"
+     },
+     "status": {
+      "enum": [
+       "draft",
+       "approved"
+      ],
+      "title": "Status",
+      "type": "string"
+     },
+     "text": {
+      "title": "Text",
+      "type": "string"
+     },
+     "wording": {
+      "enum": [
+       "template",
+       "claude"
+      ],
+      "title": "Wording",
+      "type": "string"
+     }
+    },
+    "required": [
+     "decision",
+     "text",
+     "status",
+     "wording",
+     "drafted_at"
+    ],
+    "title": "ReplyDraft",
+    "type": "object"
+   },
+   "ReplyTextRequest": {
+    "properties": {
+     "text": {
+      "title": "Text",
+      "type": "string"
+     }
+    },
+    "required": [
+     "text"
+    ],
+    "title": "ReplyTextRequest",
+    "type": "object"
+   },
    "RuleCheck": {
     "description": "One row of the memo metrics table: value, thresholds, and status.",
     "properties": {
@@ -3217,6 +3292,177 @@
      }
     },
     "summary": "Confirm Patch"
+   }
+  },
+  "/api/deals/{deal_id}/reply-draft": {
+   "get": {
+    "operationId": "get_reply_draft_api_deals__deal_id__reply_draft_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "deal_id",
+      "required": true,
+      "schema": {
+       "title": "Deal Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "anyOf": [
+          {
+           "$ref": "#/components/schemas/ReplyDraft"
+          },
+          {
+           "type": "null"
+          }
+         ],
+         "title": "Response Get Reply Draft Api Deals  Deal Id  Reply Draft Get"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Reply Draft"
+   },
+   "post": {
+    "description": "Draft the reply for a decided deal, or start over on it.",
+    "operationId": "draft_reply_api_deals__deal_id__reply_draft_post",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "deal_id",
+      "required": true,
+      "schema": {
+       "title": "Deal Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ReplyDraft"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Draft Reply"
+   },
+   "put": {
+    "operationId": "edit_reply_api_deals__deal_id__reply_draft_put",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "deal_id",
+      "required": true,
+      "schema": {
+       "title": "Deal Id",
+       "type": "string"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ReplyTextRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ReplyDraft"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Edit Reply"
+   }
+  },
+  "/api/deals/{deal_id}/reply-draft/approve": {
+   "post": {
+    "operationId": "approve_reply_api_deals__deal_id__reply_draft_approve_post",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "deal_id",
+      "required": true,
+      "schema": {
+       "title": "Deal Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ReplyDraft"
+        }
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Approve Reply"
    }
   },
   "/api/deals/{deal_id}/restore": {

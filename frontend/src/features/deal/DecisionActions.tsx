@@ -15,7 +15,7 @@ const FINAL: Record<string, { tone: 'teal' | 'coral'; text: string }> = {
 const EXPLAIN = [
   ['Reject', 'Closes the deal as rejected and logs your rationale. This is final: a closed deal cannot be reopened.'],
   ['Request info', 'Asks the sponsor for something. Your note appears in their intake chat and the deal waits. A reply in words returns it to you as it is; a new file is read again as a new version.'],
-  ['Approve', 'Records your approval and closes the deal. A released snapshot (deal data, result, check and your rationale) is saved beside the memo. Nothing is sent outside this app.'],
+  ['Approve', 'Records your approval and closes the deal. A released snapshot (deal data, result, check and your rationale) is saved beside the memo. A draft reply to the broker opens for you to edit; nothing is sent outside this app.'],
 ] as const
 
 const CONFIRM: Record<Decision, string> = {
@@ -26,8 +26,10 @@ const CONFIRM: Record<Decision, string> = {
 /** Reject on the left, the primary action on the right. The AI call is a recommendation; only
  *  these buttons record a decision. */
 export default function DecisionActions({
-  dealId, state, escalated, onRequestInfo,
-}: { dealId: string; state: string; escalated: boolean; onRequestInfo: () => void }) {
+  dealId, state, escalated, onRequestInfo, onReply,
+}: {
+  dealId: string; state: string; escalated: boolean; onRequestInfo: () => void; onReply: () => void
+}) {
   const [asking, setAsking] = useState<Decision | null>(null)
   const [busy, setBusy] = useState<Decision | null>(null)
   const [help, setHelp] = useState(false)
@@ -41,6 +43,7 @@ export default function DecisionActions({
     setError(null)
     try {
       await api.decide(dealId, decision, '')
+      onReply()          // the reply to the broker is drafted with the decision
     } catch (e) {
       setError((e as Error).message)
     } finally {
@@ -52,6 +55,9 @@ export default function DecisionActions({
     return (
       <div className="flex items-center gap-2">
         <Chip tone={final.tone}>{final.text}</Chip>
+        <Button onClick={onReply} title="The draft reply to the broker. It is never sent from this app.">
+          Reply to broker
+        </Button>
       </div>
     )
 

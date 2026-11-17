@@ -83,6 +83,12 @@ function describe(e: ApiEvent): Omit<LogEntry, 'id' | 'ts'> | null {
       const sent = files.length ? `sent ${files.join(', ')}` : ''
       return entry('Sponsor', `Replied${said ? `: ${said}` : ''}${said && sent ? ' and ' : sent ? ': ' : ''}${sent}`)
     }
+    case 'reply.drafted':
+      return entry('Chief', 'Drafted the reply to the broker (not sent)')
+    case 'reply.edited':
+      return entry('You', 'Edited the reply to the broker')
+    case 'reply.approved':
+      return entry('You', 'Approved the reply to the broker (not sent)', 'good')
     case 'deal.archived':
     case 'deal.restored':
     case 'deal.renamed':

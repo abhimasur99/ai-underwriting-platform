@@ -13,10 +13,10 @@ const link = 'font-semibold text-slate-600 hover:text-ink'
 /** Back and previous on the left, next on the right; the deal's name and where it stands below,
  *  and the decision on the right of that, on every tab. */
 export default function DealHeader({
-  dealId, detail, nav, onChanged, onRequestInfo,
+  dealId, detail, nav, onChanged, onRequestInfo, onReply,
 }: {
   dealId: string; detail: DealDetail; nav: Neighbours
-  onChanged: () => void; onRequestInfo: () => void
+  onChanged: () => void; onRequestInfo: () => void; onReply: () => void
 }) {
   const { status } = detail
   const [error, setError] = useState<string | null>(null)
@@ -86,7 +86,7 @@ export default function DealHeader({
             </ul>
           </details>
           <DecisionActions dealId={dealId} state={status.state} escalated={status.escalation}
-            onRequestInfo={onRequestInfo} />
+            onRequestInfo={onRequestInfo} onReply={onReply} />
         </div>
       </div>
       {error && <p role="alert" className="mt-1 text-xs text-coral-700">{error}</p>}

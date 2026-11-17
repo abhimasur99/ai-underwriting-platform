@@ -10,8 +10,8 @@ Work one sprint at a time. Stop at done-when and show the result before starting
 | 3c Files and deals | Done, tagged `sprint-3c` |
 | 3d Deal page rebuild | Done, tagged `sprint-3d` |
 | 3e Intake and chat | Done, tagged `sprint-3e` |
-| 3f What-ifs and sizing | Done: awaiting go-ahead to tag `sprint-3f` |
-| 3g Draft broker reply | Planned |
+| 3f What-ifs and sizing | Done, tagged `sprint-3f` |
+| 3g Draft broker reply | Done: awaiting go-ahead to tag `sprint-3g` |
 | 3h Underwriter case (assumptions) | Optional: decide after 3g |
 | 4 Demo and docs | Planned (last) |
 
@@ -52,7 +52,8 @@ Why 3c to 3h exist: a design review (see `docs/decisions.md` D29 to D33) found t
 **Done when:** a reviewer can ask a what-if or the maximum loan in the chat and get an exact answer in seconds, and no what-if changes the deal.
 
 ## Sprint 3g: Draft broker reply
-- [ ] Approving or rejecting a deal produces a draft reply to the broker (template offline, wording from Claude in live mode behind the same validator as the chats); it is shown for the reviewer to edit and approve, and is never sent
+- [x] Approving or rejecting a deal produces a draft reply to the broker (template offline, wording from Claude in live mode behind a stricter validator than the chats: no new figure or credit word, same blanks and list); it opens for the reviewer to edit and approve, and is never sent
+- [x] Drafted, edited and approved are events in the log; a deal decided before this sprint, or a reviewer who wants a fresh start, can ask for the draft again ("Reply to broker" in the header)
 **Done when:** every approved or rejected deal has a logged, reviewer-approved draft.
 
 ## Sprint 3h: Underwriter case (optional)

@@ -85,6 +85,10 @@ Chat on the left, the deal on the right. Back and previous are on the left, next
 | `GET /api/stream` | SSE for the queue |
 | `GET /api/deals/{id}/artifacts/{memo.pdf or workbook.xlsx}` | Latest outputs |
 | `POST /api/deals/{id}/chief-chat` | Internal chat; returns reply, suggestions and optional patch proposal, what-if outcome or sizing |
+| `GET /api/deals/{id}/reply-draft` | The draft reply to the broker for an approved or rejected deal (null before a decision): `decision`, `text`, `status` (draft or approved), `wording` (template or claude), `edited` |
+| `POST /api/deals/{id}/reply-draft` | Draft the reply, or start over on it (409 before a decision) |
+| `PUT /api/deals/{id}/reply-draft` | The reviewer's edited text (422 if empty or too long); status returns to draft |
+| `POST /api/deals/{id}/reply-draft/approve` | Record the reviewer's approval of the wording (422 while a `[blank]` is left). Nothing is ever sent |
 | `POST /api/deals/{id}/what-if` | Try different assumptions (`{params: {name: value}}`); returns the current case against the changed one. Saves nothing; 422 for an unknown or out-of-range assumption |
 | `GET /api/deals/{id}/max-loan?target=screen\|watch` | The largest loan that still reaches the target call, found by re-applying the rules. Saves nothing |
 | `POST /api/deals/{id}/patches/{patch_id}/confirm` | Apply a proposed patch |
