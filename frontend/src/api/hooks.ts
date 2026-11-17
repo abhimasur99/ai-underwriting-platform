@@ -91,3 +91,12 @@ export function useDealData(dealId: string) {
   useStream(`/api/deals/${dealId}/stream`, refresh)
   return { detail, events, error, reload: load }
 }
+
+/** "cached" (offline) or "live" (Claude writes the narrative and words the chat). */
+export function useMode(): string | null {
+  const [mode, setMode] = useState<string | null>(null)
+  useEffect(() => {
+    api.health().then((h) => setMode(h.mode), () => setMode(null))
+  }, [])
+  return mode
+}

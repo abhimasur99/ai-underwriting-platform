@@ -66,5 +66,9 @@ def validate_narrative(narrative: dict[str, str]) -> None:
     for section, text in narrative.items():
         stray = find_stray_digits(text)
         if stray:
+            # quote the words around the first offender so a model (or a person) can fix it
+            bare = PLACEHOLDER.sub("", text)
+            at = re.search(r"\d", bare)
+            near = bare[max(0, at.start() - 25):at.start() + 25].strip() if at else ""
             raise NarrativeError(f"narrative section {section!r} has digits outside "
-                                 f"placeholders: {stray}")
+                                 f"placeholders: {stray} (near: \"{near}\")")

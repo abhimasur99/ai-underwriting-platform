@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { useQueue } from '../api/hooks'
-import { CallChip, Chip, StageChip, Button } from '../components/Chips'
+import { useMode, useQueue } from '../api/hooks'
+import { CallChip, Chip, ModeBadge, StageChip, Button } from '../components/Chips'
 import { ago } from '../lib/format'
 import { navigate } from '../lib/router'
 
@@ -14,6 +14,7 @@ const FILTERS: { id: Filter; label: string }[] = [
 
 export default function Queue() {
   const { rows, error } = useQueue()
+  const mode = useMode()
   const [filter, setFilter] = useState<Filter>('all')
   const [search, setSearch] = useState('')
 
@@ -30,7 +31,10 @@ export default function Queue() {
     <div className="mx-auto max-w-6xl px-6 py-8">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-xl font-semibold">Deal queue</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-semibold">Deal queue</h1>
+            <ModeBadge mode={mode} />
+          </div>
           <p className="mt-1 text-sm text-slate-500">
             Every row is a view over the event log. It updates live.
           </p>

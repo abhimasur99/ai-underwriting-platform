@@ -114,3 +114,15 @@ def test_edits_outside_review_are_refused_politely(tmp_path):
     chief.decide(deal_id, "reject", "no")
     out = chat.handle(deal_id, "change the ARV to 9,000,000 because x")
     assert out["patch"] is None and "in review" in out["reply"]
+
+
+def test_an_override_or_narrative_edit_with_no_text_is_never_proposed(tmp_path):
+    from bridge.agents.runner_types import ChiefTurn, PatchRequest
+    chief, chat, deal_id = setup(tmp_path)
+    for kind, intent in (("override", "override"), ("narrative", "narrative_edit")):
+        chat.runner = type("R", (), {"interpret_chief": staticmethod(lambda _m, k=kind, i=intent:
+                                     ChiefTurn(i, patch=PatchRequest(k, section="risks", text=None,
+                                                                     reason="because")))})()
+        out = chat.handle(deal_id, "whatever")
+        assert out["patch"] is None and "I need" in out["reply"]
+    assert chief.store.patches(deal_id, status="proposed") == []

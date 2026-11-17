@@ -205,3 +205,13 @@ def test_prompt_versions_follow_the_file_contents():
     runner = ClaudeRunner(FakeClient(), "m")
     _, v1 = runner._prompt("chief")
     assert v1.startswith("chief@") and len(v1.split("@")[1]) == 8
+
+
+def test_override_judgment_is_recovered_when_the_model_leaves_it_empty():
+    """Seen live: the model put the whole sentence in the reason and returned no judgment."""
+    msg = "Override: comfortable with the sponsor because six prior renovations closed on time"
+    turn = ClaudeRunner(FakeClient(chief_reply(
+        intent="override", patch_kind="override", patch_text="none",
+        patch_reason="six prior renovations closed on time")), "m").interpret_chief(msg)
+    assert turn.patch.text == "comfortable with the sponsor"
+    assert turn.patch.reason == "six prior renovations closed on time"

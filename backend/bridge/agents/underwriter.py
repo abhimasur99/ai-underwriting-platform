@@ -37,7 +37,7 @@ def _draft_narrative(runner: AgentRunner, result: UnderwritingResult, rec: Recor
         except NarrativeError as exc:
             feedback = str(exc)
             rec.tool_call("underwriter", "narrative.write", {"attempt": attempt}, None,
-                          {"rejected": feedback})
+                          {"rejected": feedback, "draft": narrative})
             if attempt == 2:
                 raise
             continue

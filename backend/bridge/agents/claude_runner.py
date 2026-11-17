@@ -12,6 +12,7 @@ prompt says to treat them as data.
 import hashlib
 import json
 import logging
+import re
 from pathlib import Path
 
 import anthropic
@@ -139,8 +140,8 @@ class ClaudeRunner:
             "In this call you do not use tools: the numbers are already computed. Write the three "
             "narrative sections (summary, exit, risks) as JSON. Refer to numbers ONLY with "
             "placeholders from available_placeholders, written like {{metrics.ltc}}. Any digit "
-            "outside a placeholder is rejected. Lead the summary with the exit. Do not recommend "
-            "approving or funding.")
+            "outside a placeholder is rejected, even in names like T-12 (write 'trailing twelve "
+            "months'). Lead the summary with the exit. Do not recommend approving or funding.")
         user = json.dumps(context, indent=1)
         if feedback:
             user += f"\n\nYour previous draft was rejected: {feedback}. Rewrite it."
@@ -180,11 +181,22 @@ class ClaudeRunner:
         return IntakeTurn(facts={f["key"]: f["value"] for f in out["facts"]},
                           asks_for_decision=out["asks_for_decision"])
 
+    @staticmethod
+    def _judgment_from(message: str, out: dict) -> str | None:
+        """If the model left an override's judgment empty, take the words before 'because'."""
+        if out.get("patch_kind") != "override":
+            return None
+        body = re.sub(r"^\s*override\b[:,]?\s*", "", message, flags=re.I)
+        head = re.split(r"\s*(?:because|reason\s*:|since)\s*", body, maxsplit=1, flags=re.I)[0]
+        return head.strip(" .") or None
+
     def interpret_chief(self, message: str) -> ChiefTurn:
         out = self._structured(
             "chief", "Classify the reviewer's message and extract its parameters. Use 'none' "
             "where a field does not apply. Percentages as fractions (11% = 0.11). You do not "
-            "answer; code answers from tool output.", self._wrap(message), CHIEF_SCHEMA)
+            "answer; code answers from tool output. For an override, patch_text is the judgment "
+            "being recorded (for example 'comfortable with the sponsor') and patch_reason is why "
+            "(the words after 'because'); fill both.", self._wrap(message), CHIEF_SCHEMA)
 
         def keep(value):
             return None if value in ("none", "", None) else value
@@ -195,6 +207,7 @@ class ClaudeRunner:
                 kind=out["patch_kind"], field=keep(out["patch_field"]),
                 value=out["patch_value"] if out["patch_field"] != "none" else None,
                 unit=keep(out["patch_unit"]), section=keep(out["patch_section"]),
-                text=keep(out["patch_text"]), reason=out["patch_reason"] or "")
+                text=keep(out["patch_text"]) or self._judgment_from(message, out),
+                reason=out["patch_reason"] or "")
         return ChiefTurn(intent=out["intent"], metric=keep(out["metric"]),
                          topic=keep(out["topic"]), patch=patch, action=keep(out["action"]))

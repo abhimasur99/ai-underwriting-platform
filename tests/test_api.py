@@ -223,3 +223,17 @@ def test_memo_opens_inline_and_workbook_downloads(client):
     assert memo.headers["content-disposition"].startswith("inline")
     book = client.get(f"/api/deals/{deal_id}/artifacts/workbook.xlsx")
     assert book.headers["content-disposition"].startswith("attachment")
+
+
+def test_live_mode_needs_a_key_and_unknown_modes_are_rejected(tmp_path):
+    no_key = Settings(None, "m", tmp_path / "a.db", tmp_path, mode="live")
+    with pytest.raises(RuntimeError, match="ANTHROPIC_API_KEY"):
+        create_app(no_key)
+    with pytest.raises(RuntimeError, match="cached"):
+        create_app(Settings(None, "m", tmp_path / "b.db", tmp_path, mode="turbo"))
+
+
+def test_live_mode_health_reports_live(tmp_path):
+    settings = Settings("test-key-not-real", "m", tmp_path / "c.db", tmp_path, mode="live")
+    health = TestClient(create_app(settings)).get("/api/health").json()
+    assert health == {"status": "ok", "mode": "live"}

@@ -192,4 +192,14 @@ def create_app(settings: Settings | None = None, runner: AgentRunner | None = No
 
 
 def _default_runner(settings: Settings) -> AgentRunner:
+    """Offline by default. BRIDGE_MODE=live uses Claude for narrative, checker wording and chat
+    interpretation; the numbers are computed by code either way."""
+    if settings.mode == "live":
+        if not settings.api_key:
+            raise RuntimeError(
+                "BRIDGE_MODE=live needs ANTHROPIC_API_KEY (copy .env.example to .env)")
+        from bridge.agents.claude_runner import ClaudeRunner
+        return ClaudeRunner.from_settings(settings)
+    if settings.mode != "cached":
+        raise RuntimeError(f"BRIDGE_MODE must be 'cached' or 'live', not {settings.mode!r}")
     return CachedRunner()

@@ -4,7 +4,7 @@ PY ?= python3.12
 VENV := .venv
 BIN := $(VENV)/bin
 
-.PHONY: setup test lint dev dev-retry demo smoke fixtures openapi
+.PHONY: setup test lint dev dev-retry dev-live demo smoke fixtures openapi
 
 setup:
 	$(PY) -m venv $(VENV)
@@ -25,6 +25,10 @@ dev:
 	BRIDGE_STEP_DELAY=$${BRIDGE_STEP_DELAY:-1} $(BIN)/uvicorn bridge.api.app:create_app --factory --app-dir backend --reload --port 8000 & \
 	(cd frontend && npm run dev) & \
 	wait
+
+# Same as dev, but Claude writes the narrative and words the chat (needs ANTHROPIC_API_KEY in .env).
+dev-live:
+	@BRIDGE_MODE=live $(MAKE) dev
 
 # Same as dev, but the checker is made to disagree twice: shows the retry loop and escalation.
 dev-retry:

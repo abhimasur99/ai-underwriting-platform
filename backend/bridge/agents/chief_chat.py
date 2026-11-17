@@ -155,6 +155,11 @@ class ChiefChat:
                          f"(reason: {req.reason}). That creates deal version {deal.version + 1} "
                          "and re-runs underwriting and the checker. Nothing changes until you "
                          "confirm.")
+            elif turn.intent in ("narrative_edit", "override") and not (req.text or "").strip():
+                what = "the new text for that section" if turn.intent == "narrative_edit" \
+                    else "the judgment you want recorded"
+                return {"reply": f"I need {what}. For an override, say it as: "
+                                 "override <judgment> because <reason>."}
             elif turn.intent == "narrative_edit":
                 patch = self.chief.propose_patch(deal_id, "narrative",
                                                  f"narrative.{req.section}", req.text, "")

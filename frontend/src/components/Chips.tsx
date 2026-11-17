@@ -97,3 +97,18 @@ export function Button({
     </button>
   )
 }
+
+/** Shows which mode the backend is in, so nobody mistakes offline fixtures for a live model. */
+export function ModeBadge({ mode }: { mode: string | null }) {
+  if (!mode) return null
+  const live = mode === 'live'
+  return (
+    <Chip
+      tone={live ? 'sky' : 'slate'}
+      title={live ? 'Claude writes the narrative and words the chat. Code computes every number.'
+        : 'Offline: cached fixtures and templates. No model is called.'}
+    >
+      {live ? '● live model' : 'offline (cached)'}
+    </Chip>
+  )
+}

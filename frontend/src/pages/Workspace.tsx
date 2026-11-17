@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
-import { useDealData } from '../api/hooks'
+import { useDealData, useMode } from '../api/hooks'
 import ChiefChat from '../components/ChiefChat'
-import { CallChip, Chip, EscalationBadge, StateChip } from '../components/Chips'
+import { CallChip, Chip, EscalationBadge, ModeBadge, StateChip } from '../components/Chips'
 import DecisionBar from '../components/DecisionBar'
 import DecisionPackage from '../components/DecisionPackage'
 import FlowGraph from '../components/FlowGraph'
@@ -20,6 +20,7 @@ const DONE = ['NEEDS_REVIEW', 'APPROVED', 'RELEASED', 'REJECTED']
 
 export default function Workspace({ dealId, tab }: { dealId: string; tab?: string }) {
   const { detail, events, error } = useDealData(dealId)
+  const mode = useMode()
   const [pane, setPane] = useState<Pane>('memo')
   const [selected, setSelected] = useState<NodeId | null>(null)
   const flow = useMemo(() => deriveFlow(events), [events])
@@ -55,7 +56,8 @@ export default function Workspace({ dealId, tab }: { dealId: string; tab?: strin
         {status.retry_count > 0 && !status.escalation && (
           <Chip tone="amber">retry {status.retry_count} of 2</Chip>
         )}
-        <nav className="ml-auto flex rounded-lg bg-slate-100 p-0.5 text-sm">
+        <div className="ml-auto"><ModeBadge mode={mode} /></div>
+        <nav className="flex rounded-lg bg-slate-100 p-0.5 text-sm">
           {(['flow', 'review'] as Tab[]).map((t) => (
             <button
               key={t}
